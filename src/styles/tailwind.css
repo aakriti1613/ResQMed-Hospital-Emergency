@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme CSS Variables ── */
+:root {
+  /* Dark (default) */
+  --ar-bg:        #0a0b0f;
+  --ar-bg-card:   #13141a;
+  --ar-bg-deep:   #0e0f14;
+  --ar-text:      #ffffff;
+  --ar-text-muted: rgba(255,255,255,0.40);
+  --ar-border:    rgba(255,255,255,0.06);
+  --ar-surface:   rgba(255,255,255,0.04);
+  color-scheme: dark;
+}
+
+/* Light mode overrides */
+html:not(.dark) {
+  --ar-bg:        #f4f5f7;
+  --ar-bg-card:   #ffffff;
+  --ar-bg-deep:   #eaecef;
+  --ar-text:      #0d0e14;
+  --ar-text-muted: rgba(0,0,0,0.45);
+  --ar-border:    rgba(0,0,0,0.07);
+  --ar-surface:   rgba(0,0,0,0.03);
+  color-scheme: light;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--ar-bg);
+  color: var(--ar-text);
+  @apply antialiased;
+  transition: background 0.25s ease, color 0.2s ease;
+}
+
+/* ── Light-mode surface overrides (via attribute selectors on data-theme) ── */
+html:not(.dark) .min-h-dvh,
+html:not(.dark) [class*="bg-\[#0a0b0f\]"],
+html:not(.dark) [class*="bg-\[#0e0f14\]"] {
+  background: var(--ar-bg) !important;
+}
+
+html:not(.dark) [class*="bg-\[#13141a\]"],
+html:not(.dark) [class*="bg-\[#1a1b22\]"],
+html:not(.dark) [class*="bg-\[#1c1d25\]"] {
+  background: var(--ar-bg-card) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+/* Text color overrides in light mode */
+html:not(.dark) .text-white {
+  color: var(--ar-text) !important;
+}
+html:not(.dark) .text-white\/35,
+html:not(.dark) .text-white\/40,
+html:not(.dark) .text-white\/45,
+html:not(.dark) .text-white\/50 {
+  color: var(--ar-text-muted) !important;
+}
+html:not(.dark) .text-white\/30,
+html:not(.dark) .text-white\/25,
+html:not(.dark) .text-white\/20,
+html:not(.dark) .text-white\/15 {
+  color: rgba(0,0,0,0.30) !important;
+}
+
+/* Border overrides in light mode */
+html:not(.dark) .border-white\/\[0\.06\],
+html:not(.dark) .border-white\/\[0\.05\],
+html:not(.dark) .border-white\/\[0\.04\] {
+  border-color: rgba(0,0,0,0.07) !important;
+}
+
+/* Bottom nav in light mode */
+html:not(.dark) nav.fixed {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Input fields in light mode */
+html:not(.dark) input {
+  background: rgba(0,0,0,0.04) !important;
+  color: var(--ar-text) !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Custom scrollbar (dark) */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+
+/* Tap highlight removal on mobile */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Range input reset */
+input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; }

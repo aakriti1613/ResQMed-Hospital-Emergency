@@ -1,0 +1,38 @@
+﻿
+> uber-hospital-and-emergency@0.0.0 build
+> tsc && vite build
+
+src/components/LocationSearchModal.tsx(1,23): error TS2688: Cannot find type definition file for 'google.maps'.
+src/components/LocationSearchModal.tsx(26,14): error TS2304: Cannot find name 'google'.
+src/components/LocationSearchModal.tsx(26,40): error TS2304: Cannot find name 'google'.
+src/components/LocationSearchModal.tsx(50,38): error TS2503: Cannot find namespace 'google'.
+src/components/LocationSearchModal.tsx(51,27): error TS2503: Cannot find namespace 'google'.
+src/components/LocationSearchModal.tsx(62,41): error TS2304: Cannot find name 'google'.
+src/components/LocationSearchModal.tsx(63,30): error TS2304: Cannot find name 'google'.
+src/components/LocationSearchModal.tsx(114,24): error TS2503: Cannot find namespace 'google'.
+src/components/LocationSearchModal.tsx(115,19): error TS2503: Cannot find namespace 'google'.
+src/components/LocationSearchModal.tsx(118,26): error TS2304: Cannot find name 'google'.
+src/data/sos.ts(62,21): error TS18048: 'd' is possibly 'undefined'.
+src/data/sos.ts(64,9): error TS18048: 'd' is possibly 'undefined'.
+src/data/sos.ts(135,22): error TS2869: Right operand of ?? is unreachable because the left operand is never nullish.
+src/data/sos.ts(136,22): error TS2869: Right operand of ?? is unreachable because the left operand is never nullish.
+src/screens/app/AppointmentsPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/screens/app/care/CareBookPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/screens/app/care/CareDoctorsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/screens/app/care/CareHospitalsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/screens/app/care/CareSpecialtiesPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/screens/app/SosPage.tsx(10,3): error TS6133: 'getActiveSosForUser' is declared but its value is never read.
+src/screens/app/VaultPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/screens/portals/DoctorPortalPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/screens/portals/HospitalPortalPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+node.exe : npm notice
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice New major version of npm available! 10.9.2 -> 11.12.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.12.1
+npm notice To update run: npm install -g npm@11.12.1
+npm notice
