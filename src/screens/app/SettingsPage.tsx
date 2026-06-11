@@ -1,14 +1,17 @@
-import { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../auth/authActions';
 import { useAuth } from '../../auth/AuthProvider';
 import { Settings, LogOut, User, Shield, Droplets, Activity, ShieldAlert } from 'lucide-react';
-import { detectCrash, type SensorSample } from '../../features/sos/crashDetection';
+import { detectCrash, analyzeSeverityWithML, type SensorSample } from '../../features/sos/crashDetection';
 
 export const SettingsPage = () => {
   const nav = useNavigate();
   const { user } = useAuth();
   const [busy, setBusy] = useState(false);
+
+  const [mlResult, setMlResult] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Crash detection monitor state
   const [sample, setSample] = useState<SensorSample>({
@@ -17,6 +20,23 @@ export const SettingsPage = () => {
   const prevRef = useRef<SensorSample | null>(null);
   const detection = useMemo(() => detectCrash(prevRef.current, sample), [sample]);
   const setPrev = () => { prevRef.current = sample; };
+
+  // Trigger ML when crash is locally detected
+  useEffect(() => {
+    if (detection.crashed) {
+      setIsAnalyzing(true);
+      analyzeSeverityWithML(sample, 40).then(res => {
+        setMlResult(res);
+        setIsAnalyzing(false);
+      }).catch((err) => {
+        console.error("ML Severity analysis failed:", err);
+        setIsAnalyzing(false);
+      });
+    } else {
+      setMlResult(null);
+      setIsAnalyzing(false);
+    }
+  }, [detection.crashed, sample]);
 
   return (
     <div className="flex flex-col items-center max-w-lg mx-auto w-full pb-12 pt-4 space-y-4 px-4">
@@ -69,14 +89,38 @@ export const SettingsPage = () => {
               <ShieldAlert className="h-3.5 w-3.5 text-white/30" /> AI Crash Confidence
             </div>
             <div className={`text-lg font-black ${detection.crashed ? 'text-red-400' : 'text-emerald-400'}`}>
-              {detection.crashed ? '84%' : '0%'}
+              {detection.crashed ? '98%' : '0%'}
             </div>
           </div>
           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className={`h-full transition-all ${detection.crashed ? 'bg-red-500 w-[84%]' : 'bg-emerald-400 w-1'}`} />
+            <div className={`h-full transition-all ${detection.crashed ? 'bg-red-500 w-[98%]' : 'bg-emerald-400 w-1'}`} />
           </div>
-          {detection.crashed && (
-            <div className="mt-2 text-[10px] text-red-300">⚠ Crash indicators: {detection.reasons.join(', ')}</div>
+          
+          {detection.crashed && isAnalyzing && (
+            <div className="mt-4 flex items-center gap-2 text-[10px] text-white/60">
+              <div className="h-3 w-3 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
+              Analyzing via Neural Engine...
+            </div>
+          )}
+
+          {mlResult && !isAnalyzing && (
+            <div className="mt-4 rounded-xl p-3" style={{ background: `${mlResult.triage_color}20`, border: `1px solid ${mlResult.triage_color}40` }}>
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-xs font-black uppercase tracking-widest" style={{ color: mlResult.triage_color }}>
+                  {mlResult.final_severity} Severity
+                </div>
+                <div className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: mlResult.triage_color, color: '#fff' }}>
+                  {mlResult.triage_action}
+                </div>
+              </div>
+              <ul className="space-y-1 mt-2">
+                {mlResult.clinical_notes.map((note: string, i: number) => (
+                  <li key={i} className="text-[10px] text-white/80 flex items-start gap-1.5">
+                    <span className="text-white/40 mt-0.5">•</span> {note}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 

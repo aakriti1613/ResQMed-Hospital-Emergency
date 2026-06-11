@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 
@@ -13,36 +13,51 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const firebaseApp = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
-
-export const auth = getAuth(firebaseApp);
-
-/**
- * Firestore init: prefer `initializeFirestore` with long-polling auto-detect.
- * This avoids a class of "INTERNAL ASSERTION FAILED: Unexpected state" errors
- * seen with WebChannel + some browsers / VPNs / HMR teardown races.
- * On HMR, Firestore may already exist — fall back to `getFirestore`.
- */
-function createDb(): Firestore {
-  try {
-    return initializeFirestore(firebaseApp, {
-      experimentalAutoDetectLongPolling: true,
-    });
-  } catch {
-    return getFirestore(firebaseApp);
-  }
-}
-
-export const db = createDb();
-export const storage = getStorage(firebaseApp);
-
-export const functions = getFunctions(firebaseApp);
-
+let app: any = null;
+let authInstance: any = null;
+let dbInstance: any = null;
+let storageInstance: any = null;
+let functionsInstance: any = null;
 let messagingInstance: any = null;
+
 try {
-  const { getMessaging } = await import('firebase/messaging');
-  messagingInstance = getMessaging(firebaseApp);
+  if (firebaseConfig.apiKey) {
+    app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
+    authInstance = getAuth(app);
+    try {
+      dbInstance = initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+      });
+    } catch {
+      dbInstance = getFirestore(app);
+    }
+    storageInstance = getStorage(app);
+    functionsInstance = getFunctions(app);
+  }
 } catch (e) {
-  console.warn('Firebase Messaging not supported or failed to initialize', e);
+  console.warn('Firebase initialization skipped or failed. Running in Demo mode.', e);
 }
+
+export const firebaseApp = app;
+export const auth = authInstance;
+export const db = dbInstance;
+export const storage = storageInstance;
+export const functions = functionsInstance;
+
+// Firebase Messaging requires Service Workers — NOT supported in native iOS/Android WebViews.
+// We load it lazily and only if serviceWorker is available (i.e. on the web, not in the app).
 export const messaging = messagingInstance;
+
+if (app && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  import('firebase/messaging')
+    .then(({ getMessaging }) => {
+      try {
+        messagingInstance = getMessaging(app);
+      } catch {
+        // silently ignore — not supported in this environment
+      }
+    })
+    .catch(() => {
+      // silently ignore — messaging not available
+    });
+}

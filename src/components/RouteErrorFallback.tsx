@@ -7,7 +7,7 @@ import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
  */
 export const RouteErrorFallback = () => {
   const err = useRouteError();
-  const msg =
+  let msg =
     isRouteErrorResponse(err)
       ? `${err.status} ${err.statusText}`
       : err instanceof Error
@@ -16,9 +16,9 @@ export const RouteErrorFallback = () => {
           ? err
           : 'Something went wrong';
 
-  const isFirestore =
-    /firestore|INTERNAL ASSERTION|Unexpected state/i.test(msg) ||
-    (err instanceof Error && /firestore/i.test(err.stack || ''));
+  if (err instanceof Error && (err.message.includes('permission-denied') || err.message.includes('offline'))) {
+    msg = 'Cannot connect to database (offline or permissions issue).';
+  }
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] text-white flex flex-col items-center justify-center px-6">
@@ -27,14 +27,14 @@ export const RouteErrorFallback = () => {
           <AlertTriangle className="h-7 w-7 text-amber-400" />
         </div>
         <h1 className="text-lg font-black">We hit a snag</h1>
-        <p className="mt-2 text-sm text-white/55 leading-relaxed">
-          {isFirestore
-            ? 'A realtime sync glitch occurred (often during hot-reload). Reloading usually fixes it.'
-            : 'The app ran into an unexpected error.'}
-        </p>
-        <pre className="mt-4 text-left text-[10px] text-white/35 bg-black/40 rounded-xl p-3 overflow-x-auto whitespace-pre-wrap break-words max-h-32">
-          {msg}
-        </pre>
+        <p className="text-xs text-white/50">The app ran into an unexpected error.</p>
+        <div className="mt-4 rounded-xl border border-white/5 bg-black/50 p-4 text-left">
+          <code className="text-[10px] text-red-400 font-mono break-all">
+            {err instanceof Error ? err.message : msg}
+            <br/><br/>
+            {err instanceof Error ? err.stack : 'No stack trace available'}
+          </code>
+        </div>
         <div className="mt-5 flex flex-col gap-2">
           <button
             type="button"

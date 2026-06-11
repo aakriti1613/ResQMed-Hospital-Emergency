@@ -1,5 +1,5 @@
 
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import { LandingPage } from './screens/public/LandingPage';
 import { LoginPage } from './screens/public/LoginPage';
 import { SignupPage } from './screens/public/SignupPage';
@@ -25,7 +25,7 @@ import { NotFoundPage } from './screens/NotFoundPage';
 import { RootLayout } from './shell/RootLayout';
 import { RouteErrorFallback } from './components/RouteErrorFallback';
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <RootLayout />,

@@ -1,0 +1,36 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 300,
+  "features": [
+    "acceleration_magnitude",
+    "gyro_magnitude",
+    "impact_force",
+    "tilt_angle_after_impact",
+    "no_movement_duration_s",
+    "pre_impact_acc_mean",
+    "speed_before_impact",
+    "speed_drop"
+  ],
+  "classes": {
+    "0": "Minor",
+    "1": "Major",
+    "2": "Critical"
+  },
+  "datasets_used": [
+    "SisFall (IMU features)"
+  ],
+  "test_accuracy": 1.0,
+  "test_f1_weighted": 1.0,
+  "cv_f1_mean": 0.9997,
+  "cv_f1_std": 0.0006,
+  "feature_importance": {
+    "acceleration_magnitude": 0.4498,
+    "gyro_magnitude": 0.0871,
+    "impact_force": 0.4261,
+    "tilt_angle_after_impact": 0.0071,
+    "no_movement_duration_s": 0.0197,
+    "pre_impact_acc_mean": 0.0103
+  },
+  "n_train_samples": 3150,
+  "n_test_samples": 675
+}

@@ -15,13 +15,17 @@ import {
   listenAssignmentsForRequest,
   listenSosRequestDoc,
   updateSosRequest,
-  listenCurrentSosRequest,
+  getActiveSosForUser,
   type SosAssignmentDoc,
   type SosRequestDoc,
   type IncidentType,
   type ParticipantBrief,
 } from '../../data/sos';
 import { formatEta, formatDistance } from '../../data/routing';
+import {
+  analyzeSeverityWithML,
+  type MLSeverityResponse,
+} from '../../features/sos/crashDetection';
 import { listenAlertsForRequest, type HospitalAlert } from '../../data/hospitalAlerts';
 import {
   listenUserProfile,
@@ -78,6 +82,25 @@ export const SosPage = () => {
   const [incidentType, setIncidentType] = useState<IncidentType | null>(null);
   // ── "How are you feeling?" mood captured after marking safe ─────────────
   const [feelingMood, setFeelingMood] = useState<string | null>(null);
+  
+  // ── ML Integration & Manual Override State ────────────────────────────────
+  const hwGforce = searchParams.get('gforce');
+  const hwSeverity = (searchParams.get('severity') as 'minor'|'major'|'critical') || 'major';
+  const [manualSeverity, setManualSeverity] = useState<'minor'|'major'|'critical'>('major');
+  const [mlData, setMlData] = useState<MLSeverityResponse | null>(null);
+
+  useEffect(() => {
+    if (isHardwareCrash && hwGforce) {
+      // Simulate the window from gforce just to get model 3
+      analyzeSeverityWithML(
+        { accelerationG: parseFloat(hwGforce), speedKmh: 40, lat: 0, lon: 0, orientation: 'normal', vibration: 50 },
+        40
+      ).then(res => {
+        if (res) setMlData(res);
+      });
+    }
+  }, [isHardwareCrash, hwGforce]);
+
   const [showManual, setShowManual] = useState(false);
   const [showHelplines, setShowHelplines] = useState(false);
   const [callPopup, setCallPopup] = useState(false);
@@ -211,8 +234,9 @@ export const SosPage = () => {
 
   // ── Resume check: if user already has an active SOS, skip countdown ───────
   useEffect(() => {
-    const unsub = listenCurrentSosRequest(uid, (existing) => {
-      unsub(); // one-time check only
+    let isCancelled = false;
+    getActiveSosForUser(uid).then((existing) => {
+      if (isCancelled) return;
       if (!existing || isDoneRef.current || createdRef.current) return;
       if (existing.status !== 'active') return;
       console.log('[SOS] Resuming existing active SOS:', existing.id);
@@ -223,8 +247,9 @@ export const SosPage = () => {
       setPhase('active');
       setHelmetFlowStep('live_track');
       setCdown(0);
-    });
-    return unsub;
+    }).catch(console.error);
+    
+    return () => { isCancelled = true; };
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── LOCAL COUNTDOWN — zero Firestore writes during this phase ────────────
@@ -295,7 +320,7 @@ export const SosPage = () => {
       const saved = await createSosRequest({
         victimId: uid,
         status: 'active',         // written directly as 'active' — no countdown in Firestore
-        severity: hwLat || incidentType === 'crash' ? 'critical' : 'major',
+        severity: isHardwareCrash ? hwSeverity : manualSeverity,
         source: hwLat ? 'hardware' : 'mobile',
         countdown: 0,
         location: finalLocation ? { lat: finalLocation.lat, lon: finalLocation.lon } : null,
@@ -781,44 +806,122 @@ export const SosPage = () => {
               </div>
 
               <div className="mt-6">
-                <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">
-                  What happened?
-                </div>
-                <div className="grid grid-cols-1 gap-2">
-                  {(
-                    [
-                      { id: 'crash',   label: 'High impact / Crash',   icon: <Car className="h-4 w-4" />,        tint: '#f59e0b' },
-                      { id: 'fall',    label: 'Vehicle Skid / Fall',   icon: <Bandage className="h-4 w-4" />,    tint: '#f59e0b' },
-                      { id: 'medical', label: 'Medical Emergency',     icon: <HeartPulse className="h-4 w-4" />, tint: '#ec4899' },
-                      { id: 'other',   label: 'Other / Not Sure',      icon: <HelpCircle className="h-4 w-4" />, tint: '#6366f1' },
-                    ] as const
-                  ).map((opt) => {
-                    const active = incidentType === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setIncidentType(opt.id)}
-                        className={[
-                          'w-full flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition active:scale-[0.99]',
-                          active
-                            ? 'border-amber-400/50 bg-amber-500/15'
-                            : 'border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05]',
-                        ].join(' ')}
-                      >
-                        <span
-                          className={`h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                            active ? 'border-amber-400 bg-amber-400' : 'border-white/25'
-                          }`}
-                        >
-                          {active && <span className="h-2 w-2 rounded-full bg-black" />}
-                        </span>
-                        <span className="shrink-0" style={{ color: opt.tint }}>{opt.icon}</span>
-                        <span className={`text-[13px] font-bold flex-1 ${active ? 'text-white' : 'text-white/70'}`}>{opt.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {isHardwareCrash ? (
+                  <div className="rounded-2xl border border-white/10 bg-black/40 p-4 shadow-inner">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-1">
+                        <div className="text-[10px] uppercase text-white/50 tracking-wider">Estimated Severity</div>
+                        <div className={`text-xl font-black capitalize ${
+                          hwSeverity === 'critical' ? 'text-red-500' : hwSeverity === 'major' ? 'text-orange-400' : 'text-emerald-400'
+                        }`}>{hwSeverity}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[10px] uppercase text-white/50 tracking-wider">Peak Impact</div>
+                        <div className="text-lg font-bold text-red-400">{hwGforce || 'Unknown'} G</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      <div className="text-[10px] uppercase text-white/50 tracking-wider mb-2">AI Bodily Injury Risks (Model 3)</div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {['head_trauma_risk', 'spine_injury_risk', 'lower_body_injury_risk'].map((riskKey) => {
+                          const risk = (mlData as any)?.[riskKey];
+                          if (!risk) return null;
+                          const title = riskKey.replace(/_/g, ' ').replace(' risk', '');
+                          const color = risk.level === 'High' ? 'text-red-400' : risk.level === 'Medium' ? 'text-orange-400' : 'text-emerald-400';
+                          return (
+                            <div key={riskKey} className="text-xs flex justify-between items-center bg-white/[0.03] px-3 py-2 rounded-lg">
+                              <span className="text-white/70 capitalize">{title}</span>
+                              <span className={`font-bold ${color}`}>{risk.level} <span className="opacity-50 text-[10px]">({(risk.confidence * 100).toFixed(0)}%)</span></span>
+                            </div>
+                          );
+                        })}
+                        {!mlData && (
+                          <div className="text-xs text-white/40 italic flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-white/20 animate-pulse" />
+                            Analyzing injury risks...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">
+                      Emergency Severity
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mb-6">
+                      {(['minor', 'major', 'critical'] as const).map(sev => {
+                        const active = manualSeverity === sev;
+                        return (
+                          <button
+                            key={sev}
+                            type="button"
+                            onClick={() => setManualSeverity(sev)}
+                            className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                              active 
+                                ? sev === 'critical' ? 'bg-red-500/20 border-red-500/50 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.2)]' 
+                                : sev === 'major' ? 'bg-orange-500/20 border-orange-500/50 text-orange-200' 
+                                : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200'
+                                : 'bg-white/[0.02] border-white/10 text-white/40 hover:bg-white/[0.05]'
+                            }`}
+                          >
+                            {sev.toUpperCase()}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-2">
+                      What happened?
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {(
+                        [
+                          { id: 'crash',   label: 'High impact / Crash',   icon: <Car className="h-4 w-4" />,        tint: '#f59e0b' },
+                          { id: 'fall',    label: 'Vehicle Skid / Fall',   icon: <Bandage className="h-4 w-4" />,    tint: '#f59e0b' },
+                          { id: 'medical', label: 'Medical Emergency',     icon: <HeartPulse className="h-4 w-4" />, tint: '#ec4899' },
+                          { id: 'other',   label: 'Other / Not Sure',      icon: <HelpCircle className="h-4 w-4" />, tint: '#6366f1' },
+                        ] as const
+                      ).map((opt) => {
+                        const active = incidentType === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setIncidentType(opt.id)}
+                            className={`group relative flex items-center gap-4 overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+                              active
+                                ? 'border-white/20 bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]'
+                                : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]'
+                            }`}
+                          >
+                            <div
+                              className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors"
+                              style={{
+                                backgroundColor: active ? `${opt.tint}25` : 'rgba(255,255,255,0.05)',
+                                color: active ? opt.tint : 'rgba(255,255,255,0.5)',
+                              }}
+                            >
+                              {opt.icon}
+                            </div>
+                            <span className={`text-sm font-bold transition-colors ${active ? 'text-white' : 'text-white/60 group-hover:text-white/80'}`}>
+                              {opt.label}
+                            </span>
+                            {active && (
+                              <motion.div
+                                layoutId="activeIndicator"
+                                className="absolute right-4 flex h-5 w-5 items-center justify-center rounded-full bg-white text-black"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                              </motion.div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.08] px-4 py-2.5">

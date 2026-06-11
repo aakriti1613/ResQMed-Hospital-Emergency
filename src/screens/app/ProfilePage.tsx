@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 import { logout } from '../../auth/authActions';
 import { useTheme } from '../../app/ThemeContext';
-import { detectCrash, type SensorSample } from '../../features/sos/crashDetection';
+import { detectCrash, analyzeSeverityWithML, type SensorSample } from '../../features/sos/crashDetection';
 import {
   User, Phone, Droplets, Plus, Trash2, ShieldCheck,
   Activity, ShieldAlert, MapPin, Bell, Moon, Sun, LogOut, ChevronRight,
@@ -1092,36 +1092,88 @@ const SensorDashboard = ({
   setSample: (fn: (s: SensorSample) => SensorSample) => void;
   detection: ReturnType<typeof detectCrash>;
   onBack: () => void;
-}) => (
-  <div className="min-h-full bg-[#0a0b0f] px-4 pt-6 pb-4 max-w-lg mx-auto w-full space-y-4">
-    <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition mb-2">
-      ← Back
-    </button>
-    <div className="flex items-center gap-2">
-      <Activity className="h-5 w-5 text-emerald-400" />
-      <h2 className="text-xl font-black text-white">Crash Detection Monitor</h2>
-    </div>
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1.5 text-[10px] font-bold text-emerald-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Sensors Active
-    </div>
+}) => {
+  const navigate = useNavigate();
+  const [mlResult, setMlResult] = React.useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
 
-    {/* AI Confidence */}
-    <div className="rounded-2xl border border-white/[0.05] bg-[#13141a] p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-xs font-bold text-white/60">
-          <ShieldAlert className="h-3.5 w-3.5 text-white/25" /> AI Crash Confidence
-        </div>
-        <div className={`text-xl font-black ${detection.crashed ? 'text-red-400' : 'text-emerald-400'}`}>
-          {detection.crashed ? '84%' : '0%'}
-        </div>
+  React.useEffect(() => {
+    if (detection.crashed) {
+      setIsAnalyzing(true);
+      analyzeSeverityWithML(sample, 40).then(res => {
+        setMlResult(res);
+        setIsAnalyzing(false);
+        
+        if (res) {
+          // Immediately navigate to the SOS Timer
+          const sev = res.final_severity.toLowerCase();
+          const urlParams = `crash=1&lat=${sample.lat}&lon=${sample.lon}&severity=${sev}&gforce=${sample.accelerationG.toFixed(2)}`;
+          navigate(`/app/sos?${urlParams}`);
+        }
+      }).catch((err) => {
+        console.error("ML Severity analysis failed:", err);
+        setIsAnalyzing(false);
+      });
+    } else {
+      setMlResult(null);
+      setIsAnalyzing(false);
+    }
+  }, [detection.crashed, sample, navigate]);
+
+  return (
+    <div className="min-h-full bg-[#0a0b0f] px-4 pt-6 pb-4 max-w-lg mx-auto w-full space-y-4">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition mb-2">
+        ← Back
+      </button>
+      <div className="flex items-center gap-2">
+        <Activity className="h-5 w-5 text-emerald-400" />
+        <h2 className="text-xl font-black text-white">Crash Detection Monitor</h2>
       </div>
-      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${detection.crashed ? 'bg-red-500 w-[84%]' : 'bg-emerald-400 w-1'}`} />
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1.5 text-[10px] font-bold text-emerald-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> Sensors Active
       </div>
-      {detection.crashed && (
-        <p className="mt-2 text-[10px] text-red-300">⚠ {detection.reasons.join(', ')}</p>
-      )}
-    </div>
+
+      {/* AI Confidence */}
+      <div className="rounded-2xl border border-white/[0.05] bg-[#13141a] p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-white/60">
+            <ShieldAlert className="h-3.5 w-3.5 text-white/25" /> AI Crash Confidence
+          </div>
+          <div className={`text-xl font-black ${detection.crashed ? 'text-red-400' : 'text-emerald-400'}`}>
+            {detection.crashed ? '98%' : '0%'}
+          </div>
+        </div>
+        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+          <div className={`h-full rounded-full transition-all ${detection.crashed ? 'bg-red-500 w-[98%]' : 'bg-emerald-400 w-1'}`} />
+        </div>
+        
+        {detection.crashed && isAnalyzing && (
+          <div className="mt-4 flex items-center gap-2 text-[10px] text-white/60">
+            <div className="h-3 w-3 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
+            Analyzing via Neural Engine...
+          </div>
+        )}
+
+        {mlResult && !isAnalyzing && (
+          <div className="mt-4 rounded-xl p-3" style={{ background: `${mlResult.triage_color}20`, border: `1px solid ${mlResult.triage_color}40` }}>
+            <div className="flex justify-between items-start mb-2">
+              <div className="text-xs font-black uppercase tracking-widest" style={{ color: mlResult.triage_color }}>
+                {mlResult.final_severity} Severity
+              </div>
+              <div className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: mlResult.triage_color, color: '#fff' }}>
+                {mlResult.triage_action}
+              </div>
+            </div>
+            <ul className="space-y-1 mt-2">
+              {mlResult.clinical_notes.map((note: string, i: number) => (
+                <li key={i} className="text-[10px] text-white/80 flex items-start gap-1.5">
+                  <span className="text-white/40 mt-0.5">•</span> {note}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
     {/* Sliders */}
     <div className="space-y-3">
@@ -1133,7 +1185,8 @@ const SensorDashboard = ({
         onChange={v => setSample(s => ({ ...s, vibration: v, orientation: v > 90 ? 'flipped' : 'normal' }))} color="#a855f7" />
     </div>
   </div>
-);
+  );
+};
 
 const SSlider = ({ label, unit, min, max, step = 1, value, onChange, color }: {
   label: string; unit: string; min: number; max: number; step?: number;

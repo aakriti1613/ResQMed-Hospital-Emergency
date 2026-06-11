@@ -1,7 +1,7 @@
 # 🚑 Arogya Raksha
 
 > **Emergency response + hospital care platform**  
-> One mobile-first app for SOS rescue, helper coordination, doctor booking, safety tools, and health records.
+> One mobile-first app for SOS rescue, helper coordination, doctor booking, safety tools, and health records. Featuring an integrated Machine Learning crash detection pipeline and native iOS support.
 
 ---
 
@@ -10,6 +10,8 @@
 - [Prototype Videos](#-prototype-videos)
 - [Screenshots](#-screenshots)
 - [Core Feature Set](#-core-feature-set)
+- [Machine Learning Pipeline](#-machine-learning-pipeline)
+- [iOS Application](#-ios-application)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
@@ -21,89 +23,30 @@
 ## ✨ Project Overview
 
 - 🆘 Instant SOS and helper dispatch model
+- 🧠 **AI-Powered Triage**: ML models detect accidents, assess severity, and predict bodily injury risks
 - 🗺️ Live map tracking with ETA and distance updates
 - 🏥 Department-based hospital and doctor booking
 - 🗂️ Health Vault for prescriptions and reports
 - 🛡️ Safety suite (Medical ID + Safety Circle)
 - 🧾 Trips history (rides/helped/earned)
 - 🎁 Points and community contribution flows
-- 📱 Mobile-style experience across all screen sizes
+- 📱 Native iOS App & Mobile-style web experience
 
 ---
 
-## 🎬 Prototype Videos
+## 🧠 Machine Learning Pipeline
 
-| Type | Link |
-| --- | --- |
-| Full product walkthrough | [Add video link](https://drive.google.com/drive/folders/1QgGScPH1PEJyWkn8pM74n7fJYiNJWjdL?usp=sharing) |
-
----
-
-## 📸 Screenshots
-
-| Screen | Preview Path |
-| --- | --- |
-| Landing page | <img width="448" height="872" alt="image" src="https://github.com/user-attachments/assets/e3febc39-a861-4a25-9f58-379419d7ae34" /> <img width="462" height="875" alt="image" src="https://github.com/user-attachments/assets/565aa0b6-dc4a-4a79-939e-f641028ecd42" /> |
-| SOS victim flow | <img width="465" height="871" alt="image" src="https://github.com/user-attachments/assets/07b4b19f-7aee-47af-8510-a4a2f98f92a5" /> |
-| Incoming helper popup | <img width="443" height="872" alt="image" src="https://github.com/user-attachments/assets/b7be49ea-a384-45b4-9cf2-052a18272956" /> |
-| Helper - On the way | <img width="466" height="870" alt="image" src="https://github.com/user-attachments/assets/76f8bdf7-5241-40e1-b4be-68d49c072d54" /> |
-| Home dashboard | <img width="453" height="871" alt="image" src="https://github.com/user-attachments/assets/d8f4811a-dfdd-4b57-b35b-3a1f50b4c271" /> |
-| Care booking | <img width="471" height="872" alt="image" src="https://github.com/user-attachments/assets/8da83ad2-dbf5-4c9a-b5b4-b39211bd0fe2" /> <img width="446" height="872" alt="image" src="https://github.com/user-attachments/assets/81b3e2c6-508c-4a59-b3b0-afd4b86dcd0e" /> |
-| Trips tabs | <img width="449" height="872" alt="image" src="https://github.com/user-attachments/assets/1b1cd92a-c557-4d50-98e2-dfd506f720bf" /> |
-| Profile and rewards | <img width="433" height="875" alt="image" src="https://github.com/user-attachments/assets/89904a09-0400-472f-974e-219da360932d" /> |
+- ⚡ **Accident Detection:** Distinguishes normal daily activities from actual high-impact crashes with 99.8% accuracy.
+- 🚑 **Severity Classification:** Analyzes crash physics and rider vital signs to instantly categorize the emergency (Minor, Major, Critical).
+- 🦴 **Injury Risk Assessment:** Predicts specific bodily injury risks (Head, Spine, Lower Body) by comparing crash forces to historical real-world fall data.
+- 📋 **Automated ER Triage:** Generates a real-time hospital preparation checklist (e.g., "Prepare Trauma Bed", "CT Scan Required") before the ambulance even arrives.
 
 ---
 
-## 🧩 Core Feature Set
+## 📱 iOS Application
 
-### 🚨 SOS & Emergency Flow
-- 10-second SOS countdown
-- Crash/helmet-triggered emergency path
-- One-helper acceptance lock (single responder model)
-- Mutual profile sharing: name, age, short address, ETA, distance
-- Live victim-helper map tracking
-- SOS progress states with actionable cards
-- Emergency contact and support-oriented UX blocks
-
-### 🙋 Helper Experience
-- Nearby SOS popup intake
-- Fast accept and redirect to response interface
-- On-the-way + at-hospital dual workflow
-- Victim details and route intelligence
-- Hospital notification panel
-- Success state: "Successfully notified, preparing for treatment"
-- Rescue completion and points reward flow
-
-### 🏠 Home Dashboard
-- Helmet status card
-- Partner hospital discovery
-- Department browsing
-- Quick actions section
-- Community impact highlights
-
-### 🩺 Care & Booking
-- Department -> hospital -> doctor navigation
-- Detailed doctor cards and profiles
-- Slot selection
-- Reason-for-visit input
-- Payment experience (including Google Pay flow options)
-- Appointment lifecycle UI
-
-### 🧾 Trips & Rewards
-- Rides tab (movement history grouping)
-- Helped tab (rescue history)
-- Earned tab (points summary)
-
-### 🛡️ Safety & Health Records
-- Safety hub access
-- Medical ID module
-- Safety Circle contacts module
-- Health Vault uploads and retrieval
-
-### 👤 Account & Portals
-- Profile details and medical fields
-- Emergency contacts and address data
-- Role-based portals: doctor, hospital, admin
+- 🍏 **Native Conversion:** The React web app is fully converted into a Native iOS App using Ionic Capacitor.
+- 📸 **Hardware Features:** Shares the exact same codebase as the web version while gaining native access to iOS features like Haptics, Camera, and Geolocation.
 
 ---
 
@@ -111,31 +54,33 @@
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | React, TypeScript, Vite |
-| UI | Tailwind CSS, Framer Motion, Lucide Icons |
-| Auth | Firebase Authentication |
-| Database | Cloud Firestore |
-| Storage | Firebase Storage |
-| Backend | Firebase Cloud Functions |
-| Maps & Location | Google Maps APIs (Places, directions/ETA logic) |
-| Payments | Google Pay (test + production-ready modes) |
-| Workspace | npm workspaces |
+| **Frontend** | React, TypeScript, Vite |
+| **Mobile** | Ionic Capacitor (iOS/Android Native Shell) |
+| **UI** | Tailwind CSS, Framer Motion, Lucide Icons |
+| **ML Backend** | FastAPI, Python 3.13, Scikit-Learn, Joblib, Pandas |
+| **Auth** | Firebase Authentication |
+| **Database** | Cloud Firestore |
+| **Storage** | Firebase Storage |
+| **Backend** | Firebase Cloud Functions |
+| **Maps & Location** | Google Maps APIs (Places, directions/ETA logic) |
+| **Payments** | Google Pay (test + production-ready modes) |
 
 ---
 
 ## 🏗️ Project Structure
 
 ```text
-Uber Hospital and Emergency/
+Arogya Raksha/
 ├── src/
 │   ├── components/        # Reusable UI and flow components
 │   ├── data/              # Firestore/data-layer logic
-│   ├── screens/
-│   │   ├── public/        # Landing and public-facing pages
-│   │   └── app/           # Authenticated application screens
-│   ├── shell/             # App layouts and wrappers
-│   └── lib/               # Shared client utilities
-├── functions/             # Firebase Cloud Functions workspace
+│   ├── screens/           # Authenticated & public application screens
+│   └── utils/             # Shared client utilities
+├── ml_service/            # Python FastAPI Machine Learning backend
+│   ├── model/             # Pre-trained .joblib ML models
+│   ├── main.py            # API Server routes
+│   └── *_train.py         # Training scripts for Models 1, 2, and 3
+├── ios/                   # Native iOS Xcode project (generated by Capacitor)
 ├── docs/                  # Documentation and screenshot assets
 ├── .env.example           # Client environment variable template
 └── package.json           # Root workspace scripts
@@ -145,13 +90,41 @@ Uber Hospital and Emergency/
 
 ## 🚀 Getting Started
 
+### 1. Start the React Web App
 ```bash
 npm install
 npm run dev
 ```
 
----
+### 2. Start the Machine Learning Backend
+Open a second terminal window:
+```bash
+cd ml_service
+pip3 install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+```
 
+### 3. Run the Mobile App
+
+**For Mac (iOS App):**
+Ensure you have Xcode installed.
+```bash
+npm run build
+npx cap sync ios
+npx cap open ios
+```
+*This will open Xcode. Select your iPhone simulator or physical device and click the "Play" button to build and run.*
+
+**For Windows (Android App):**
+Ensure you have Android Studio installed.
+```bash
+npm run build
+npx cap sync android
+npx cap open android
+```
+*This will open Android Studio where you can run the app on an Android emulator or your physical Android phone.*
+
+---
 
 ## 🔐 Environment Setup
 
@@ -172,11 +145,11 @@ cp .env.example .env.local
 # Start development server
 npm run dev
 
-# Build frontend
+# Build frontend for web/mobile
 npm run build
 
-# Preview production build
-npm run preview
+# Sync web build to iOS/Android native projects
+npx cap sync
 
 # Build cloud functions workspace
 npm run build:functions
