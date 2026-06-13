@@ -20,11 +20,12 @@ import {
   type SosRequestDoc,
   type IncidentType,
   type ParticipantBrief,
+  type MLFeatures,
+  type MLSeverityResponse,
 } from '../../data/sos';
 import { formatEta, formatDistance } from '../../data/routing';
 import {
   analyzeSeverityWithML,
-  type MLSeverityResponse,
 } from '../../features/sos/crashDetection';
 import { listenAlertsForRequest, type HospitalAlert } from '../../data/hospitalAlerts';
 import {
@@ -34,6 +35,7 @@ import {
   shortAddressFromProfile,
   type UserProfile,
 } from '../../data/user';
+import { IncidentTimeline, type TimelineStep } from '../../components/ui/IncidentTimeline';
 
 /** Helmet One reference: 10s auto-send countdown (same for manual SOS + crash). */
 const HELMET_COUNTDOWN_SEC = 10;
@@ -78,6 +80,7 @@ export const SosPage = () => {
   const [hospitalAlerts, setHospitalAlerts] = useState<HospitalAlert[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [helperPublic, setHelperPublic] = useState<UserProfile | null>(null);
+  const [ambulanceAssigned, setAmbulanceAssigned] = useState(false);
   // ── Helmet-One style intake captured during the countdown ───────────────
   const [incidentType, setIncidentType] = useState<IncidentType | null>(null);
   // ── "How are you feeling?" mood captured after marking safe ─────────────
@@ -187,6 +190,15 @@ export const SosPage = () => {
   }, [phase, primaryResponder, helperPublic]);
 
   const uiPrimaryResponder = primaryResponder;
+
+  useEffect(() => {
+    if (phase === 'active') {
+      const timer = setTimeout(() => {
+        setAmbulanceAssigned(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
 
   // ── Mount: clear stale location, auto-connect GPS ─────────────────────────
   useEffect(() => {
@@ -439,6 +451,49 @@ export const SosPage = () => {
   const circumference = 2 * Math.PI * 54;
   // Display priority: confirmed SOS location → live GPS → null
   const displayCoords = sosLocation ?? (currentLocation ? { lat: currentLocation.lat, lon: currentLocation.lon } : null);
+
+  const timelineSteps: TimelineStep[] = useMemo(() => {
+    const isHospitalAlerted = hospitalAlerts.some(a => a.status !== 'cancelled');
+    const isResolved = liveSosDoc?.status === 'resolved';
+    return [
+      {
+        id: '1',
+        label: 'Emergency Triggered',
+        status: 'completed',
+        time: 'Just now',
+      },
+      {
+        id: '2',
+        label: 'Nearby Alerts Sent',
+        subLabel: `${contactedDisplay} responders notified`,
+        status: 'completed',
+      },
+      {
+        id: '3',
+        label: 'Responder Accepted',
+        subLabel: activeAssignments.length > 0 ? `${activeAssignments.length} responder(s) assigned` : 'Waiting for responder...',
+        status: activeAssignments.length > 0 ? 'completed' : 'active',
+      },
+      {
+        id: '4',
+        label: 'Ambulance Assigned',
+        subLabel: ambulanceAssigned ? 'Ambulance dispatched to location' : 'Assigning ambulance...',
+        status: ambulanceAssigned ? 'completed' : 'active',
+      },
+      {
+        id: '5',
+        label: 'Hospital Notified',
+        subLabel: isHospitalAlerted ? 'Emergency room is preparing' : 'Awaiting hospital selection...',
+        status: isHospitalAlerted ? 'completed' : (ambulanceAssigned ? 'active' : 'pending'),
+      },
+      {
+        id: '6',
+        label: 'Patient Handed Over',
+        subLabel: isResolved ? 'Emergency resolved' : undefined,
+        status: isResolved ? 'completed' : 'pending',
+      }
+    ];
+  }, [contactedDisplay, activeAssignments.length, ambulanceAssigned, hospitalAlerts, liveSosDoc?.status]);
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] flex flex-col overflow-hidden">
@@ -1229,6 +1284,9 @@ export const SosPage = () => {
                   </div>
                 );
                 })()}
+
+                {/* Live Incident Timeline */}
+                <IncidentTimeline steps={timelineSteps} />
 
                 {uiPrimaryResponder && (
                   <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 flex items-center justify-between gap-4">

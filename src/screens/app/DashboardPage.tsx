@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
-  ChevronRight, Clock, Trophy,
+  ChevronRight, Clock, Trophy, Mic,
   Users, HardHat, BatteryFull, BatteryLow, BatteryWarning, Wifi, WifiOff, ShieldCheck,
   Bell, Siren, Share2,
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import { listenUpcomingAppointments, type Appointment } from '../../data/appoint
 import { listenUserProfile, type UserProfile } from '../../data/user';
 import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice } from '../../data/helmet';
 import { useSharedLocation } from '../../hooks/useSharedLocation';
+import { useVoiceSos } from '../../hooks/useVoiceSos';
 
 const HELMET_HELP_SEC = 10;
 
@@ -24,6 +25,10 @@ export const DashboardPage = () => {
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   const [points, setPoints] = useState(0);
   const [helmet, setHelmet] = useState<HelmetDevice | null>(null);
+
+  const { isListening: isVoiceListening, toggleListening: toggleVoiceSos, isSupported: isVoiceSupported } = useVoiceSos(() => {
+    nav(`/app/sos?from=${encodeURIComponent('/app')}`);
+  });
 
   useEffect(() => {
     if (!user?.uid) { setUpcoming([]); return; }
@@ -111,6 +116,33 @@ export const DashboardPage = () => {
           <Siren className="h-5 w-5" />
           Request Emergency Help
         </button>
+
+        {isVoiceSupported && (
+          <button
+            type="button"
+            onClick={toggleVoiceSos}
+            className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition border ${
+              isVoiceListening
+                ? 'bg-blue-500/20 border-blue-500/40 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+                : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+            }`}
+          >
+            {isVoiceListening ? (
+              <>
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                </span>
+                Listening for "Help me"...
+              </>
+            ) : (
+              <>
+                <Mic className="h-4 w-4" />
+                Enable Smart Voice SOS
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Helmet health strip */}
