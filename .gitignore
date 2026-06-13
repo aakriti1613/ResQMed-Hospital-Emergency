@@ -30,3 +30,6 @@ functions/.env.*
 *.njsproj
 *.sln
 *.sw?
+
+# Local debugging scripts (do not commit)
+scripts/
