@@ -62,11 +62,20 @@ export const LoginPage = () => {
     }
 
     try {
-      if (!(window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
-          size: 'invisible',
-        });
+      const containerId = 'login-recaptcha-' + Date.now();
+      const wrapper = document.getElementById('login-recaptcha-wrapper');
+      if (wrapper) {
+        wrapper.innerHTML = `<div id="${containerId}"></div>`;
       }
+
+      if ((window as any).recaptchaVerifier) {
+        try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
+        (window as any).recaptchaVerifier = undefined;
+      }
+
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+        size: 'invisible',
+      });
       const confirmation = await signInWithPhoneNumber(auth, '+91' + digits, (window as any).recaptchaVerifier);
       setConfirmationResult(confirmation);
       setStep('otp');
@@ -198,7 +207,9 @@ export const LoginPage = () => {
                   style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
                   {busy ? <Spinner /> : 'Send OTP →'}
                 </button>
-                <div id="login-recaptcha-container" className="mt-4"></div>
+                <div id="login-recaptcha-wrapper" className="mt-4">
+                  <div id="login-recaptcha-container"></div>
+                </div>
               </motion.div>
             ) : (
               <motion.div key="otp" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}>

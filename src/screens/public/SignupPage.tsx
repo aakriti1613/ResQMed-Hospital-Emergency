@@ -52,11 +52,20 @@ export const SignupPage = () => {
     }
 
     try {
-      if (!(window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'signup-recaptcha-container', {
-          size: 'invisible',
-        });
+      const containerId = 'signup-recaptcha-' + Date.now();
+      const wrapper = document.getElementById('signup-recaptcha-wrapper');
+      if (wrapper) {
+        wrapper.innerHTML = `<div id="${containerId}"></div>`;
       }
+
+      if ((window as any).recaptchaVerifier) {
+        try { (window as any).recaptchaVerifier.clear(); } catch (e) {}
+        (window as any).recaptchaVerifier = undefined;
+      }
+
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+        size: 'invisible',
+      });
       const confirmation = await signInWithPhoneNumber(auth, '+91' + d, (window as any).recaptchaVerifier);
       setConfirmationResult(confirmation);
       setStep('otp');
@@ -246,7 +255,9 @@ export const SignupPage = () => {
                   style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
                   {busy ? 'Sending...' : 'Send OTP →'}
                 </button>
-                <div id="signup-recaptcha-container" className="mt-4"></div>
+                <div id="signup-recaptcha-wrapper" className="mt-4">
+                  <div id="signup-recaptcha-container"></div>
+                </div>
               </motion.div>
             )}
 

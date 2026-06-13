@@ -13,7 +13,7 @@ import { listenUserProfile, type UserProfile } from '../../data/user';
 import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice } from '../../data/helmet';
 import { useSharedLocation } from '../../hooks/useSharedLocation';
 
-const HELMET_HELP_SEC = 60;
+const HELMET_HELP_SEC = 10;
 
 export const DashboardPage = () => {
   const { user } = useAuth();
@@ -56,7 +56,7 @@ export const DashboardPage = () => {
 
   const shareLiveLocation = useCallback(async () => {
     if (!currentLocation) {
-      nav('/app/sos');
+      nav(`/app/sos?from=${encodeURIComponent('/app')}`);
       return;
     }
     const url = `https://maps.google.com/?q=${currentLocation.lat},${currentLocation.lon}`;
@@ -104,7 +104,7 @@ export const DashboardPage = () => {
         </p>
         <button
           type="button"
-          onClick={() => nav('/app/sos')}
+          onClick={() => nav(`/app/sos?from=${encodeURIComponent('/app')}`)}
           className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-sm font-black text-white shadow-[0_0_28px_rgba(220,38,38,0.45)] active:scale-[0.99] transition"
           style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)' }}
         >
@@ -182,7 +182,7 @@ export const DashboardPage = () => {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => nav('/app/sos?crash=1')}
+            onClick={() => nav(`/app/sos?crash=1&from=${encodeURIComponent('/app')}`)}
             className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
           >
             <div className="h-14 w-14 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">⚠️</div>

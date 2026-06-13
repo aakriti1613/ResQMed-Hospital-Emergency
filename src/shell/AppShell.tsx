@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Route, Shield, User, Siren } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest, type SosRequestDoc } from '../data/sos';
@@ -8,6 +8,7 @@ import { useLiveLocationTracking } from '../hooks/useLiveLocationTracking';
 export const AppShell = () => {
   const { user } = useAuth();
   const nav = useNavigate();
+  const loc = useLocation();
   const [request, setRequest] = useState<SosRequestDoc | null>(null);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export const AppShell = () => {
 
   const handleSos = () => {
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    nav('/app/sos');
+    nav(`/app/sos?from=${encodeURIComponent(loc.pathname + loc.search)}`);
   };
 
   return (

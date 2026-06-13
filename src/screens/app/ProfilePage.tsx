@@ -1107,7 +1107,7 @@ const SensorDashboard = ({
         if (res) {
           // Immediately navigate to the SOS Timer
           const sev = res.final_severity.toLowerCase();
-          const urlParams = `crash=1&lat=${sample.lat}&lon=${sample.lon}&severity=${sev}&gforce=${sample.accelerationG.toFixed(2)}`;
+          const urlParams = `crash=1&lat=${sample.lat}&lon=${sample.lon}&severity=${sev}&gforce=${sample.accelerationG.toFixed(2)}&from=${encodeURIComponent('/app/profile')}`;
           navigate(`/app/sos?${urlParams}`);
         }
       }).catch((err) => {

@@ -157,7 +157,7 @@ export const LandingPage = () => {
               <motion.button
                 whileHover={reduceMotion ? undefined : { scale: 1.03 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-                onClick={() => nav('/app/sos')}
+                onClick={() => nav('/app/sos?from=landing')}
                 className="h-12 w-full px-5 rounded-full flex items-center justify-center gap-2 text-sm font-black transition"
                 style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 24px rgba(220,38,38,0.45)' }}
               >
@@ -178,7 +178,7 @@ export const LandingPage = () => {
                 onClick={() => nav('/login?redirect=/app/help')}
                 className="h-12 w-full px-5 rounded-full flex items-center justify-center gap-2 text-sm font-black bg-white/[0.05] border border-white/10 hover:bg-white/[0.08] transition"
               >
-                <HandHeart className="h-4 w-4" /> Volunteer as helper
+                <HandHeart className="h-4 w-4" /> I can help
               </motion.button>
               <motion.a
                 href="#download-app"
@@ -229,7 +229,7 @@ export const LandingPage = () => {
               'Emergency contacts notified in real time',
             ]}
             cta="Try the SOS flow →"
-            onCta={() => nav('/app/sos')}
+            onCta={() => nav('/app/sos?from=landing')}
             icon={<Siren className="h-6 w-6" />}
           />
           <PillarCard

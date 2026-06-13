@@ -31,6 +31,8 @@ export async function loginWithPhone(phone: string, _otp: string): Promise<strin
     if (storedPhone !== cleanPhone) {
       throw new Error('This number is not registered yet.');
     }
+    sessionStorage.setItem('demo_logged_in', 'true');
+    window.dispatchEvent(new Event('demo-auth-changed'));
     return existing.uid as string;
   }
 
@@ -58,6 +60,8 @@ export async function signupWithPhone(input: {
       bloodGroup: input.bloodGroup ?? '',
       emergencyContacts: input.emergencyContacts,
     }));
+    sessionStorage.setItem('demo_logged_in', 'true');
+    window.dispatchEvent(new Event('demo-auth-changed'));
     // Simulate notifying emergency contacts
     console.info(
       `[DEMO] Notified contacts for ${input.name}:`,
@@ -96,6 +100,8 @@ export async function signup(input: { name: string; email: string; password: str
   if (!isFirebaseConfigured) {
     const uid = `demo-${Date.now()}`;
     localStorage.setItem(DEMO_KEY, JSON.stringify({ uid, email: input.email, displayName: input.name }));
+    sessionStorage.setItem('demo_logged_in', 'true');
+    window.dispatchEvent(new Event('demo-auth-changed'));
     return;
   }
   const cred = await createUserWithEmailAndPassword(auth, input.email, input.password);
@@ -110,14 +116,48 @@ export async function signup(input: { name: string; email: string; password: str
 
 export async function login(input: { email: string; password: string }) {
   if (!isFirebaseConfigured) {
-    const uid = `demo-${Date.now()}`;
-    localStorage.setItem(DEMO_KEY, JSON.stringify({ uid, email: input.email, displayName: input.email.split('@')[0] }));
+    sessionStorage.setItem('demo_logged_in', 'true');
+    window.dispatchEvent(new Event('demo-auth-changed'));
     return;
   }
   await signInWithEmailAndPassword(auth, input.email, input.password);
 }
 
+export async function wipeMyData(uid: string, phone?: string) {
+  if (!isFirebaseConfigured) {
+    localStorage.removeItem(DEMO_KEY);
+    sessionStorage.removeItem('demo_logged_in');
+    window.dispatchEvent(new Event('demo-auth-changed'));
+    return;
+  }
+  try {
+    const { deleteDoc } = await import('firebase/firestore');
+    const { deleteUser } = await import('firebase/auth');
+    
+    if (phone) {
+      const cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone) await deleteDoc(doc(db, 'phoneIndex', cleanPhone));
+    }
+    
+    await deleteDoc(doc(db, 'users', uid));
+    await deleteDoc(doc(db, 'patients', uid));
+    
+    if (auth.currentUser) {
+      await deleteUser(auth.currentUser);
+    } else {
+      await signOut(auth);
+    }
+  } catch (e) {
+    console.warn('Wipe data partial failure:', e);
+    await signOut(auth);
+  }
+}
+
 export async function logout() {
-  if (!isFirebaseConfigured) { localStorage.removeItem(DEMO_KEY); return; }
+  if (!isFirebaseConfigured) { 
+    sessionStorage.removeItem('demo_logged_in'); 
+    window.dispatchEvent(new Event('demo-auth-changed'));
+    return; 
+  }
   await signOut(auth);
 }

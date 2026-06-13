@@ -198,11 +198,12 @@ export function listenAlertsForRequest(
   }
   const q = query(
     collection(db, 'hospitalAlerts'),
-    where('requestId', '==', requestId),
-    orderBy('createdAt', 'desc'),
+    where('requestId', '==', requestId)
   );
   return onSnapshot(q, (snap) => {
-    cb(snap.docs.map((d) => mapAlert(d.id, d.data())));
+    const docs = snap.docs.map((d) => mapAlert(d.id, d.data()));
+    docs.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+    cb(docs);
   });
 }
 

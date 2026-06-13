@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../auth/authActions';
+import { logout, wipeMyData } from '../../auth/authActions';
 import { useAuth } from '../../auth/AuthProvider';
 import { Settings, LogOut, User, Shield, Droplets, Activity, ShieldAlert } from 'lucide-react';
 import { detectCrash, analyzeSeverityWithML, type SensorSample } from '../../features/sos/crashDetection';
@@ -54,17 +54,37 @@ export const SettingsPage = () => {
           <SettingItem icon={<Droplets className="h-4 w-4 text-red-400" />} title="Blood Group & Allergies" subtitle="Not set" alert />
         </div>
 
-        <div className="mt-5 pt-5 border-t border-white/[0.05]">
+        <div className="mt-5 pt-5 border-t border-white/[0.05] space-y-3">
           <button
             type="button"
             disabled={busy || !user}
             onClick={async () => {
-              setBusy(true);
-              try { await logout(); nav('/'); } finally { setBusy(false); }
+              if (window.confirm('Are you sure you want to log out?')) {
+                setBusy(true);
+                await logout();
+                setBusy(false);
+                nav('/');
+              }
             }}
-            className="w-full h-12 flex items-center justify-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-4 text-xs font-black text-red-400 hover:bg-red-500/10 transition disabled:opacity-50"
+            className="w-full h-12 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 text-sm font-black text-white hover:bg-white/10 transition disabled:opacity-50"
           >
-            {busy ? 'Signing out...' : <><LogOut className="h-4 w-4" /> Log out</>}
+            <LogOut className="h-4 w-4 text-white/50" /> Logout
+          </button>
+          
+          <button
+            type="button"
+            disabled={busy || !user}
+            onClick={async () => {
+              if (window.confirm('⚠️ DANGER: This will permanently delete your account data so you can test signing up again. Are you sure?')) {
+                setBusy(true);
+                await wipeMyData(user!.uid, user?.phoneNumber || '');
+                setBusy(false);
+                nav('/');
+              }
+            }}
+            className="w-full h-12 rounded-2xl border border-red-500/20 bg-red-500/10 flex items-center justify-center gap-2 text-sm font-black text-red-400 hover:bg-red-500/20 transition disabled:opacity-50"
+          >
+            <ShieldAlert className="h-4 w-4" /> Wipe My Data (For Testing)
           </button>
         </div>
       </div>

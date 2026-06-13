@@ -93,14 +93,26 @@ export const HelpPage = () => {
   // Listen to SOS feed — available to ALL users including guests
   useEffect(() => {
     return listenActiveSosRequests((data) => {
-      // Filter: exclude own requests + discard docs older than 30 minutes
       const now = Date.now();
       const fresh = data.filter(r =>
-        r.victimId !== helperUid &&
         ((r as any)._createdMs ? now - (r as any)._createdMs < 30 * 60 * 1000 : true)
       );
-      console.log('[HELPER] Visible SOS after filtering:', fresh.length);
-      setFeed(fresh);
+
+      // Deduplicate by victimId (keep the most recent one)
+      const uniqueFeed = Array.from(
+        fresh.reduce((map, req) => {
+          const existing = map.get(req.victimId);
+          const reqTime = (req as any)._createdMs || 0;
+          const existTime = existing ? ((existing as any)._createdMs || 0) : 0;
+          if (!existing || reqTime > existTime) {
+            map.set(req.victimId, req);
+          }
+          return map;
+        }, new Map<string, SosRequestDoc>()).values()
+      );
+
+      console.log('[HELPER] Visible SOS after filtering:', uniqueFeed.length);
+      setFeed(uniqueFeed);
     });
   }, [helperUid]);
 
@@ -133,7 +145,7 @@ export const HelpPage = () => {
         sos.location.lon
       );
 
-      if (dist > 5.0 && !tooFarSosIds.has(sosRequestId) && !removingRef.current.has(sosRequestId)) {
+      if (dist > 50.0 && !tooFarSosIds.has(sosRequestId) && !removingRef.current.has(sosRequestId)) {
         removingRef.current.add(sosRequestId);
         console.log('[HELPER] ❌ Too far from SOS', sosRequestId, '— removing from helpersAccepted');
         removeHelperFromSos(sosRequestId, helperUid).catch(console.warn);
@@ -172,10 +184,13 @@ export const HelpPage = () => {
       }
       const helperBrief: ParticipantBrief = {
         name: user?.displayName || hp?.name || 'Helper',
-        age: hp ? computeAgeFromDob(hp.dob) : undefined,
-        shortAddress: shortAddressFromProfile(hp) ?? currentLocation.displayName,
-        phone: hp?.phone,
       };
+      const age = hp ? computeAgeFromDob(hp.dob) : undefined;
+      if (age !== undefined) helperBrief.age = age;
+      const shortAddress = shortAddressFromProfile(hp) ?? currentLocation.displayName;
+      if (shortAddress !== undefined) helperBrief.shortAddress = shortAddress;
+      if (hp?.phone) helperBrief.phone = hp.phone;
+      
       assignmentId = await acceptSosRequest({
         requestId: req.id,
         victimId: req.victimId,
@@ -206,7 +221,7 @@ export const HelpPage = () => {
         currentLocation.lat, currentLocation.lon,
         req.location.lat,   req.location.lon
       );
-      return d <= 5.0;
+      return d <= 50.0;
     })
     .map(req => {
       const dist = getDistance(
@@ -409,7 +424,7 @@ export const HelpPage = () => {
                         <HandHeart className="h-6 w-6 text-white/20" />
                       </div>
                       <p className="text-sm font-bold text-white/40">No active emergencies nearby</p>
-                      <p className="text-xs text-white/25 mt-1">You'll be notified when someone needs help within 5km</p>
+                      <p className="text-xs text-white/25 mt-1">You'll be notified when someone needs help within 50km</p>
                     </div>
                   )}
 

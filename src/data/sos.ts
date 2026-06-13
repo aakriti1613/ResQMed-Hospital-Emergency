@@ -89,13 +89,13 @@ export async function getActiveSosForUser(victimId: string): Promise<SosRequestD
   const q = query(
     collection(db, 'sosRequests'),
     where('victimId', '==', victimId),
-    where('status', '==', 'active'),
-    limit(1)
+    limit(10)
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const d = snap.docs[0];
-  if (!d) return null;
+  const activeDocs = snap.docs.filter(d => (d.data() as any).status === 'active');
+  if (activeDocs.length === 0) return null;
+  const d = activeDocs[0];
   const data: any = d.data();
   return {
     id: d.id,
@@ -124,8 +124,12 @@ export async function createSosRequest(input: Omit<SosRequestDoc, 'id' | 'primar
   // ── Part 1: duplicate-prevention ─────────────────────────────────────────
   const existing = await getActiveSosForUser(input.victimId);
   if (existing) {
-    console.warn('[SOS] ⚠ Existing active SOS found — reusing:', existing.id);
-    return existing;
+    console.warn('[SOS] ⚠ Existing active SOS found — cancelling old one.');
+    try {
+      await updateDoc(doc(db, 'sosRequests', existing.id), { status: 'cancelled', updatedAt: serverTimestamp() });
+    } catch (e) {
+      console.error('Failed to cancel old SOS', e);
+    }
   }
 
   const payload: Record<string, unknown> = {
@@ -435,10 +439,7 @@ export async function acceptSosRequest(input: {
     if (!reqSnap.exists()) throw new Error('SOS_NOT_FOUND');
     const d: any = reqSnap.data();
     const accepted: string[] = Array.isArray(d.helpersAccepted) ? d.helpersAccepted : [];
-    if (accepted.length >= 1) {
-      throw new Error('HELPER_SLOT_FULL');
-    }
-
+    // Allow multiple helpers to accept
     tx.set(assignRef, {
       requestId: input.requestId,
       victimId: input.victimId,

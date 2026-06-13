@@ -22,6 +22,7 @@ const AuthContext = createContext<AuthState>({ user: null, ready: false });
 
 const DEMO_KEY = 'resqmed_demo_user_v1';
 function getDemoUser(): AuthUser | null {
+  if (sessionStorage.getItem('demo_logged_in') !== 'true') return null;
   const raw = localStorage.getItem(DEMO_KEY);
   if (!raw) return null;
   try {
@@ -38,10 +39,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
-      const demo = getDemoUser();
-      setUser(demo);
-      setReady(true);
-      return;
+      const updateDemoUser = () => {
+        setUser(getDemoUser());
+        setReady(true);
+      };
+      updateDemoUser();
+      
+      window.addEventListener('demo-auth-changed', updateDemoUser);
+      return () => window.removeEventListener('demo-auth-changed', updateDemoUser);
     }
 
     const unsub = onAuthStateChanged(auth, async (u) => {

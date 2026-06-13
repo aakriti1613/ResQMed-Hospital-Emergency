@@ -111,8 +111,7 @@ export const SosPage = () => {
     etaLine?: string;
   } | null>(null);
   // ── Demo helper popup (temporary) ─────────────────────────────────────────
-  const [showFakeHelperPopup, setShowFakeHelperPopup] = useState(false);
-  const [fakeHelperAccepted, setFakeHelperAccepted] = useState(false);
+
   const [isLocating, setIsLocating] = useState(true);
 
   const isDoneRef = useRef(false);    // blocks all state updates after cancel/resolve
@@ -187,39 +186,7 @@ export const SosPage = () => {
     return () => clearTimeout(t);
   }, [phase, primaryResponder, helperPublic]);
 
-  // ── TEMP: Fake helper accept popup (requested) ────────────────────────────
-  useEffect(() => {
-    if (phase !== 'active') return;
-    if (primaryResponder) return;
-    if (fakeHelperAccepted || showFakeHelperPopup) return;
-    const t = setTimeout(() => setShowFakeHelperPopup(true), 900);
-    return () => clearTimeout(t);
-  }, [phase, primaryResponder, fakeHelperAccepted, showFakeHelperPopup]);
-
-  const fakePrimaryResponder: SosAssignmentDoc | null = useMemo(() => {
-    if (!fakeHelperAccepted) return null;
-    return {
-      id: 'fake-assignment',
-      requestId: sosId ?? 'fake',
-      victimId: uid,
-      helperId: 'fake-helper-akriti',
-      helperName: 'Akriti Jha',
-      helperBrief: {
-        name: 'Akriti Jha',
-        age: 25,
-        shortAddress: 'On scooty',
-        phone: '9999999999',
-      } as ParticipantBrief,
-      status: 'enroute',
-      acceptedAt: null as any,
-      updatedAt: null as any,
-      distanceTrend: 'unknown',
-      etaSeconds: 3 * 60,
-      distanceMeters: 900,
-    } as any;
-  }, [fakeHelperAccepted, sosId, uid]);
-
-  const uiPrimaryResponder = primaryResponder ?? fakePrimaryResponder;
+  const uiPrimaryResponder = primaryResponder;
 
   // ── Mount: clear stale location, auto-connect GPS ─────────────────────────
   useEffect(() => {
@@ -305,16 +272,20 @@ export const SosPage = () => {
         profile?.name?.trim() ||
         user?.displayName?.trim() ||
         (uid.startsWith('guest-') ? 'Guest rider' : 'User'),
-      age: profile ? computeAgeFromDob(profile.dob) : undefined,
-      shortAddress:
-        shortAddressFromProfile(profile) ??
-        (currentLocation?.displayName
-          ? currentLocation.displayName.length > 48
-            ? `${currentLocation.displayName.slice(0, 46)}…`
-            : currentLocation.displayName
-          : undefined),
-      phone: profile?.phone?.trim() || undefined,
     };
+    const age = profile ? computeAgeFromDob(profile.dob) : undefined;
+    if (age !== undefined) victimBrief.age = age;
+    
+    const shortAddress = shortAddressFromProfile(profile) ??
+      (currentLocation?.displayName
+        ? currentLocation.displayName.length > 48
+          ? `${currentLocation.displayName.slice(0, 46)}…`
+          : currentLocation.displayName
+        : undefined);
+    if (shortAddress !== undefined) victimBrief.shortAddress = shortAddress;
+    
+    const phone = profile?.phone?.trim();
+    if (phone) victimBrief.phone = phone;
 
     try {
       const saved = await createSosRequest({
@@ -409,8 +380,16 @@ export const SosPage = () => {
 
   // ── NAVIGATION HELPERS ────────────────────────────────────────────────────
   const goHome = useCallback(() => {
-    nav(user ? '/app' : '/', { replace: true });
-  }, [nav, user]);
+    const fromParam = searchParams.get('from');
+    if (fromParam === 'landing') {
+      nav('/', { replace: true });
+    } else if (fromParam && fromParam.startsWith('/')) {
+      // Decode and return exactly where they came from
+      nav(decodeURIComponent(fromParam), { replace: true });
+    } else {
+      nav(user && !user.isDemo ? '/app' : '/', { replace: true });
+    }
+  }, [nav, user, searchParams]);
 
   const cancelAlert = useCallback(() => {
     isDoneRef.current = true;
@@ -507,75 +486,6 @@ export const SosPage = () => {
                 <X className="h-4 w-4 text-white/60" />
               </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* TEMP: Fake helper accept popup (requested) */}
-      <AnimatePresence>
-        {showFakeHelperPopup && phase === 'active' && !primaryResponder && !fakeHelperAccepted && (
-          <motion.div
-            key="fake-helper-scrim"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-          >
-            <motion.div
-              key="fake-helper-card"
-              initial={{ y: 20, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 20, opacity: 0, scale: 0.98 }}
-              className="w-full max-w-sm rounded-3xl border border-white/[0.08] bg-[#13141a] p-4 shadow-2xl"
-            >
-              <div className="flex items-start gap-3">
-                <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg,#10b981,#0891b2)' }}>
-                  🛵
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-white/35">Nearby responder</div>
-                  <div className="text-base font-black text-white truncate">Akriti Jha</div>
-                  <div className="text-[11px] text-white/55 truncate">25 years · on scooty</div>
-                  <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-3 py-1">
-                    <Clock className="h-3.5 w-3.5 text-emerald-300" />
-                    <span className="text-[11px] font-black text-emerald-200">3 min away</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowFakeHelperPopup(false)}
-                  className="h-9 w-9 rounded-full border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center shrink-0"
-                  aria-label="Close"
-                >
-                  <X className="h-4 w-4 text-white/60" />
-                </button>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <a
-                  href="tel:9999999999"
-                  className="h-11 rounded-2xl border border-sky-500/35 bg-sky-500/10 text-[12px] font-black text-sky-200 hover:bg-sky-500/15 transition active:scale-[0.99] flex items-center justify-center gap-2"
-                >
-                  <Phone className="h-4 w-4" /> Call
-                </a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowFakeHelperPopup(false);
-                    setFakeHelperAccepted(true);
-                    setHelperAcceptedToast({
-                      helperName: 'Akriti Jha',
-                      helperSub: '25 yrs · On scooty',
-                      etaLine: '3 min · 0.9 km',
-                    });
-                  }}
-                  className="h-11 rounded-2xl text-[12px] font-black text-white transition active:scale-[0.99]"
-                  style={{ background: 'linear-gradient(135deg,#10b981,#059669)' }}
-                >
-                  OK
-                </button>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1296,12 +1206,12 @@ export const SosPage = () => {
                       <AlertRow
                         ok={!noLocationMode}
                         icon={<Phone className="h-4 w-4 text-emerald-300" />}
-                        title="Assigned responder"
+                        title={activeAssignments.length > 1 ? "Assigned responders" : "Assigned responder"}
                         meta={
                           noLocationMode
                             ? 'Location required to broadcast'
-                            : helperReachCount > 0
-                              ? 'One responder is assigned · details below'
+                            : activeAssignments.length > 0
+                              ? `${activeAssignments.length} ${activeAssignments.length === 1 ? 'responder is' : 'responders are'} assigned · details below`
                               : 'Broadcasting within 5 km radius'
                         }
                       />
@@ -1437,8 +1347,7 @@ export const SosPage = () => {
                 </div>
               )}
 
-              {uiPrimaryResponder && (() => {
-                const a = uiPrimaryResponder;
+              {activeAssignments.map((a, index) => {
                 const hb = a.helperBrief;
                 const reached = a.status === 'reached' || !!a.arrivedAt;
                 const hName = (hb?.name || a.helperName || 'Responder').trim();
@@ -1451,42 +1360,36 @@ export const SosPage = () => {
                 const yAddr = vb?.shortAddress ?? shortAddressFromProfile(profile);
                 const yPhone = vb?.phone?.trim() || profile?.phone?.trim();
                 return (
-                  <div className="space-y-3">
-                    <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-3">Your details (shared)</div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-base font-black text-white truncate">{yName}</div>
-                          <div className="text-[11px] text-white/50 mt-1 space-y-0.5">
-                            {yAge != null && <div>Age {yAge}</div>}
-                            {yAddr && <div className="truncate">{yAddr}</div>}
-                            {!yAddr && <div className="text-white/35">Address on profile</div>}
+                  <div key={a.id} className="space-y-3 mt-4">
+                    {index === 0 && (
+                      <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-3">Your details (shared)</div>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-base font-black text-white truncate">{yName}</div>
+                            <div className="text-[11px] text-white/50 mt-1 space-y-0.5">
+                              {yAge != null && <div>Age {yAge}</div>}
+                              {yAddr && <div className="truncate">{yAddr}</div>}
+                              {!yAddr && <div className="text-white/35">Address on profile</div>}
+                            </div>
                           </div>
+                          {yPhone && (
+                            <a href={`tel:${yPhone.replace(/\s/g, '')}`} className="h-10 w-10 rounded-full bg-sky-500/20 border border-sky-500/35 flex items-center justify-center shrink-0">
+                              <Phone className="h-4 w-4 text-sky-300" />
+                            </a>
+                          )}
                         </div>
-                        {yPhone && (
-                          <a href={`tel:${yPhone.replace(/\s/g, '')}`} className="h-10 w-10 rounded-full bg-sky-500/20 border border-sky-500/35 flex items-center justify-center shrink-0">
-                            <Phone className="h-4 w-4 text-sky-300" />
-                          </a>
-                        )}
                       </div>
-                    </div>
+                    )}
 
                     <div className="rounded-3xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300/90">
-                          Responder details
+                          Responder {activeAssignments.length > 1 ? `#${index + 1}` : 'details'}
                         </div>
                         <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-200">
                           <Navigation className="h-3 w-3" />
                           Live
-                        </div>
-                      </div>
-
-                      <div className={`rounded-2xl border px-3 py-2.5 flex items-center gap-3 ${reached ? 'border-emerald-400/35 bg-emerald-500/10' : 'border-white/[0.08] bg-[#0f1016]'}`}>
-                        <div className="h-10 w-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0 text-lg">🚑</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-black text-white">Response unit</div>
-                          <div className="text-[10px] text-white/45">Community emergency assist</div>
                         </div>
                       </div>
 
@@ -1530,7 +1433,7 @@ export const SosPage = () => {
                     </div>
                   </div>
                 );
-              })()}
+              })}
 
               {/* Hospital notifications raised by helpers ──────────────────── */}
               {hospitalAlerts.filter((a) => a.status !== 'cancelled').length > 0 && (
@@ -1737,10 +1640,10 @@ export const SosPage = () => {
             </div>
 
             <div className="mt-auto pt-6 grid grid-cols-2 gap-2">
-              <Link to="/app"
+              <button onClick={goHome}
                 className="h-11 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center text-xs font-black text-white/70 hover:bg-white/10 transition active:scale-95">
                 Back to Home
-              </Link>
+              </button>
               <Link to="/app/care"
                 className="h-11 rounded-2xl flex items-center justify-center text-xs font-black text-white transition active:scale-95"
                 style={{ background: 'linear-gradient(135deg,#10b981,#0891b2)' }}>
