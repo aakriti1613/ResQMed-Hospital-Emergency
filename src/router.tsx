@@ -14,6 +14,7 @@ import { MedicalIdPage } from './screens/app/MedicalIdPage';
 import { SafetyCirclePage } from './screens/app/SafetyCirclePage';
 import { TripsPage } from './screens/app/TripsPage';
 import { SafetyHubPage } from './screens/app/SafetyHubPage';
+import { TravelSafetyPage } from './screens/app/TravelSafetyPage';
 import { CareSpecialtiesPage } from './screens/app/care/CareSpecialtiesPage';
 import { CareDoctorsPage } from './screens/app/care/CareDoctorsPage';
 import { CareHospitalsPage } from './screens/app/care/CareHospitalsPage';
@@ -67,6 +68,7 @@ export const router = createHashRouter([
           // ── Trips (demo)
           { path: 'trips', element: <TripsPage /> },
           { path: 'safety', element: <SafetyHubPage /> },
+          { path: 'travel-safety', element: <TravelSafetyPage /> },
 
           // ── Safety
           { path: 'medical-id', element: <MedicalIdPage /> },

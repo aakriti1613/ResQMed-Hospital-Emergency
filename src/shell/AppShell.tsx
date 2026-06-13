@@ -4,6 +4,7 @@ import { Home, Route, Shield, User, Siren } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest, type SosRequestDoc } from '../data/sos';
 import { useLiveLocationTracking } from '../hooks/useLiveLocationTracking';
+import { GlobalTravelWatcher } from '../components/GlobalTravelWatcher';
 
 export const AppShell = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ export const AppShell = () => {
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] dark:bg-[#0a0b0f] light:bg-gray-50 flex flex-col">
+      <GlobalTravelWatcher />
       <main className="flex-1 overflow-y-auto pb-[88px]">
         <Outlet />
       </main>

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, Heart, Users, Shield, FolderHeart, HandHeart } from 'lucide-react';
+import { ChevronRight, Heart, Users, Shield, FolderHeart, HandHeart, ShieldAlert } from 'lucide-react';
 
 const rows = [
+  { to: '/app/travel-safety', title: 'Solo Traveler Mode', desc: 'Auto-escalate SOS if you miss a check-in', icon: <ShieldAlert className="h-5 w-5 text-emerald-300" />, tint: 'from-emerald-500/20 to-emerald-600/5' },
   { to: '/app/medical-id', title: 'Medical ID', desc: 'Blood group, allergies, conditions', icon: <Heart className="h-5 w-5 text-red-300" />, tint: 'from-red-500/20 to-red-600/5' },
   { to: '/app/safety-circle', title: 'Safety Circle', desc: 'Who we notify in an emergency', icon: <Users className="h-5 w-5 text-sky-300" />, tint: 'from-sky-500/20 to-sky-600/5' },
   { to: '/app/vault', title: 'Health Vault', desc: 'Reports & prescriptions', icon: <FolderHeart className="h-5 w-5 text-pink-300" />, tint: 'from-pink-500/20 to-pink-600/5' },
