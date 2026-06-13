@@ -3,10 +3,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Phone, X, CheckCircle2, ChevronDown, ChevronUp, MapPin, Search, Hospital,
   Car, HeartPulse, Bandage, HelpCircle, Mic, Users, ShieldAlert, Sparkles, Navigation,
-  Siren, Ambulance, MessageSquare,
+  Siren, Ambulance, MessageSquare, Star, Award,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LocationSearchModal } from '../../components/LocationSearchModal';
+import { FirstAidDrawer } from '../../components/FirstAidDrawer';
 import { LiveTrackingMap } from '../../components/LiveTrackingMap';
 import { SosChatBridge } from '../../components/ui/SosChatBridge';
 import { useSharedLocation, hasGrantedGPS } from '../../hooks/useSharedLocation';
@@ -80,6 +81,7 @@ export const SosPage = () => {
   const [assignments, setAssignments] = useState<SosAssignmentDoc[]>([]);
   const [liveSosDoc, setLiveSosDoc] = useState<SosRequestDoc | null>(null);
   const [hospitalAlerts, setHospitalAlerts] = useState<HospitalAlert[]>([]);
+  const [firstAidOpen, setFirstAidOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [helperPublic, setHelperPublic] = useState<UserProfile | null>(null);
   const [ambulanceAssigned, setAmbulanceAssigned] = useState(false);
@@ -1493,7 +1495,27 @@ export const SosPage = () => {
                             {hAge != null && <span>Age {hAge} · </span>}
                             {hAddr ? <span className="truncate">{hAddr}</span> : <span>En route to you</span>}
                           </div>
-                          <div className="text-[11px] font-black text-emerald-300/90 mt-1">
+                          {(hb?.trustScore || (hb?.badges && hb.badges.length > 0)) && (
+                            <div className="mt-2 flex flex-col gap-1.5 border-t border-white/[0.06] pt-2">
+                              {hb.trustScore && (
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-amber-400">
+                                  <Star className="h-3 w-3 fill-amber-400" />
+                                  Trust Score: {hb.trustScore}/100
+                                </div>
+                              )}
+                              {hb.badges && hb.badges.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                                  {hb.badges.map((b, bi) => (
+                                    <div key={bi} className="flex items-center gap-1 bg-[#1d1e26] border border-amber-500/20 text-amber-200/90 text-[9px] font-bold px-2 py-0.5 rounded-md">
+                                      <Award className="h-2.5 w-2.5 text-amber-400" />
+                                      {b}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="text-[11px] font-black text-emerald-300/90 mt-2">
                             {reached
                               ? 'Arrived at your location'
                               : a.etaSeconds
@@ -1642,6 +1664,15 @@ export const SosPage = () => {
                 </a>
               </div>
 
+              {/* First-Aid Guide */}
+              <button
+                type="button"
+                onClick={() => setFirstAidOpen(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 py-3.5 text-xs font-black text-red-300 hover:bg-red-500/20 transition active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.15)]"
+              >
+                <Bandage className="h-4 w-4" /> Open First-Aid Guide
+              </button>
+
               {/* Cancel + I Am Safe */}
               <div className="flex gap-2">
                 <button id="btn-cancel-alert" onClick={cancelAlert}
@@ -1783,6 +1814,8 @@ export const SosPage = () => {
           onClose={() => setShowChat(false)}
         />
       )}
+
+      <FirstAidDrawer isOpen={firstAidOpen} onClose={() => setFirstAidOpen(false)} />
     </div>
   );
 };

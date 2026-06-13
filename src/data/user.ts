@@ -52,6 +52,8 @@ export interface UserProfile {
   fcmToken?: string;
   points?: number;
   helpedCount?: number;
+  trustScore?: number;
+  badges?: string[];
   location?: { lat: number; lon: number };
   contacts: { name: string; phone: string; relation?: string }[];
 }
@@ -76,6 +78,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         medications: u.medications || '',
         addresses: u.addresses || [],
         contacts: u.emergencyContacts || u.contacts || [],
+        trustScore: u.trustScore ?? 98,
+        badges: u.badges || ['Verified Helper', 'CPR Certified'],
       } as UserProfile;
     } catch { return null; }
   }

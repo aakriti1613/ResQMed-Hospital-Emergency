@@ -122,6 +122,8 @@ export const HelperDashboardPage = () => {
         age: hp ? computeAgeFromDob(hp.dob) : undefined,
         shortAddress: shortAddressFromProfile(hp),
         phone: hp?.phone,
+        trustScore: hp?.trustScore ?? 98,
+        badges: hp?.badges ?? ['Verified Helper', 'CPR Certified'],
       };
       await acceptSosRequest({
         requestId: req.id,

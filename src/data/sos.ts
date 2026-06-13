@@ -32,6 +32,8 @@ export type ParticipantBrief = {
   age?: number;
   shortAddress?: string;
   phone?: string;
+  trustScore?: number;
+  badges?: string[];
 };
 
 export type SosRequestDoc = {

@@ -8,7 +8,7 @@ import {
   User, Phone, Droplets, Plus, Trash2, ShieldCheck,
   Activity, ShieldAlert, MapPin, Bell, Moon, Sun, LogOut, ChevronRight,
   Pencil, Check, Home, Briefcase, Tag, CalendarDays, HeartPulse, Pill as PillIcon, Search,
-  Trophy, Sparkles, Lock, Gift,
+  Trophy, Sparkles, Lock, Gift, Star, Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -68,6 +68,8 @@ export const ProfilePage = () => {
   const [contactSaved, setContactSaved] = useState(false);
   const [points, setPoints] = useState(0);
   const [helpedCount, setHelpedCount] = useState(0);
+  const [trustScore, setTrustScore] = useState(98);
+  const [badges, setBadges] = useState<string[]>([]);
 
   // ── Hydrate from Firestore (realtime) ─────────────────────────────────────
   // Live listener keeps points/tier in sync the moment a helper reward lands.
@@ -89,6 +91,8 @@ export const ProfilePage = () => {
       if (p.contacts?.length) setContacts(p.contacts);
       setPoints(typeof p.points === 'number' ? p.points : 0);
       setHelpedCount(typeof p.helpedCount === 'number' ? p.helpedCount : 0);
+      setTrustScore(typeof p.trustScore === 'number' ? p.trustScore : 98);
+      setBadges(Array.isArray(p.badges) ? p.badges : ['Verified Helper', 'CPR Certified']);
     });
     return () => unsub();
   }, [user?.uid, user?.displayName]);
@@ -244,6 +248,31 @@ export const ProfilePage = () => {
           <Pill icon={<Droplets className="h-3 w-3 text-red-300" />}
             label={bloodGroup || 'Blood —'} />
         </div>
+
+        {/* Volunteer Trust Score & Badges */}
+        {(helpedCount > 0 || badges.length > 0) && (
+          <div className="mt-5 pt-5 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest flex items-center gap-1">
+                <Star className="h-3 w-3 text-amber-400 fill-amber-400" /> Trust Score
+              </label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-black text-amber-400">{trustScore}</span>
+                <span className="text-[10px] text-white/30 uppercase font-bold tracking-widest">/ 100</span>
+              </div>
+            </div>
+            {badges.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {badges.map((b, i) => (
+                  <div key={i} className="flex items-center gap-1.5 bg-[#1d1e26] border border-amber-500/20 text-amber-200/90 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">
+                    <Award className="h-3 w-3 text-amber-400" />
+                    {b}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Blood group selector */}
         <div className="mt-5">

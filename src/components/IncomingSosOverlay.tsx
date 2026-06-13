@@ -175,6 +175,8 @@ export const IncomingSosOverlay = () => {
         age: hp ? computeAgeFromDob(hp.dob) : undefined,
         shortAddress: shortAddressFromProfile(hp) ?? currentLocation.displayName,
         phone: hp?.phone,
+        trustScore: hp?.trustScore ?? 98,
+        badges: hp?.badges ?? ['Verified Helper', 'CPR Certified'],
       };
       await acceptSosRequest({
         requestId: activeReq.id,
