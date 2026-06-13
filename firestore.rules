@@ -101,6 +101,12 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // SOS Timeline Events
+    // ⚡ Emergency: allow anyone to read/write live timeline events
+    match /timelineEvents/{eventId} {
+      allow read, write: if true;
+    }
+
     // Smart Helmet telemetry — one doc per user, written by the helmet's
     // companion sync (or our pair flow), read by the user's app.
     match /helmets/{ownerUid} {

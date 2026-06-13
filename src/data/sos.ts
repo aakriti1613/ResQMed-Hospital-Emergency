@@ -54,6 +54,15 @@ export type SosRequestDoc = {
   symptomNotes?: string;
   /** Victim details shared with the assigned helper when they accept. */
   victimBrief?: ParticipantBrief;
+  
+  // ── Auto-Escalation System ──────────────────────────────────────────────
+  priority?: number;
+  escalated?: boolean;
+  escalationLevel?: number;
+  lastEscalationTime?: number;
+  possibleUnconscious?: boolean;
+  monitoringStarted?: boolean;
+
   // ── Part 3: helper assignment tracking ────────────────────────────────────
   helpersAssigned?: string[];   // UIDs notified
   helpersAccepted?: string[];   // UIDs who clicked "Help Now"
@@ -114,6 +123,12 @@ export async function getActiveSosForUser(victimId: string): Promise<SosRequestD
     incidentType: data.incidentType,
     symptomNotes: data.symptomNotes,
     victimBrief: data.victimBrief,
+    priority: data.priority ?? 1,
+    escalated: data.escalated ?? false,
+    escalationLevel: data.escalationLevel ?? 0,
+    lastEscalationTime: data.lastEscalationTime,
+    possibleUnconscious: data.possibleUnconscious ?? false,
+    monitoringStarted: data.monitoringStarted ?? false,
     helpersAssigned: data.helpersAssigned ?? [],
     helpersAccepted: data.helpersAccepted ?? [],
   };
@@ -169,6 +184,12 @@ export async function getSosRequestDoc(id: string): Promise<SosRequestDoc | null
     incidentType: data.incidentType,
     symptomNotes: data.symptomNotes,
     victimBrief: data.victimBrief,
+    priority: data.priority ?? 1,
+    escalated: data.escalated ?? false,
+    escalationLevel: data.escalationLevel ?? 0,
+    lastEscalationTime: data.lastEscalationTime,
+    possibleUnconscious: data.possibleUnconscious ?? false,
+    monitoringStarted: data.monitoringStarted ?? false,
     helpersAssigned: data.helpersAssigned ?? [],
     helpersAccepted: data.helpersAccepted ?? [],
   };
@@ -199,6 +220,11 @@ export async function createSosRequest(input: Omit<SosRequestDoc, 'id' | 'primar
     hasValidLocation: input.hasValidLocation ?? false,
     isApproximate: input.isApproximate ?? false,
     radiusKm: input.radiusKm,
+    priority: 1,
+    escalated: false,
+    escalationLevel: 0,
+    possibleUnconscious: false,
+    monitoringStarted: false,
     helpersAssigned: [],
     helpersAccepted: [],
     createdAt: serverTimestamp(),
@@ -261,6 +287,12 @@ export function listenCurrentSosRequest(victimId: string, cb: (item: SosRequestD
         incidentType: data.incidentType,
         symptomNotes: data.symptomNotes,
         victimBrief: data.victimBrief,
+        priority: data.priority ?? 1,
+        escalated: data.escalated ?? false,
+        escalationLevel: data.escalationLevel ?? 0,
+        lastEscalationTime: data.lastEscalationTime,
+        possibleUnconscious: data.possibleUnconscious ?? false,
+        monitoringStarted: data.monitoringStarted ?? false,
         helpersAssigned: data.helpersAssigned ?? [],
         helpersAccepted: data.helpersAccepted ?? [],
       });
@@ -315,6 +347,12 @@ export function listenActiveSosRequests(cb: (items: SosRequestDoc[]) => void) {
             incidentType: data.incidentType as IncidentType | undefined,
             symptomNotes: data.symptomNotes,
             victimBrief: data.victimBrief,
+            priority: data.priority ?? 1,
+            escalated: data.escalated ?? false,
+            escalationLevel: data.escalationLevel ?? 0,
+            lastEscalationTime: data.lastEscalationTime,
+            possibleUnconscious: data.possibleUnconscious ?? false,
+            monitoringStarted: data.monitoringStarted ?? false,
             helpersAssigned: data.helpersAssigned ?? [],
             helpersAccepted: data.helpersAccepted ?? [],
             _createdMs: createdMs,
@@ -363,6 +401,12 @@ export function listenSosRequestDoc(requestId: string, cb: (item: SosRequestDoc 
         incidentType: data.incidentType,
         symptomNotes: data.symptomNotes,
         victimBrief: data.victimBrief,
+        priority: data.priority ?? 1,
+        escalated: data.escalated ?? false,
+        escalationLevel: data.escalationLevel ?? 0,
+        lastEscalationTime: data.lastEscalationTime,
+        possibleUnconscious: data.possibleUnconscious ?? false,
+        monitoringStarted: data.monitoringStarted ?? false,
         helpersAssigned: data.helpersAssigned ?? [],
         helpersAccepted: data.helpersAccepted ?? [],
       });

@@ -39,6 +39,8 @@ import {
   type UserProfile,
 } from '../../data/user';
 import { IncidentTimeline, type TimelineStep } from '../../components/ui/IncidentTimeline';
+import { listenTimelineEvents, type TimelineEventDoc } from '../../data/timeline';
+import { useSosEscalationMonitor } from '../../features/sos/useSosEscalationMonitor';
 
 /** Helmet One reference: 10s auto-send countdown (same for manual SOS + crash). */
 const HELMET_COUNTDOWN_SEC = 10;
@@ -96,6 +98,12 @@ export const SosPage = () => {
   const hwSeverity = (searchParams.get('severity') as 'minor'|'major'|'critical') || 'major';
   const [manualSeverity, setManualSeverity] = useState<'minor'|'major'|'critical'>('major');
   const [mlData, setMlData] = useState<MLSeverityResponse | null>(null);
+
+  // ── Auto-Escalation State & Mock Vitals ──────────────────────────────────
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEventDoc[]>([]);
+  const [mockHr, setMockHr] = useState(75);
+  const [mockSpo2, setMockSpo2] = useState(98);
+  const [mockNoMovement, setMockNoMovement] = useState(0);
 
   useEffect(() => {
     if (isHardwareCrash && hwGforce) {
@@ -402,6 +410,22 @@ export const SosPage = () => {
     return listenUserProfile(user.uid, setProfile);
   }, [user?.uid]);
 
+  // ── Listen to live timeline events ─────────────────────────────────────────
+  useEffect(() => {
+    if (!sosId) { setTimelineEvents([]); return; }
+    return listenTimelineEvents(sosId, setTimelineEvents);
+  }, [sosId]);
+
+  // ── Start Escalation Monitor ───────────────────────────────────────────────
+  useSosEscalationMonitor({
+    sosId,
+    liveSosDoc,
+    assignments,
+    heartRate: mockHr,
+    spo2: mockSpo2,
+    noMovementDuration: mockNoMovement,
+  });
+
   // ── NAVIGATION HELPERS ────────────────────────────────────────────────────
   const goHome = useCallback(() => {
     const fromParam = searchParams.get('from');
@@ -479,7 +503,8 @@ export const SosPage = () => {
   const timelineSteps: TimelineStep[] = useMemo(() => {
     const isHospitalAlerted = hospitalAlerts.some(a => a.status !== 'cancelled');
     const isResolved = liveSosDoc?.status === 'resolved';
-    return [
+    
+    const baseSteps: TimelineStep[] = [
       {
         id: '1',
         label: 'Emergency Triggered',
@@ -497,7 +522,20 @@ export const SosPage = () => {
         label: 'Responder Accepted',
         subLabel: activeAssignments.length > 0 ? `${activeAssignments.length} responder(s) assigned` : 'Waiting for responder...',
         status: activeAssignments.length > 0 ? 'completed' : 'active',
-      },
+      }
+    ];
+
+    const dynamicSteps: TimelineStep[] = timelineEvents.map((e, idx) => ({
+      id: `dyn_${idx}`,
+      label: e.eventType.replace(/_/g, ' '),
+      subLabel: e.description,
+      status: 'completed' as const,
+      time: new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
+
+    const finalSteps = [...baseSteps, ...dynamicSteps];
+
+    finalSteps.push(
       {
         id: '4',
         label: 'Ambulance Assigned',
@@ -516,8 +554,10 @@ export const SosPage = () => {
         subLabel: isResolved ? 'Emergency resolved' : undefined,
         status: isResolved ? 'completed' : 'pending',
       }
-    ];
-  }, [contactedDisplay, activeAssignments.length, ambulanceAssigned, hospitalAlerts, liveSosDoc?.status]);
+    );
+
+    return finalSteps;
+  }, [contactedDisplay, activeAssignments.length, ambulanceAssigned, hospitalAlerts, liveSosDoc?.status, timelineEvents]);
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] flex flex-col overflow-hidden">
@@ -1213,6 +1253,23 @@ export const SosPage = () => {
                   ? `Ambulance / responder ETA ${formatEta(uiPrimaryResponder.etaSeconds)}`
                   : 'Live tracking & responders below'}
               </p>
+
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 flex items-center gap-2">
+                  <HeartPulse className="h-4 w-4 text-rose-400" />
+                  <span className="text-xs font-bold text-rose-300">Severity: <span className="uppercase">{liveSosDoc?.severity || 'MINOR'}</span></span>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-bold text-amber-300">Priority: {liveSosDoc?.priority || 1}</span>
+                </div>
+                {liveSosDoc?.escalated && (
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-1.5 flex items-center gap-2">
+                    <Siren className="h-4 w-4 text-red-400 animate-pulse" />
+                    <span className="text-xs font-bold text-red-300">ESCALATED</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="px-5 pb-6 space-y-4 flex-1">
@@ -1813,6 +1870,33 @@ export const SosPage = () => {
           counterpartyName={primaryResponder?.helperName || 'Responder'}
           onClose={() => setShowChat(false)}
         />
+      )}
+
+      {/* ── Developer Debug Panel for Vitals & Movement ── */}
+      {phase === 'active' && (
+        <div className="fixed bottom-24 right-4 z-50 rounded-2xl border border-white/10 bg-[#13141a]/95 backdrop-blur-md p-3 shadow-2xl max-w-[200px]">
+          <div className="text-[10px] font-black uppercase text-white/50 mb-2 border-b border-white/10 pb-1">Vitals Simulator</div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[10px] text-white/70 flex justify-between">
+                <span>Heart Rate</span> <span>{mockHr} bpm</span>
+              </label>
+              <input type="range" min="30" max="200" value={mockHr} onChange={e => setMockHr(Number(e.target.value))} className="w-full accent-rose-500 h-1" />
+            </div>
+            <div>
+              <label className="text-[10px] text-white/70 flex justify-between">
+                <span>SpO2</span> <span>{mockSpo2}%</span>
+              </label>
+              <input type="range" min="80" max="100" value={mockSpo2} onChange={e => setMockSpo2(Number(e.target.value))} className="w-full accent-sky-500 h-1" />
+            </div>
+            <div>
+              <label className="text-[10px] text-white/70 flex justify-between">
+                <span>Movement</span> <span>{mockNoMovement}s idle</span>
+              </label>
+              <input type="range" min="0" max="120" value={mockNoMovement} onChange={e => setMockNoMovement(Number(e.target.value))} className="w-full accent-amber-500 h-1" />
+            </div>
+          </div>
+        </div>
       )}
 
       <FirstAidDrawer isOpen={firstAidOpen} onClose={() => setFirstAidOpen(false)} />
