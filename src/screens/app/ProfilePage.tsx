@@ -8,9 +8,10 @@ import {
   User, Phone, Droplets, Plus, Trash2, ShieldCheck,
   Activity, ShieldAlert, MapPin, Bell, Moon, Sun, LogOut, ChevronRight,
   Pencil, Check, Home, Briefcase, Tag, CalendarDays, HeartPulse, Pill as PillIcon, Search,
-  Trophy, Sparkles, Lock, Gift, Star, Award
+  Trophy, Sparkles, Lock, Gift, Star, Award, Languages
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   listenUserProfile,
   updateUserProfile,
@@ -51,6 +52,7 @@ export const ProfilePage = () => {
   const nav = useNavigate();
   const { user } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [section, setSection] = useState<Section>('main');
   const [toast, setToast] = useState<string | null>(null);
@@ -303,58 +305,58 @@ export const ProfilePage = () => {
       <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden divide-y divide-white/[0.04]">
         <SettingRow
           icon={<User className="h-4 w-4 text-sky-300" />}
-          label="Personal Details"
+          label={t('settings.personalDetails')}
           sub={
             [
               age !== null ? `${age} yrs` : null,
               gender ? genderLabel(gender) : null,
               dob ? new Date(dob).toLocaleDateString() : null,
-            ].filter(Boolean).join(' • ') || 'Add age, gender & DOB'
+            ].filter(Boolean).join(' • ') || t('settings.personalDetailsSubFallback')
           }
           onClick={() => setSection('personal')}
           arrow
         />
         <SettingRow
           icon={<Home className="h-4 w-4 text-emerald-300" />}
-          label="Saved Addresses"
-          sub={addresses.length > 0 ? `${addresses.length} saved` : 'Add home & work for faster SOS'}
+          label={t('settings.savedAddresses')}
+          sub={addresses.length > 0 ? `${addresses.length} saved` : t('settings.savedAddressesSub')}
           onClick={() => setSection('addresses')}
           arrow
         />
         <SettingRow
           icon={<HeartPulse className="h-4 w-4 text-pink-400" />}
-          label="Health Info"
+          label={t('settings.healthInfo')}
           sub={
             [allergies && 'Allergies', medications && 'Medications']
               .filter(Boolean)
-              .join(' • ') || 'Add allergies & medications'
+              .join(' • ') || t('settings.healthInfoSub')
           }
           onClick={() => setSection('health')}
           arrow
         />
         <SettingRow
           icon={<ShieldCheck className="h-4 w-4 text-blue-400" />}
-          label="Emergency Contacts"
-          sub={`${contacts.filter(c => c.name).length} saved`}
+          label={t('settings.emergencyContacts')}
+          sub={contacts.filter(c => c.name).length > 0 ? t('settings.emergencyContactsSub', { count: contacts.filter(c => c.name).length }) : t('settings.emergencyContactsNone')}
           onClick={() => setSection('contacts')}
           arrow
         />
         <SettingRow
           icon={<Activity className="h-4 w-4 text-emerald-400" />}
-          label="Crash Detection Monitor"
-          sub="Sensor diagnostics"
+          label={t('settings.crashMonitor')}
+          sub={t('settings.crashMonitorSub')}
           onClick={() => setSection('sensors')}
           arrow
         />
         <SettingRow
           icon={<MapPin className="h-4 w-4 text-amber-400" />}
-          label="Location"
-          sub="Used only when needed"
+          label={t('settings.location')}
+          sub={t('settings.locationSub')}
         />
         <SettingRow
           icon={<Bell className="h-4 w-4 text-purple-400" />}
-          label="Notifications"
-          sub="Emergency alerts enabled"
+          label={t('settings.notifications')}
+          sub={t('settings.notificationsSub')}
         />
         {/* Dark mode toggle */}
         <div className="flex items-center justify-between px-4 py-3.5">
@@ -363,8 +365,8 @@ export const ProfilePage = () => {
               {theme === 'dark' ? <Moon className="h-4 w-4 text-indigo-300" /> : <Sun className="h-4 w-4 text-amber-400" />}
             </div>
             <div>
-              <div className="text-sm font-semibold text-white/85">Dark Mode</div>
-              <div className="text-[10px] text-white/30 font-medium">{theme === 'dark' ? 'Currently dark' : 'Currently light'}</div>
+              <div className="text-sm font-semibold text-white/85">{t('settings.darkMode')}</div>
+              <div className="text-[10px] text-white/30 font-medium">{theme === 'dark' ? t('settings.currentlyDark') : t('settings.currentlyLight')}</div>
             </div>
           </div>
           <button
@@ -380,6 +382,28 @@ export const ProfilePage = () => {
             ].join(' ')} />
           </button>
         </div>
+        
+        {/* Language switch */}
+        <div className="flex items-center justify-between px-4 py-3.5 border-t border-white/[0.05]">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center">
+              <Languages className="h-4 w-4 text-emerald-400" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white/85">{t('settings.language')}</div>
+              <div className="text-[10px] text-white/30 font-medium">{t(`settings.${i18n.language}`) || t('settings.en')}</div>
+            </div>
+          </div>
+          <select
+            value={i18n.language}
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+            className="bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white/80 px-2 py-1 outline-none focus:border-emerald-500/50 transition appearance-none"
+          >
+            <option value="en" className="bg-[#1a1b23]">{t('settings.en')}</option>
+            <option value="hi" className="bg-[#1a1b23]">{t('settings.hi')}</option>
+            <option value="te" className="bg-[#1a1b23]">{t('settings.te')}</option>
+          </select>
+        </div>
       </div>
 
       {/* Logout */}
@@ -388,7 +412,7 @@ export const ProfilePage = () => {
         disabled={busy}
         className="w-full h-12 flex items-center justify-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/5 text-xs font-black text-red-400 hover:bg-red-500/10 transition active:scale-95 disabled:opacity-50"
       >
-        <LogOut className="h-4 w-4" /> {busy ? 'Signing out…' : 'Log Out'}
+        <LogOut className="h-4 w-4" /> {busy ? t('settings.signingOut') : t('settings.logOut')}
       </button>
 
       <p className="text-center text-[10px] text-white/15 pb-2">Arogya Raksha v1.0</p>

@@ -30,8 +30,8 @@ export function useSosEscalationMonitor({
 
     const intervalId = setInterval(() => {
       const now = Date.now();
-      const createdAt = liveSosDoc.createdAt?.seconds 
-        ? liveSosDoc.createdAt.seconds * 1000 
+      const createdAt = (liveSosDoc as any).createdAt?.seconds 
+        ? (liveSosDoc as any).createdAt.seconds * 1000 
         : (liveSosDoc as any)._createdMs || Date.now();
       
       const elapsedSeconds = (now - createdAt) / 1000;
@@ -90,7 +90,7 @@ export function useSosEscalationMonitor({
       // Look for any accepted assignment that has been active for a while but helper is far/stalled
       assignments.forEach((a) => {
         if (a.status === 'accepted' || a.status === 'enroute') {
-          const acceptedAt = (a as any)._acceptedMs || (a.acceptedAt as any)?.seconds * 1000 || now;
+          const acceptedAt = (a as any)._acceptedMs || (a as any).acceptedAt?.seconds * 1000 || now;
           const assignedElapsed = (now - acceptedAt) / 1000;
           
           if (assignedElapsed > 300 && a.distanceMeters && a.distanceMeters > 500) {

@@ -127,7 +127,7 @@ service cloud.firestore {
 
     // Helpers profile
     match /helpers/{helperId} {
-      allow read: if isSignedIn() && helperId == uid();
+      allow read: if true;
       allow create, update: if isSignedIn() && helperId == uid();
       allow delete: if false;
     }

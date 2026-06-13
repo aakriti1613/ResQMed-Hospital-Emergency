@@ -26,6 +26,7 @@ import { formatEta, formatDistance } from '../../data/routing';
 import { HospitalAlertPanel } from '../../components/HospitalAlertPanel';
 import type { SosSeverity } from '../../data/sos';
 import { SosChatBridge } from '../../components/ui/SosChatBridge';
+import { useTranslation } from 'react-i18next';
 
 type Tab = 'need-help' | 'leaderboard';
 type Sort = 'nearest' | 'urgent';
@@ -54,6 +55,7 @@ function timeAgo(ts: number) {
 }
 
 export const HelpPage = () => {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const { user, ready } = useAuth();
   const [tab, setTab] = useState<Tab>('need-help');
@@ -478,18 +480,17 @@ export const HelpPage = () => {
                             <span className="text-xs font-black text-emerald-400 animate-pulse">+200 pts</span>
                           </div>
                         ) : isTooFar ? (
-                          // ── Part 4: too-far warning ─────────────────────────────────────────
                           <div className="space-y-2">
                             <div className="flex items-start gap-2 rounded-2xl border border-red-500/25 bg-red-500/[0.08] px-3 py-2.5">
                               <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
                               <span className="text-xs font-bold text-red-300">
-                                ❌ You are no longer near this emergency
+                                {t('help.tooFar')}
                               </span>
                             </div>
                             <button onClick={() => void handleHelp(req)}
                               className="w-full h-10 rounded-2xl text-xs font-black text-white transition active:scale-95"
                               style={{ background: 'linear-gradient(135deg,#1d4ed8,#1e3a8a)' }}>
-                              Move closer & Re-accept
+                              {t('help.moveCloser')}
                             </button>
                           </div>
                         ) : isAccepted ? (
@@ -510,7 +511,7 @@ export const HelpPage = () => {
                               />
                             ) : (
                               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 text-[10px] text-amber-300/70">
-                                ⚠ Location not yet available — head to the area and stay alert.
+                                ⚠ {t('help.locPending')}
                               </div>
                             )}
                             <button onClick={async () => {
@@ -518,17 +519,17 @@ export const HelpPage = () => {
                                 try { await rewardHelperPoints(user.uid, 200); } catch { /* demo */ }
                               }
                               setCompleted(s => new Set(s).add(req.id));
-                              showToast('🏆 Points awarded! Thank you for helping.');
+                              showToast(t('help.pointsAwarded'));
                             }}
                               className="w-full h-11 flex items-center justify-center rounded-2xl border border-emerald-500/40 bg-emerald-500/10 text-xs font-black text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition">
-                              <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Done
+                              <CheckCircle2 className="h-4 w-4 mr-2" /> {t('help.markDone')}
                             </button>
                           </div>
                         ) : (
                           <button onClick={() => void handleHelp(req)}
                             className="w-full h-11 rounded-2xl text-xs font-black text-white transition active:scale-95"
                             style={{ background: 'linear-gradient(135deg,#1d4ed8,#1e3a8a)', boxShadow: '0 0 15px rgba(29,78,216,0.3)' }}>
-                            🤝 Help Now
+                            🤝 {t('help.helpNow')}
                           </button>
                         )}
                       </motion.div>
@@ -541,8 +542,8 @@ export const HelpPage = () => {
                     <div className="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-2">
                       <MapPin className="h-6 w-6 text-white/20" />
                     </div>
-                    <p className="text-sm font-bold text-white/50">Enable or select location to help others</p>
-                    <p className="text-xs text-white/30">We need your location to show relevant emergency requests near you.</p>
+                    <p className="text-sm font-bold text-white/50">{t('help.enableToHelp')}</p>
+                    <p className="text-xs text-white/30">{t('help.needLocation')}</p>
                   </div>
                 </div>
               )}
@@ -553,7 +554,7 @@ export const HelpPage = () => {
           {tab === 'leaderboard' && (
             <motion.div key="lb" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
               className="px-4 pt-3 pb-4 space-y-2.5">
-              <p className="text-[10px] text-white/25 font-bold uppercase tracking-widest mb-1">Community Heroes</p>
+              <p className="text-[10px] text-white/25 font-bold uppercase tracking-widest mb-1">{t('help.communityHeroes')}</p>
               {LEADERBOARD.map((e, i) => (
                 <div key={e.rank}
                   className={`rounded-3xl border flex items-center gap-4 p-4 ${
@@ -572,16 +573,16 @@ export const HelpPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-black text-white truncate">{e.name}</div>
-                    <div className="text-[10px] text-white/35">{e.helped} people helped</div>
+                    <div className="text-[10px] text-white/35">{e.helped} {t('help.peopleHelped')}</div>
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-sm font-black text-blue-300">{e.points.toLocaleString()}</div>
-                    <div className="text-[10px] text-white/30">pts</div>
+                    <div className="text-[10px] text-white/30">{t('help.points')}</div>
                   </div>
                 </div>
               ))}
               <div className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-4 text-center text-xs text-white/25">
-                Rewards are shown after completing a help request
+                {t('help.rewardDisclaimer')}
               </div>
             </motion.div>
           )}
@@ -593,7 +594,7 @@ export const HelpPage = () => {
         <SosChatBridge
           sosId={chatSosId}
           currentUserId={helperUid}
-          currentUserName={user?.displayName || 'Responder'}
+          currentUserName={user?.displayName || t('common.responder')}
           currentUserRole="responder"
           onClose={() => {
             setShowChat(false);
@@ -607,9 +608,6 @@ export const HelpPage = () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // <AcceptedTracker /> — rendered inside an accepted SOS card.
-// Finds this helper's assignment in Firestore, streams their GPS every few
-// seconds, and renders the shared LiveTrackingMap so they can watch their
-// own marker move towards the victim with an always-fresh ETA.
 // ─────────────────────────────────────────────────────────────────────────────
 const AcceptedTracker = ({
   requestId,
@@ -630,6 +628,7 @@ const AcceptedTracker = ({
   victimBrief?: ParticipantBrief | null;
   onOpenChat: (sosId: string) => void;
 }) => {
+  const { t } = useTranslation();
   const [assignment, setAssignment] = useState<SosAssignmentDoc | null>(null);
   const [phase, setPhase] = useState<'enroute' | 'hospital'>('enroute');
 
@@ -653,7 +652,7 @@ const AcceptedTracker = ({
     if (reached) setPhase('hospital');
   }, [reached]);
 
-  const victimName = victimBrief?.name?.trim() || 'Person in distress';
+  const victimName = victimBrief?.name?.trim() || t('help.personInDistress');
   const victimAge = victimBrief?.age;
   const victimAddr = victimBrief?.shortAddress?.trim();
   const victimPhone = victimBrief?.phone?.replace(/\s/g, '');
@@ -671,7 +670,7 @@ const AcceptedTracker = ({
               : 'text-white/40 hover:text-white/65',
           ].join(' ')}
         >
-          <Navigation className="h-3.5 w-3.5" /> On the way
+          <Navigation className="h-3.5 w-3.5" /> {t('help.onTheWay')}
         </button>
         <button
           type="button"
@@ -683,7 +682,7 @@ const AcceptedTracker = ({
               : 'text-white/40 hover:text-white/65',
           ].join(' ')}
         >
-          <Building2 className="h-3.5 w-3.5" /> At hospital
+          <Building2 className="h-3.5 w-3.5" /> {t('help.atHospital')}
         </button>
       </div>
 
@@ -691,20 +690,20 @@ const AcceptedTracker = ({
         <>
           <div className="rounded-2xl border border-white/[0.07] bg-[#13141a] p-4 flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-black text-white">Help is on the way</div>
-              <div className="text-[11px] text-white/45 mt-0.5">You are the assigned responder — they see your live ETA.</div>
+              <div className="text-sm font-black text-white">{t('help.helpIsOnWay')}</div>
+              <div className="text-[11px] text-white/45 mt-0.5">{t('help.assignedResponder')}</div>
               <div className="mt-3">
                 <div className="text-[10px] font-bold text-white/35 uppercase tracking-wider">ETA</div>
                 <div className="text-2xl font-black text-white leading-tight">
                   {assignment?.etaSeconds != null && assignment.etaSeconds > 0
                     ? formatEta(assignment.etaSeconds)
                     : reached
-                      ? 'Arrived'
+                      ? t('help.arrived')
                       : '—'}
                 </div>
                 {assignment?.distanceMeters != null && (
                   <div className="text-[11px] text-white/50 font-semibold mt-1">
-                    {formatDistance(assignment.distanceMeters)} away
+                    {formatDistance(assignment.distanceMeters)} {t('help.away')}
                   </div>
                 )}
               </div>
@@ -719,15 +718,15 @@ const AcceptedTracker = ({
             className="w-full mt-2 rounded-2xl py-4 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-black transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
           >
             <MessageSquare className="h-5 w-5" />
-            Chat with {victimName}
+            {t('help.chatWith')} {victimName}
           </button>
 
           <div>
             <div className="flex items-center justify-between mb-1.5 px-0.5">
-              <span className="text-[11px] font-black text-white">Live tracking</span>
-              <span className="text-[10px] font-bold text-sky-400/90">Map updates live</span>
+              <span className="text-[11px] font-black text-white">{t('help.liveTracking')}</span>
+              <span className="text-[10px] font-bold text-sky-400/90">{t('help.mapUpdatesLive')}</span>
             </div>
-            <div className="text-[10px] text-white/40 mb-2 px-0.5">Route to the pin — your marker moves as you drive.</div>
+            <div className="text-[10px] text-white/40 mb-2 px-0.5">{t('help.routeInstruction')}</div>
             <LiveTrackingMap
               viewerRole="helper"
               victim={victimLocation}
@@ -740,21 +739,21 @@ const AcceptedTracker = ({
           </div>
 
           <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5 space-y-2">
-            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Victim details (shared)</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{t('help.victimDetails')}</div>
             <div className="rounded-xl border border-white/[0.06] bg-[#0f1016] px-3 py-2.5 flex items-start gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-lg">👤</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-black text-white truncate">{victimName}</div>
                 <div className="text-[11px] text-white/50 mt-0.5">
-                  {[victimAge != null ? `${victimAge} yrs` : null, victimAddr || 'Address on profile'].filter(Boolean).join(' · ')}
+                  {[victimAge != null ? `${victimAge} ${t('common.years')}` : null, victimAddr || t('help.addressOnProfile')].filter(Boolean).join(' · ')}
                 </div>
-                <div className="text-[10px] text-white/35 mt-1">Same details you get on food / ride apps — stay in touch if needed.</div>
+                <div className="text-[10px] text-white/35 mt-1">{t('help.stayInTouch')}</div>
               </div>
               {victimPhone && (
                 <a
                   href={`tel:${victimPhone}`}
                   className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center shrink-0 active:scale-95 transition"
-                  aria-label="Call victim"
+                  aria-label={t('help.callVictim')}
                 >
                   <Phone className="h-4 w-4 text-white" />
                 </a>
@@ -763,22 +762,22 @@ const AcceptedTracker = ({
           </div>
 
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] px-3 py-2.5 text-[11px] text-amber-100/90 leading-relaxed">
-            <span className="font-black text-amber-300">Safety guide. </span>
-            If you can, move to a safe place with them and stay calm until EMS or hospital handover.
+            <span className="font-black text-amber-300">{t('help.safetyGuide')} </span>
+            {t('help.stayCalm')}
           </div>
 
           <div className="rounded-2xl border border-emerald-500/20 bg-[#0f1016] px-3 py-2.5 flex gap-2.5">
             <Headphones className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <div className="text-[10px] font-black uppercase text-emerald-300">Important</div>
-              <div className="text-[11px] text-white/75 mt-0.5">Keep your phone unlocked. They may call you from the app.</div>
+              <div className="text-[10px] font-black uppercase text-emerald-300">{t('common.important')}</div>
+              <div className="text-[11px] text-white/75 mt-0.5">{t('help.keepPhoneUnlocked')}</div>
             </div>
           </div>
 
           {!reached && (
             <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/5 bg-white/[0.03] px-3 py-2">
               <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                Live • streaming your location
+                {t('help.streamingLocation')}
               </div>
               <div className="flex items-center gap-2 text-[11px] font-black text-blue-200">
                 {assignment?.etaSeconds ? (
@@ -789,7 +788,7 @@ const AcceptedTracker = ({
                     <span className="text-white/60">{formatDistance(assignment.distanceMeters)}</span>
                   </>
                 ) : (
-                  <span className="text-white/50">Calculating…</span>
+                  <span className="text-white/50">{t('help.calculating')}</span>
                 )}
               </div>
             </div>
@@ -802,11 +801,11 @@ const AcceptedTracker = ({
               <CheckCircle2 className="h-6 w-6 text-emerald-200" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-black text-white">At scene / hospital handover</div>
+              <div className="text-sm font-black text-white">{t('help.atScene')}</div>
               <div className="text-[11px] text-white/55 mt-1 leading-relaxed">
                 {reached
-                  ? "You've reached the victim. Coordinate with staff and complete handover when safe."
-                  : 'Switch here after you arrive — finish notifying the hospital from the panel below.'}
+                  ? t('help.reachedInstruction')
+                  : t('help.switchHere')}
               </div>
             </div>
             <span className="text-2xl shrink-0">🏥</span>
@@ -815,27 +814,27 @@ const AcceptedTracker = ({
           <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.05] px-3 py-2.5 flex gap-2.5">
             <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <div className="text-[11px] font-black text-emerald-200">Check-in</div>
+              <div className="text-[11px] font-black text-emerald-200">{t('help.checkIn')}</div>
               <div className="text-[10px] text-white/55 mt-0.5">
-                When you pick a hospital, they get a heads-up so treatment can be prepared.
+                {t('help.checkInDescription')}
               </div>
             </div>
           </div>
 
           <div className="rounded-2xl border border-white/[0.07] bg-[#13141a] p-3.5 space-y-2">
-            <div className="text-[10px] font-black uppercase tracking-widest text-white/40">Medical ID</div>
-            <div className="text-[11px] text-white/60">Ask them to open <span className="text-white font-bold">Medical ID</span> in the app — it helps doctors treat faster.</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('help.medicalId')}</div>
+            <div className="text-[11px] text-white/60">{t('help.medicalIdPrompt')}</div>
             <div className="rounded-xl border border-red-500/20 bg-red-500/[0.06] px-3 py-2 flex items-center gap-2 text-[11px] text-white/70">
               <Heart className="h-4 w-4 text-red-400 shrink-0" />
-              Allergies & conditions show only if they choose to share.
+              {t('help.medicalIdDisclaimer')}
             </div>
           </div>
 
           <div className="rounded-2xl border border-white/[0.06] bg-[#13141a] p-3.5">
-            <div className="text-[11px] font-black text-white">How are they feeling?</div>
-            <div className="text-[10px] text-white/45 mt-0.5 mb-2">You can ask and note it for handover.</div>
+            <div className="text-[11px] font-black text-white">{t('help.howAreFeeling')}</div>
+            <div className="text-[10px] text-white/45 mt-0.5 mb-2">{t('help.handoverNote')}</div>
             <div className="flex flex-wrap gap-2">
-              {['Not good', 'In pain', 'Okay', 'Better'].map((label) => (
+              {[t('help.feelNotGood'), t('help.feelInPain'), t('help.feelOkay'), t('help.feelBetter')].map((label) => (
                 <span
                   key={label}
                   className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-white/55"

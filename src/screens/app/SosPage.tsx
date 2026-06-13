@@ -135,7 +135,7 @@ export const SosPage = () => {
   // ── Part 2: throttle location-sync writes to max 1 per 5 seconds ─────────
   const lastLocUpdateRef = useRef(0);
 
-  const { currentLocation, saveLocation, requestGPS, clearLocation } = useSharedLocation();
+  const { currentLocation, saveLocation, requestGPS } = useSharedLocation();
 
   const activeAssignments = useMemo(
     () => assignments.filter((a) => a.status !== 'cancelled'),

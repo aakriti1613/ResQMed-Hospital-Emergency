@@ -15,6 +15,7 @@ import {
   Cpu,
   Radio,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 // ── Utility helpers ──────────────────────────────────────────────────────────
@@ -224,6 +225,7 @@ const Section = ({ title, icon, children }: { title: string; icon: React.ReactNo
 export const AnalyticsDashboardPage = () => {
   const nav = useNavigate();
   const a = useAnalytics();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-full bg-[#0a0b0f] max-w-lg mx-auto w-full">
@@ -237,8 +239,8 @@ export const AnalyticsDashboardPage = () => {
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-black text-white">Emergency Analytics</h1>
-          <p className="text-[10px] text-white/35 font-semibold">Live · updates automatically</p>
+          <h1 className="text-sm font-black text-white">{t('analytics.title')}</h1>
+          <p className="text-[10px] text-white/35 font-semibold">{t('analytics.live')}</p>
         </div>
         {/* Live indicator */}
         <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1">
@@ -262,33 +264,32 @@ export const AnalyticsDashboardPage = () => {
             {/* ── Summary Cards ── */}
             <div className="grid grid-cols-2 gap-3">
               <SummaryCard
-                label="Total SOS"
+                label={t('analytics.totalSos')}
                 value={a.sosTotals.total}
-                sub={`${a.sosTotals.active} active now`}
-                icon={<Siren className="h-5 w-5 text-white" />}
+                sub={`${a.sosTotals.active} ${t('analytics.activeNow')}`}
+                icon={<Siren className="h-5 w-5 text-red-300" />}
                 gradient="linear-gradient(135deg,#ef4444,#b91c1c)"
-                glow="rgba(239,68,68,0.12)"
+                glow="rgba(220,38,38,0.15)"
               />
               <SummaryCard
-                label="Critical Cases"
+                label={t('analytics.criticalCases')}
                 value={a.severityBreakdown.critical}
-                sub={`${a.severityBreakdown.criticalPct}% of all SOS`}
-                icon={<AlertTriangle className="h-5 w-5 text-white" />}
-                gradient="linear-gradient(135deg,#f97316,#c2410c)"
-                glow="rgba(249,115,22,0.12)"
+                sub={`${a.severityBreakdown.criticalPct}% ${t('analytics.ofAllSos')}`}
+                icon={<AlertTriangle className="h-5 w-5 text-amber-300" />}
+                gradient="linear-gradient(135deg,#f59e0b,#b45309)"
+                glow="rgba(245,158,11,0.15)"
               />
               <SummaryCard
-                label="Active Guardians"
+                label={t('analytics.activeGuardians')}
                 value={a.activeGuardians}
-                sub="in network"
-                icon={<Shield className="h-5 w-5 text-white" />}
-                gradient="linear-gradient(135deg,#6366f1,#4338ca)"
-                glow="rgba(99,102,241,0.12)"
+                sub={t('analytics.inNetwork')}
+                icon={<Shield className="h-5 w-5 text-emerald-300" />}
+                gradient="linear-gradient(135deg,#10b981,#047857)"
+                glow="rgba(16,185,129,0.15)"
               />
               <SummaryCard
-                label="Hospital Alerts"
+                label={t('analytics.hospitalAlerts')}
                 value={a.hospitalAlertsCount}
-                sub="total sent"
                 icon={<Hospital className="h-5 w-5 text-white" />}
                 gradient="linear-gradient(135deg,#06b6d4,#0e7490)"
                 glow="rgba(6,182,212,0.12)"
@@ -296,7 +297,7 @@ export const AnalyticsDashboardPage = () => {
             </div>
 
             {/* ── Severity Distribution ── */}
-            <Section title="Severity Distribution" icon={<Activity className="h-4 w-4" />}>
+            <Section title={t('analytics.severityDist')} icon={<Activity className="h-4 w-4" />}>
               <DonutChart
                 minor={a.severityBreakdown.minor}
                 major={a.severityBreakdown.major}
@@ -321,7 +322,7 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── SOS Trend (7-day) ── */}
-            <Section title="SOS Trend — Last 7 Days" icon={<TrendingUp className="h-4 w-4" />}>
+            <Section title={t('analytics.sosTrend')} icon={<TrendingUp className="h-4 w-4" />}>
               {a.last7Days.length > 0 ? (
                 <BarChart7Day
                   days={a.last7Days}
@@ -330,7 +331,7 @@ export const AnalyticsDashboardPage = () => {
                   color="url(#redGrad)"
                 />
               ) : (
-                <p className="text-xs text-white/30 text-center py-6">No data yet</p>
+                <p className="text-xs text-white/30 text-center py-6">{t('analytics.noData')}</p>
               )}
               {/* Inject gradient def */}
               <svg width="0" height="0" className="absolute">
@@ -348,7 +349,7 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── Response Time Trend ── */}
-            <Section title="Avg Response Time — Last 7 Days" icon={<Clock className="h-4 w-4" />}>
+            <Section title={t('analytics.avgResponseTrend')} icon={<Clock className="h-4 w-4" />}>
               {a.last7Days.some(d => d.avgResponseSec > 0) ? (
                 <BarChart7Day
                   days={a.last7Days}
@@ -357,41 +358,41 @@ export const AnalyticsDashboardPage = () => {
                   color="url(#skyGrad)"
                 />
               ) : (
-                <p className="text-xs text-white/30 text-center py-6">No response data yet</p>
+                <p className="text-xs text-white/30 text-center py-6">{t('analytics.noData')}</p>
               )}
             </Section>
 
             {/* ── Response Metrics ── */}
-            <Section title="Response Metrics" icon={<Clock className="h-4 w-4" />}>
+            <Section title={t('analytics.responseMetrics')} icon={<Clock className="h-4 w-4" />}>
               <MetricRow
-                label="Avg Helper Acceptance Time"
+                label={t('analytics.avgAcceptance')}
                 value={fmtTime(a.responseMetrics.avgAcceptanceTimeSec)}
                 icon={<Clock className="h-3.5 w-3.5" />}
               />
               <MetricRow
-                label="Avg First Arrival Time"
+                label={t('analytics.avgArrival')}
                 value={fmtTime(a.responseMetrics.avgArrivalTimeSec)}
                 icon={<Activity className="h-3.5 w-3.5" />}
               />
               <MetricRow
-                label="Avg SOS Resolution Time"
+                label={t('analytics.avgResolution')}
                 value={fmtTime(a.responseMetrics.avgResolutionTimeSec)}
                 icon={<TrendingUp className="h-3.5 w-3.5" />}
               />
               <MetricRow
-                label="Hospital Alerts Sent"
+                label={t('analytics.hospitalAlerts')}
                 value={String(a.hospitalAlertsCount)}
                 icon={<Hospital className="h-3.5 w-3.5" />}
               />
             </Section>
 
             {/* ── Network Analytics ── */}
-            <Section title="Network Analytics" icon={<Wifi className="h-4 w-4" />}>
+            <Section title={t('analytics.networkAnalytics')} icon={<Wifi className="h-4 w-4" />}>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: 'Normal Mobile', value: a.networkMobile, icon: <Wifi className="h-4 w-4 text-sky-300" />, color: 'border-sky-500/25 bg-sky-500/[0.08]', text: 'text-sky-300' },
-                  { label: 'Hardware SOS', value: a.networkHardware, icon: <Cpu className="h-4 w-4 text-violet-300" />, color: 'border-violet-500/25 bg-violet-500/[0.08]', text: 'text-violet-300' },
-                  { label: 'Escalated', value: a.networkEscalated, icon: <Radio className="h-4 w-4 text-amber-300" />, color: 'border-amber-500/25 bg-amber-500/[0.08]', text: 'text-amber-300' },
+                  { label: t('analytics.normalMobile'), value: a.networkMobile, icon: <Wifi className="h-4 w-4 text-sky-300" />, color: 'border-sky-500/25 bg-sky-500/[0.08]', text: 'text-sky-300' },
+                  { label: t('analytics.hardwareSos'), value: a.networkHardware, icon: <Cpu className="h-4 w-4 text-violet-300" />, color: 'border-violet-500/25 bg-violet-500/[0.08]', text: 'text-violet-300' },
+                  { label: t('analytics.escalatedSos'), value: a.networkEscalated, icon: <Radio className="h-4 w-4 text-amber-300" />, color: 'border-amber-500/25 bg-amber-500/[0.08]', text: 'text-amber-300' },
                 ].map(item => (
                   <div key={item.label} className={`rounded-2xl border ${item.color} p-3 text-center`}>
                     <div className="flex justify-center mb-1.5">{item.icon}</div>
@@ -403,18 +404,18 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── Guardian Leaderboard ── */}
-            <Section title="Guardian Leaderboard" icon={<Trophy className="h-4 w-4" />}>
+            <Section title={t('analytics.guardianLeaderboard')} icon={<Trophy className="h-4 w-4" />}>
               {a.guardianLeaderboard.length === 0 ? (
-                <p className="text-xs text-white/30 text-center py-6">No guardian data yet</p>
+                <p className="text-xs text-white/30 text-center py-6">{t('analytics.noData')}</p>
               ) : (
                 <div className="space-y-2">
                   {/* Header row */}
                   <div className="grid grid-cols-[24px_1fr_48px_56px_64px] gap-2 pb-2 border-b border-white/[0.06]">
-                    <span className="text-[9px] font-black text-white/30 uppercase">#</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase">Guardian</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase text-center">Accept</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase text-center">Done</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase text-right">Avg Time</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.rank')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.guardian')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase text-center">{t('analytics.accept')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase text-center">{t('analytics.done')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase text-right">{t('analytics.avgTime')}</span>
                   </div>
                   {a.guardianLeaderboard.map((g, i) => (
                     <div key={g.helperId} className="grid grid-cols-[24px_1fr_48px_56px_64px] gap-2 items-center py-1">
@@ -432,9 +433,9 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── Geographic Hotspots ── */}
-            <Section title="High-Risk Locations" icon={<MapPin className="h-4 w-4" />}>
+            <Section title={t('analytics.hotspots')} icon={<MapPin className="h-4 w-4" />}>
               {a.hotspots.length === 0 ? (
-                <p className="text-xs text-white/30 text-center py-6">No location data yet</p>
+                <p className="text-xs text-white/30 text-center py-6">{t('analytics.noData')}</p>
               ) : (
                 <div className="space-y-2">
                   {a.hotspots.map((h, i) => (
@@ -455,17 +456,17 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── Recent Incidents ── */}
-            <Section title="Recent Incidents" icon={<Activity className="h-4 w-4" />}>
+            <Section title={t('analytics.recentIncidents')} icon={<Activity className="h-4 w-4" />}>
               {a.recentIncidents.length === 0 ? (
-                <p className="text-xs text-white/30 text-center py-6">No incidents yet</p>
+                <p className="text-xs text-white/30 text-center py-6">{t('analytics.noData')}</p>
               ) : (
                 <div className="space-y-2">
                   {/* Header */}
                   <div className="grid grid-cols-[1fr_60px_64px_56px] gap-2 pb-2 border-b border-white/[0.06]">
-                    <span className="text-[9px] font-black text-white/30 uppercase">When</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase">Severity</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase">Status</span>
-                    <span className="text-[9px] font-black text-white/30 uppercase">Type</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.when')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.severity')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.status')}</span>
+                    <span className="text-[9px] font-black text-white/30 uppercase">{t('analytics.type')}</span>
                   </div>
                   {a.recentIncidents.map((inc) => {
                     const sev = SEVERITY_COLORS[inc.severity] ?? SEVERITY_COLORS.minor!;
@@ -488,14 +489,14 @@ export const AnalyticsDashboardPage = () => {
             </Section>
 
             {/* ── SOS Status Breakdown ── */}
-            <Section title="SOS Status Breakdown" icon={<Users className="h-4 w-4" />}>
+            <Section title={t('analytics.statusBreakdown')} icon={<Users className="h-4 w-4" />}>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: 'Active',    val: a.sosTotals.active,    color: 'text-blue-300',    bg: 'bg-blue-500/10',    border: 'border-blue-500/20'    },
-                  { label: 'Resolved',  val: a.sosTotals.resolved,  color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-                  { label: 'Cancelled', val: a.sosTotals.cancelled, color: 'text-white/40',    bg: 'bg-white/5',        border: 'border-white/10'        },
-                  { label: 'Countdown', val: a.sosTotals.countdown, color: 'text-amber-300',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20'   },
-                  { label: 'Expired',   val: a.sosTotals.expired,   color: 'text-white/30',    bg: 'bg-white/5',        border: 'border-white/10'        },
+                  { label: t('sos.active'),    val: a.sosTotals.active,    color: 'text-blue-300',    bg: 'bg-blue-500/10',    border: 'border-blue-500/20'    },
+                  { label: t('sos.resolved'),  val: a.sosTotals.resolved,  color: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+                  { label: t('sos.cancelled'), val: a.sosTotals.cancelled, color: 'text-white/40',    bg: 'bg-white/5',        border: 'border-white/10'        },
+                  { label: t('sos.countdown'), val: a.sosTotals.countdown, color: 'text-amber-300',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20'   },
+                  { label: t('sos.expired'),   val: a.sosTotals.expired,   color: 'text-white/30',    bg: 'bg-white/5',        border: 'border-white/10'        },
                   { label: 'Total',     val: a.sosTotals.total,     color: 'text-white',       bg: 'bg-white/5',        border: 'border-white/15'        },
                 ].map(item => (
                   <div key={item.label} className={`rounded-2xl border ${item.border} ${item.bg} p-3 text-center`}>

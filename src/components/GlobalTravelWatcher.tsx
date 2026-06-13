@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ShieldAlert, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useTravelSession, checkInTravelSession, endTravelSession } from '../data/travelSafety';
 
 const GRACE_PERIOD_MS = 60 * 1000; // 60 seconds

@@ -13,10 +13,12 @@ import { listenUserProfile, type UserProfile } from '../../data/user';
 import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice } from '../../data/helmet';
 import { useSharedLocation } from '../../hooks/useSharedLocation';
 import { useVoiceSos } from '../../hooks/useVoiceSos';
+import { useTranslation } from 'react-i18next';
 
 const HELMET_HELP_SEC = 10;
 
 export const DashboardPage = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const nav = useNavigate();
   const { currentLocation } = useSharedLocation();
@@ -55,7 +57,7 @@ export const DashboardPage = () => {
   }, [user?.uid]);
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? t('dashboard.goodMorning') : hour < 17 ? t('dashboard.goodAfternoon') : t('dashboard.goodEvening');
 
   const next = upcoming[0];
 
@@ -86,7 +88,7 @@ export const DashboardPage = () => {
             <HardHat className="h-5 w-5 text-black" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg font-black text-white truncate">Helmet One</h1>
+            <h1 className="text-lg font-black text-white truncate">{t('dashboard.helmetOne')}</h1>
             <p className="text-[10px] text-white/40 truncate">{greeting}, {displayFirstName}</p>
           </div>
         </div>
@@ -105,7 +107,7 @@ export const DashboardPage = () => {
       {/* Emergency SOS — Helmet One card */}
       <div className="rounded-3xl border-2 border-red-500/40 bg-[#12131a] p-5 shadow-[0_0_32px_rgba(220,38,38,0.12)]">
         <p className="text-sm font-bold text-white/80 text-center leading-snug">
-          In an emergency? Get help in <span className="text-red-400 font-black">{HELMET_HELP_SEC} seconds</span>.
+          {t('dashboard.emergencyText1')} <span className="text-red-400 font-black">{t('dashboard.emergencyText2', { seconds: HELMET_HELP_SEC })}</span>
         </p>
         <button
           type="button"
@@ -114,7 +116,7 @@ export const DashboardPage = () => {
           style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)' }}
         >
           <Siren className="h-5 w-5" />
-          Request Emergency Help
+          {t('dashboard.requestHelp')}
         </button>
 
         {isVoiceSupported && (
@@ -133,12 +135,12 @@ export const DashboardPage = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                 </span>
-                Listening for "Help me"...
+                {t('dashboard.listeningVoice')}
               </>
             ) : (
               <>
                 <Mic className="h-4 w-4" />
-                Enable Smart Voice SOS
+                {t('dashboard.enableVoice')}
               </>
             )}
           </button>
@@ -150,13 +152,13 @@ export const DashboardPage = () => {
         <div className="flex items-center gap-2 min-w-0">
           <ShieldCheck className="h-5 w-5 text-emerald-300 shrink-0" />
           <div className="min-w-0">
-            <div className="text-xs font-black text-emerald-100">Great! Your helmet is working well</div>
-            <div className="text-[10px] text-emerald-200/60 truncate">Sensors · battery · connectivity</div>
+            <div className="text-xs font-black text-emerald-100">{t('dashboard.helmetWorking')}</div>
+            <div className="text-[10px] text-emerald-200/60 truncate">{t('dashboard.helmetSub')}</div>
           </div>
         </div>
         {user?.uid && helmet && (
           <Link to="/app/profile" className="text-[10px] font-black text-emerald-200 underline shrink-0">
-            Verify Helmet
+            {t('dashboard.verifyHelmet')}
           </Link>
         )}
       </div>
@@ -177,9 +179,9 @@ export const DashboardPage = () => {
             🏥
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Partner Hospital</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{t('dashboard.partnerHospital')}</div>
             <div className="text-sm font-black text-white truncate">{SHOWCASE_HOSPITAL.name}</div>
-            <div className="text-[11px] text-white/45 truncate">Bookable 24×7 · All departments</div>
+            <div className="text-[11px] text-white/45 truncate">{t('dashboard.bookable')}</div>
           </div>
           <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
         </div>
@@ -188,8 +190,8 @@ export const DashboardPage = () => {
       {/* Departments horizontal scroll */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] font-black uppercase tracking-widest text-white/40">Browse by Department</div>
-          <Link to="/app/care" className="text-[10px] font-bold text-sky-300 hover:text-sky-200">See all →</Link>
+          <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('dashboard.browseDept')}</div>
+          <Link to="/app/care" className="text-[10px] font-bold text-sky-300 hover:text-sky-200">{t('dashboard.seeAll')}</Link>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
           {DEPARTMENTS.slice(0, 8).map((d) => (
@@ -210,7 +212,7 @@ export const DashboardPage = () => {
 
       {/* Quick actions — below hospital & more (Helmet One layout) */}
       <div>
-        <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-2">Quick actions</div>
+        <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-2">{t('dashboard.quickActions')}</div>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -218,14 +220,14 @@ export const DashboardPage = () => {
             className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
           >
             <div className="h-14 w-14 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">⚠️</div>
-            <span className="text-xs font-black text-amber-100">Report Accident</span>
+            <span className="text-xs font-black text-amber-100">{t('dashboard.reportAccident')}</span>
           </button>
           <a
             href="tel:108"
             className="rounded-3xl border border-sky-500/25 bg-sky-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
           >
             <div className="h-14 w-14 rounded-full bg-sky-500/20 flex items-center justify-center text-2xl">🚑</div>
-            <span className="text-xs font-black text-sky-100">Call Ambulance</span>
+            <span className="text-xs font-black text-sky-100">{t('dashboard.callAmbulance')}</span>
           </a>
           <button
             type="button"
@@ -235,7 +237,7 @@ export const DashboardPage = () => {
             <div className="h-14 w-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
               <Share2 className="h-6 w-6 text-emerald-300" />
             </div>
-            <span className="text-xs font-black text-emerald-100">Share Live Location</span>
+            <span className="text-xs font-black text-emerald-100">{t('dashboard.shareLocation')}</span>
           </button>
           <Link
             to="/app/safety-circle"
@@ -244,7 +246,7 @@ export const DashboardPage = () => {
             <div className="h-14 w-14 rounded-full bg-violet-500/20 flex items-center justify-center">
               <Users className="h-6 w-6 text-violet-200" />
             </div>
-            <span className="text-xs font-black text-violet-100">Safety Circle</span>
+            <span className="text-xs font-black text-violet-100">{t('dashboard.safetyCircle')}</span>
           </Link>
         </div>
       </div>

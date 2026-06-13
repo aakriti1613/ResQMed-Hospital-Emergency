@@ -4,12 +4,14 @@ import { Home, BarChart2, Shield, User, Siren } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest, type SosRequestDoc } from '../data/sos';
 import { useLiveLocationTracking } from '../hooks/useLiveLocationTracking';
+import { useTranslation } from 'react-i18next';
 import { GlobalTravelWatcher } from '../components/GlobalTravelWatcher';
 
 export const AppShell = () => {
   const { user } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
+  const { t } = useTranslation();
   const [request, setRequest] = useState<SosRequestDoc | null>(null);
 
   useEffect(() => {
@@ -37,14 +39,14 @@ export const AppShell = () => {
       {/* Bottom Nav — 4 side tabs + center SOS FAB ─────────────────────── */}
       <nav className="fixed inset-x-0 bottom-0 z-50 h-[78px] border-t border-white/[0.06] dark:bg-[#0e0f14]/95 bg-white/95 backdrop-blur-xl">
         <div className="relative grid grid-cols-5 h-full max-w-lg mx-auto">
-          <BottomTab to="/app" label="Home" icon={<Home className="h-5 w-5" />} tint="emerald" end />
-          <BottomTab to="/app/analytics" label="Analytics" icon={<BarChart2 className="h-5 w-5" />} tint="sky" />
+          <BottomTab to="/app" label={t('nav.home')} icon={<Home className="h-5 w-5" />} tint="emerald" end />
+          <BottomTab to="/app/analytics" label={t('nav.analytics')} icon={<BarChart2 className="h-5 w-5" />} tint="sky" />
 
           {/* Center SOS FAB column — empty placeholder so the grid keeps 5 cols */}
           <div aria-hidden className="relative" />
 
-          <BottomTab to="/app/safety" label="Safety" icon={<Shield className="h-5 w-5" />} tint="amber" />
-          <BottomTab to="/app/profile" label="Profile" icon={<User className="h-5 w-5" />} tint="violet" />
+          <BottomTab to="/app/safety" label={t('nav.safety')} icon={<Shield className="h-5 w-5" />} tint="amber" />
+          <BottomTab to="/app/profile" label={t('nav.profile')} icon={<User className="h-5 w-5" />} tint="violet" />
 
           {/* Floating SOS button — visually pinned in the center */}
           <button
