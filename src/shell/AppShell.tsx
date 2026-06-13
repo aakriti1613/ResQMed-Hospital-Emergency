@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Route, Shield, User, Siren } from 'lucide-react';
+import { Home, BarChart2, Shield, User, Siren } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest, type SosRequestDoc } from '../data/sos';
 import { useLiveLocationTracking } from '../hooks/useLiveLocationTracking';
@@ -38,7 +38,7 @@ export const AppShell = () => {
       <nav className="fixed inset-x-0 bottom-0 z-50 h-[78px] border-t border-white/[0.06] dark:bg-[#0e0f14]/95 bg-white/95 backdrop-blur-xl">
         <div className="relative grid grid-cols-5 h-full max-w-lg mx-auto">
           <BottomTab to="/app" label="Home" icon={<Home className="h-5 w-5" />} tint="emerald" end />
-          <BottomTab to="/app/trips" label="Trips" icon={<Route className="h-5 w-5" />} tint="cyan" />
+          <BottomTab to="/app/analytics" label="Analytics" icon={<BarChart2 className="h-5 w-5" />} tint="sky" />
 
           {/* Center SOS FAB column — empty placeholder so the grid keeps 5 cols */}
           <div aria-hidden className="relative" />
@@ -71,6 +71,7 @@ export const AppShell = () => {
 const TINT: Record<string, { text: string; bg: string }> = {
   red: { text: 'text-red-400', bg: 'bg-red-500/12' },
   cyan: { text: 'text-cyan-300', bg: 'bg-cyan-500/12' },
+  sky: { text: 'text-sky-300', bg: 'bg-sky-500/12' },
   emerald: { text: 'text-emerald-300', bg: 'bg-emerald-500/12' },
   amber: { text: 'text-amber-300', bg: 'bg-amber-500/12' },
   violet: { text: 'text-violet-300', bg: 'bg-violet-500/12' },

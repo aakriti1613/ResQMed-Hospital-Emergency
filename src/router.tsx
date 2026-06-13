@@ -25,6 +25,7 @@ import { AdminPanel } from './screens/admin/AdminPanel';
 import { NotFoundPage } from './screens/NotFoundPage';
 import { RootLayout } from './shell/RootLayout';
 import { RouteErrorFallback } from './components/RouteErrorFallback';
+import { AnalyticsDashboardPage } from './screens/app/AnalyticsDashboardPage';
 
 export const router = createHashRouter([
   {
@@ -73,6 +74,9 @@ export const router = createHashRouter([
           // ── Safety
           { path: 'medical-id', element: <MedicalIdPage /> },
           { path: 'safety-circle', element: <SafetyCirclePage /> },
+
+          // ── Analytics
+          { path: 'analytics', element: <AnalyticsDashboardPage /> },
 
           // legacy redirects so old links don't 404
           { path: 'settings', element: <Navigate to="/app/profile" replace /> },
