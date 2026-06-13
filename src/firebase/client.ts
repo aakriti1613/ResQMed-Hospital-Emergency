@@ -25,10 +25,10 @@ try {
     app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
     authInstance = getAuth(app);
     try {
-      dbInstance = initializeFirestore(app, {
-        experimentalAutoDetectLongPolling: true,
-      });
+      // v10 stable — no experimental options needed
+      dbInstance = initializeFirestore(app, {});
     } catch {
+      // initializeFirestore throws if called more than once (e.g. HMR); fall back to getFirestore
       dbInstance = getFirestore(app);
     }
     storageInstance = getStorage(app);

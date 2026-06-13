@@ -89,13 +89,68 @@ export async function getActiveSosForUser(victimId: string): Promise<SosRequestD
   const q = query(
     collection(db, 'sosRequests'),
     where('victimId', '==', victimId),
-    limit(10)
+    limit(50)
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
   const activeDocs = snap.docs.filter(d => (d.data() as any).status === 'active');
   if (activeDocs.length === 0) return null;
-  const d = activeDocs[0];
+  const d = activeDocs[0]!;
+  const data: any = d.data();
+  return {
+    id: d.id,
+    victimId: data.victimId,
+    status: data.status,
+    severity: data.severity,
+    source: data.source || 'mobile',
+    countdown: data.countdown ?? 0,
+    location: data.location ?? null,
+    hasValidLocation: data.hasValidLocation ?? false,
+    isApproximate: data.isApproximate ?? false,
+    radiusKm: data.radiusKm ?? 5,
+    primaryHelperId: data.primaryHelperId,
+    incidentType: data.incidentType,
+    symptomNotes: data.symptomNotes,
+    victimBrief: data.victimBrief,
+    helpersAssigned: data.helpersAssigned ?? [],
+    helpersAccepted: data.helpersAccepted ?? [],
+  };
+}
+
+/**
+ * Cancel ALL active/countdown SOS docs for this user in parallel.
+ * Returns the IDs that were cancelled so the caller can flag them in sessionStorage.
+ */
+export async function cancelAllActiveSosForUser(victimId: string): Promise<string[]> {
+  if (isDemoMode) return [];
+  const q = query(
+    collection(db, 'sosRequests'),
+    where('victimId', '==', victimId),
+    limit(50)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return [];
+  const toCancel = snap.docs.filter(d => {
+    const s = (d.data() as any).status;
+    return s === 'active' || s === 'countdown';
+  });
+  if (toCancel.length === 0) return [];
+  await Promise.all(
+    toCancel.map(d =>
+      updateDoc(doc(db, 'sosRequests', d.id), { status: 'cancelled', updatedAt: serverTimestamp() })
+        .catch(console.warn)
+    )
+  );
+  return toCancel.map(d => d.id);
+}
+
+
+/** Fetch a single SOS request document by its ID. */
+export async function getSosRequestDoc(id: string): Promise<SosRequestDoc | null> {
+  if (isDemoMode) return null;
+  const snap = await getDocs(query(collection(db, 'sosRequests'), where('__name__', '==', id)));
+  if (snap.empty) return null;
+  const d = snap.docs[0]!;
   const data: any = d.data();
   return {
     id: d.id,
@@ -170,7 +225,7 @@ export function listenCurrentSosRequest(victimId: string, cb: (item: SosRequestD
   const q = query(
     collection(db, 'sosRequests'),
     where('victimId', '==', victimId),
-    limit(5)
+    limit(50)
   );
 
   return onSnapshot(
@@ -438,7 +493,6 @@ export async function acceptSosRequest(input: {
     const reqSnap = await tx.get(reqRef);
     if (!reqSnap.exists()) throw new Error('SOS_NOT_FOUND');
     const d: any = reqSnap.data();
-    const accepted: string[] = Array.isArray(d.helpersAccepted) ? d.helpersAccepted : [];
     // Allow multiple helpers to accept
     tx.set(assignRef, {
       requestId: input.requestId,

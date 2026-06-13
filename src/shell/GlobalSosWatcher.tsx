@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest } from '../data/sos';
+import { wasSosCancelledRecently } from './sosCancelSignal';
 
 export const GlobalSosWatcher = () => {
   const { user } = useAuth();
@@ -10,18 +11,20 @@ export const GlobalSosWatcher = () => {
 
   useEffect(() => {
     if (!user?.uid) return;
-    
-    // Globally listen to the backend SOS state
+
     return listenCurrentSosRequest(user.uid, (req) => {
       if (req && (req.status === 'countdown' || req.status === 'active')) {
-        // Prevent race-condition bounce-back if the user literally just cancelled it.
+        // 1. Check if the user just hit the cancel button (synchronous signal)
+        if (wasSosCancelledRecently()) return;
+
+        // 2. Check sessionStorage ignore flag (set when individual SOS is cancelled)
         if (sessionStorage.getItem(`ignore_sos_${req.id}`)) return;
 
-        // If an SOS is active, force navigation to the SOS screen to handle it!
-        // Ignored if already on the SOS page or if this tab is running the Admin Simulator
-        if (!loc.pathname.includes('/sos') && !loc.pathname.includes('/admin')) {
-          nav('/app/sos');
-        }
+        // 3. Don't redirect if already on SOS or admin page
+        if (loc.pathname.includes('/sos') || loc.pathname.includes('/admin')) return;
+
+        // Active SOS — bring user to the SOS screen
+        nav('/app/sos');
       }
     });
   }, [user?.uid, loc.pathname, nav]);

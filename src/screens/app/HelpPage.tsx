@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   HandHeart, CheckCircle2, Clock, MapPin, Search, AlertTriangle, Car, Phone, Navigation,
-  Headphones, ShieldCheck, Building2, Heart,
+  Headphones, ShieldCheck, Building2, Heart, MessageSquare,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/AuthProvider';
@@ -25,6 +25,7 @@ import { getDistance } from '../../lib/distance';
 import { formatEta, formatDistance } from '../../data/routing';
 import { HospitalAlertPanel } from '../../components/HospitalAlertPanel';
 import type { SosSeverity } from '../../data/sos';
+import { SosChatBridge } from '../../components/ui/SosChatBridge';
 
 type Tab = 'need-help' | 'leaderboard';
 type Sort = 'nearest' | 'urgent';
@@ -64,6 +65,9 @@ export const HelpPage = () => {
   // ── Part 4: track SOS IDs where helper became >5km (show inline warning) ─
   const [tooFarSosIds, setTooFarSosIds] = useState<Set<string>>(new Set());
   const removingRef = useRef<Set<string>>(new Set()); // prevents duplicate removeHelperFromSos calls
+  
+  const [showChat, setShowChat] = useState(false);
+  const [chatSosId, setChatSosId] = useState<string | null>(null);
 
   // ── Redirect to login if user is not authenticated ──
   useEffect(() => {
@@ -497,6 +501,10 @@ export const HelpPage = () => {
                                 victimLocation={rloc}
                                 severity={req.severity}
                                 victimBrief={req.victimBrief}
+                                onOpenChat={(sosId) => {
+                                  setChatSosId(sosId);
+                                  setShowChat(true);
+                                }}
                               />
                             ) : (
                               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3 text-[10px] text-amber-300/70">
@@ -577,6 +585,20 @@ export const HelpPage = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Chat Bridge Drawer */}
+      {showChat && chatSosId && (
+        <SosChatBridge
+          sosId={chatSosId}
+          currentUserId={helperUid}
+          currentUserName={user?.displayName || 'Responder'}
+          currentUserRole="responder"
+          onClose={() => {
+            setShowChat(false);
+            setChatSosId(null);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -595,6 +617,7 @@ const AcceptedTracker = ({
   victimLocation,
   severity,
   victimBrief,
+  onOpenChat,
 }: {
   requestId: string;
   victimId: string;
@@ -603,6 +626,7 @@ const AcceptedTracker = ({
   victimLocation: { lat: number; lon: number };
   severity?: SosSeverity;
   victimBrief?: ParticipantBrief | null;
+  onOpenChat: (sosId: string) => void;
 }) => {
   const [assignment, setAssignment] = useState<SosAssignmentDoc | null>(null);
   const [phase, setPhase] = useState<'enroute' | 'hospital'>('enroute');
@@ -687,6 +711,14 @@ const AcceptedTracker = ({
               🚑
             </div>
           </div>
+
+          <button
+            onClick={() => onOpenChat(requestId)}
+            className="w-full mt-2 rounded-2xl py-4 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-black transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+          >
+            <MessageSquare className="h-5 w-5" />
+            Chat with {victimName}
+          </button>
 
           <div>
             <div className="flex items-center justify-between mb-1.5 px-0.5">

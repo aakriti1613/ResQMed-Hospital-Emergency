@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Phone, X, CheckCircle2, ChevronDown, ChevronUp, MapPin, Search, Hospital, Clock,
+  Phone, X, CheckCircle2, ChevronDown, ChevronUp, MapPin, Search, Hospital,
   Car, HeartPulse, Bandage, HelpCircle, Mic, Users, ShieldAlert, Sparkles, Navigation,
-  Siren, Ambulance,
+  Siren, Ambulance, MessageSquare,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LocationSearchModal } from '../../components/LocationSearchModal';
 import { LiveTrackingMap } from '../../components/LiveTrackingMap';
+import { SosChatBridge } from '../../components/ui/SosChatBridge';
 import { useSharedLocation, hasGrantedGPS } from '../../hooks/useSharedLocation';
 import { useAuth } from '../../auth/AuthProvider';
 import {
@@ -16,13 +17,14 @@ import {
   listenSosRequestDoc,
   updateSosRequest,
   getActiveSosForUser,
+  cancelAllActiveSosForUser,
   type SosAssignmentDoc,
   type SosRequestDoc,
   type IncidentType,
   type ParticipantBrief,
-  type MLFeatures,
-  type MLSeverityResponse,
 } from '../../data/sos';
+import { signalSosCancel } from '../../shell/sosCancelSignal';
+import type { MLSeverityResponse } from '../../features/sos/crashDetection';
 import { formatEta, formatDistance } from '../../data/routing';
 import {
   analyzeSeverityWithML,
@@ -81,6 +83,7 @@ export const SosPage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [helperPublic, setHelperPublic] = useState<UserProfile | null>(null);
   const [ambulanceAssigned, setAmbulanceAssigned] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   // ── Helmet-One style intake captured during the countdown ───────────────
   const [incidentType, setIncidentType] = useState<IncidentType | null>(null);
   // ── "How are you feeling?" mood captured after marking safe ─────────────
@@ -200,10 +203,10 @@ export const SosPage = () => {
     }
   }, [phase]);
 
-  // ── Mount: clear stale location, auto-connect GPS ─────────────────────────
+  // ── Mount: auto-connect GPS (do NOT clear existing location — it may be the
+  //    only fix we have if GPS is blocked and user chose manual location)
   useEffect(() => {
-    clearLocation();
-    requestGPS({ silent: false, showAlert: false }).finally(() => setIsLocating(false));
+    requestGPS({ silent: true, showAlert: false }).finally(() => setIsLocating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helmet crash + SOS share the same flow; hardware defaults to crash intake.
@@ -250,6 +253,7 @@ export const SosPage = () => {
   const createSosRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   const createSos = useCallback(async () => {
+    console.log('[SOS] createSos EXECUTING! isHardwareCrash:', isHardwareCrash);
     // ── FINAL LOCATION PRIORITY CHAIN ────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const hwLat = params.get('lat');
@@ -299,29 +303,34 @@ export const SosPage = () => {
     const phone = profile?.phone?.trim();
     if (phone) victimBrief.phone = phone;
 
-    try {
-      const saved = await createSosRequest({
-        victimId: uid,
-        status: 'active',         // written directly as 'active' — no countdown in Firestore
-        severity: isHardwareCrash ? hwSeverity : manualSeverity,
-        source: hwLat ? 'hardware' : 'mobile',
-        countdown: 0,
-        location: finalLocation ? { lat: finalLocation.lat, lon: finalLocation.lon } : null,
-        hasValidLocation: hasValidLoc,
-        isApproximate: finalLocation?.isApproximate ?? false,
-        radiusKm: 5,
-        incidentType: incidentType ?? undefined,
-        victimBrief,
+    console.log('[SOS] Calling createSosRequest...');
+    // Fire-and-forget: Do NOT await so the UI transitions instantly!
+    createSosRequest({
+      victimId: uid,
+      status: 'active',
+      severity: isHardwareCrash ? hwSeverity : manualSeverity,
+      source: hwLat ? 'hardware' : 'mobile',
+      countdown: 0,
+      location: finalLocation ? { lat: finalLocation.lat, lon: finalLocation.lon } : null,
+      hasValidLocation: hasValidLoc,
+      isApproximate: finalLocation?.isApproximate ?? false,
+      radiusKm: 5,
+      incidentType: incidentType ?? undefined,
+      victimBrief,
+    })
+      .then((saved) => {
+        console.log('[SOS] ✅ Saved to Firestore as active:', saved.id, '| location:', finalLocation);
+        setSosId(saved.id);
+      })
+      .catch((err) => {
+        console.error('[SOS] ❌ Firestore write FAILED inside createSos:', err);
+        showToast('SOS sent (offline mode — check console for error)');
       });
-      console.log('[SOS] ✅ Saved to Firestore as active:', saved.id, '| location:', finalLocation);
-      setSosId(saved.id);
-    } catch (err) {
-      console.error('[SOS] ❌ Firestore write FAILED:', err);
-      showToast('SOS sent (offline mode — check console for error)');
-    }
 
+    console.log('[SOS] createSos finished Firestore call, setting phase active...');
     setHelmetFlowStep('alert_sent');
     setPhase('active');
+    console.log('[SOS] Phase set to active.');
   }, [uid, currentLocation, showToast, incidentType, profile, user]);
 
   // Keep ref in sync so effect below always calls the latest createSos
@@ -330,6 +339,7 @@ export const SosPage = () => {
   // ── Fire createSos exactly once when countdown hits zero ──────────────────
   useEffect(() => {
     if (cdown !== 0 || phase !== 'countdown' || createdRef.current || isDoneRef.current) return;
+    console.log('[SOS] Countdown hit 0 naturally! Triggering createSosRef.current...');
     createdRef.current = true;
     void createSosRef.current?.();
   }, [cdown, phase]);
@@ -403,24 +413,34 @@ export const SosPage = () => {
     }
   }, [nav, user, searchParams]);
 
-  const cancelAlert = useCallback(() => {
+  // ── Cancel: bulk-cancel ALL active/countdown SOS docs for this user ────────
+  const cancelAndClearAll = useCallback(async () => {
+    // ⚡ Signal FIRST (synchronous) — GlobalSosWatcher checks this before any
+    //    React state or Firestore snapshot can fire.
+    signalSosCancel();
     isDoneRef.current = true;
-    showToast('Alert cancelled.');
-    if (sosId) {
-      sessionStorage.setItem(`ignore_sos_${sosId}`, 'true');
-      updateSosRequest(sosId, { status: 'cancelled' }).catch(console.warn);
-    }
+    // Navigate home immediately so the user isn't left waiting
     goHome();
-  }, [sosId, showToast, goHome]);
+    // Fire-and-forget the Firestore cancellation in the background
+    try {
+      // Flag current sosId in sessionStorage too (belt-and-suspenders)
+      if (sosId) sessionStorage.setItem(`ignore_sos_${sosId}`, 'true');
+      // Bulk-cancel every active/countdown SOS doc for this user
+      const cancelledIds = await cancelAllActiveSosForUser(uid);
+      cancelledIds.forEach(id => sessionStorage.setItem(`ignore_sos_${id}`, 'true'));
+    } catch (e) {
+      console.warn('[SOS] Cancel sweep error (non-fatal):', e);
+    }
+  }, [sosId, uid, goHome]);
+
+  const cancelAlert = useCallback(() => {
+    showToast('Alert cancelled.');
+    void cancelAndClearAll();
+  }, [cancelAndClearAll, showToast]);
 
   const stopAlert = useCallback(() => {
-    isDoneRef.current = true;
-    if (sosId) {
-      sessionStorage.setItem(`ignore_sos_${sosId}`, 'true');
-      updateSosRequest(sosId, { status: 'cancelled' }).catch(console.warn);
-    }
-    goHome();
-  }, [sosId, goHome]);
+    void cancelAndClearAll();
+  }, [cancelAndClearAll]);
 
   const markSafe = useCallback(() => {
     isDoneRef.current = true;
@@ -433,9 +453,11 @@ export const SosPage = () => {
   }, [sosId, showToast]);
 
   const sendHelpNow = useCallback(() => {
+    console.log('[SOS] sendHelpNow clicked! isDone:', isDoneRef.current, 'created:', createdRef.current);
     if (isDoneRef.current || createdRef.current) return;
     createdRef.current = true;
     setCdown(0);
+    console.log('[SOS] calling createSosRef.current...');
     void createSosRef.current?.();
   }, []);
 
@@ -1210,7 +1232,6 @@ export const SosPage = () => {
               {/* ── Alert Sent summary (rich) ───────────────────────────── */}
               {(() => {
                 const contactCount = profile?.contacts?.length ?? 0;
-                const helperReachCount = contactedDisplay;
                 const incidentMeta = (() => {
                   const it = incidentType ?? null;
                   if (it === 'crash')   return { label: 'High Impact / Crash',  tint: '#ef4444', icon: <Car className="h-3 w-3" /> };
@@ -1289,21 +1310,31 @@ export const SosPage = () => {
                 <IncidentTimeline steps={timelineSteps} />
 
                 {uiPrimaryResponder && (
-                  <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 flex items-center justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-black text-white">Responder is on the way</div>
-                      <div className="text-[10px] font-black text-white/35 uppercase tracking-widest mt-2">ETA</div>
-                      <div className="text-3xl font-black text-white mt-0.5">
-                        {uiPrimaryResponder.etaSeconds ? formatEta(uiPrimaryResponder.etaSeconds) : '—'}
-                      </div>
-                      {uiPrimaryResponder.distanceMeters != null && (
-                        <div className="text-xs text-white/50 mt-1 font-semibold">
-                          {formatDistance(uiPrimaryResponder.distanceMeters)} away
+                  <>
+                    <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-black text-white">Responder is on the way</div>
+                        <div className="text-[10px] font-black text-white/35 uppercase tracking-widest mt-2">ETA</div>
+                        <div className="text-3xl font-black text-white mt-0.5">
+                          {uiPrimaryResponder.etaSeconds ? formatEta(uiPrimaryResponder.etaSeconds) : '—'}
                         </div>
-                      )}
+                        {uiPrimaryResponder.distanceMeters != null && (
+                          <div className="text-xs text-white/50 mt-1 font-semibold">
+                            {formatDistance(uiPrimaryResponder.distanceMeters)} away
+                          </div>
+                        )}
+                      </div>
+                      <Ambulance className="h-14 w-14 text-red-400/90 shrink-0" />
                     </div>
-                    <Ambulance className="h-14 w-14 text-red-400/90 shrink-0" />
-                  </div>
+
+                    <button
+                      onClick={() => setShowChat(true)}
+                      className="w-full mt-3 rounded-2xl py-4 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-black transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                    >
+                      <MessageSquare className="h-5 w-5" />
+                      Chat with {uiPrimaryResponder.helperName || 'Responder'}
+                    </button>
+                  </>
                 )}
 
                 {/* Live map */}
@@ -1739,6 +1770,19 @@ export const SosPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Chat Bridge Drawer */}
+      {showChat && sosId && (
+        <SosChatBridge
+          sosId={sosId}
+          currentUserId={uid}
+          currentUserName={profile?.name || 'Victim'}
+          currentUserRole="victim"
+          phoneToCall={primaryResponder?.helperBrief?.phone}
+          counterpartyName={primaryResponder?.helperName || 'Responder'}
+          onClose={() => setShowChat(false)}
+        />
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
-import { CheckCircle2, Circle, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { CheckCircle2, Clock } from 'lucide-react';
+
 
 export type TimelineStepStatus = 'completed' | 'active' | 'pending';
 
@@ -22,7 +22,7 @@ export function IncidentTimeline({ steps }: { steps: TimelineStep[] }) {
         {/* Vertical tracking line */}
         <div className="absolute left-[11px] top-2 bottom-4 w-0.5 bg-white/[0.05]" />
         
-        {steps.map((step, idx) => (
+        {steps.map((step) => (
           <div key={step.id} className="relative flex gap-4 items-start">
             {/* Status Icon */}
             <div className="relative z-10 bg-[#12131a] py-0.5">

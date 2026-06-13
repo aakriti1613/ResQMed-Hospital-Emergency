@@ -83,17 +83,7 @@ service cloud.firestore {
     // ⚡ Emergency: allow guest (unauthenticated) users to CREATE a panic SOS
     //    Victim must either be guest OR must match their own uid
     match /sosRequests/{requestId} {
-      // Allow anyone to create (needed for guest/panic mode emergency access)
-      allow create: if true;
-
-      // Victim full read, any signed-in helper can see active requests
-      allow read: if true;
-
-      // Updates: only victim themselves (or admin) can change status
-      allow update: if isSignedIn() && (
-        resource.data.victimId == uid()
-        || hasRole('admin')
-      );
+      allow read, create, update: if true;
       allow delete: if false;
     }
 
@@ -101,14 +91,14 @@ service cloud.firestore {
     // ⚡ Emergency: allow anyone to read/create assignments
     //    Helpers need to create, victims need to read who's coming. Both may be guest.
     match /sosAssignments/{assignmentId} {
-      allow create: if true;
-      allow read:   if true;
-      allow update: if isSignedIn() && (
-        resource.data.helperId == uid()
-        || resource.data.victimId == uid()
-        || hasRole('admin')
-      );
+      allow read, create, update: if true;
       allow delete: if false;
+    }
+
+    // SOS Chat Messages
+    // ⚡ Emergency: allow anyone to read/write chat messages (guests included)
+    match /sosMessages/{messageId} {
+      allow read, write: if true;
     }
 
     // Smart Helmet telemetry — one doc per user, written by the helmet's
@@ -125,27 +115,7 @@ service cloud.firestore {
     //    by hospitalId. Victim and helper can read alerts on their own request
     //    so the SOS UI shows "Helper has alerted St. Mary's Hospital".
     match /hospitalAlerts/{alertId} {
-      allow create: if isSignedIn()
-        && request.resource.data.helperId == uid()
-        && request.resource.data.requestId is string
-        && request.resource.data.hospitalId is string
-        && request.resource.data.hospitalName is string;
-
-      // Read: victim, helper, and hospital staff/admin all need to see it.
-      allow read: if isSignedIn() && (
-        resource.data.victimId == uid()
-        || resource.data.helperId == uid()
-        || hasRole('hospital_admin')
-        || hasRole('admin')
-      );
-
-      // Updates: helper can change status (cancel / arrived) and edit notes.
-      // Hospital admin can acknowledge.
-      allow update: if isSignedIn() && (
-        resource.data.helperId == uid()
-        || hasRole('hospital_admin')
-        || hasRole('admin')
-      );
+      allow read, create, update: if true;
       allow delete: if false;
     }
 

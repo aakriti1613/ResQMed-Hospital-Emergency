@@ -19,7 +19,6 @@ import {
   collection,
   doc,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
@@ -221,5 +220,34 @@ export function listenMyAlertForRequest(
       .filter((a) => a.helperId === helperId && a.status !== 'cancelled')
       .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))[0];
     cb(mine ?? null);
+  });
+}
+
+/** Live listener for all alerts sent to a specific hospital. */
+export function listenAlertsForHospital(
+  hospitalId: string,
+  cb: (items: HospitalAlert[]) => void,
+): () => void {
+  if (isDemoMode) {
+    const tick = () =>
+      cb(
+        loadDemo()
+          .filter((a) => a.hospitalId === hospitalId && a.status !== 'cancelled')
+          .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)),
+      );
+    tick();
+    const t = setInterval(tick, 1500);
+    return () => clearInterval(t);
+  }
+  const q = query(
+    collection(db, 'hospitalAlerts'),
+    where('hospitalId', '==', hospitalId)
+  );
+  return onSnapshot(q, (snap) => {
+    let docs = snap.docs.map((d) => mapAlert(d.id, d.data()));
+    // Filter status locally to avoid Firebase "in" query assertion bugs + composite index needs
+    docs = docs.filter(d => ['notified', 'acknowledged', 'arrived'].includes(d.status));
+    docs.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+    cb(docs);
   });
 }
