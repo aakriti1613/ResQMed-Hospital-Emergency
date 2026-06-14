@@ -14,7 +14,6 @@ import { MedicalIdPage } from './screens/app/MedicalIdPage';
 import { SafetyCirclePage } from './screens/app/SafetyCirclePage';
 import { TripsPage } from './screens/app/TripsPage';
 import { SafetyHubPage } from './screens/app/SafetyHubPage';
-import { TravelSafetyPage } from './screens/app/TravelSafetyPage';
 import { CareSpecialtiesPage } from './screens/app/care/CareSpecialtiesPage';
 import { CareDoctorsPage } from './screens/app/care/CareDoctorsPage';
 import { CareHospitalsPage } from './screens/app/care/CareHospitalsPage';
@@ -26,6 +25,12 @@ import { NotFoundPage } from './screens/NotFoundPage';
 import { RootLayout } from './shell/RootLayout';
 import { RouteErrorFallback } from './components/RouteErrorFallback';
 import { AnalyticsDashboardPage } from './screens/app/AnalyticsDashboardPage';
+import { HealthChallengesPage } from './screens/app/HealthChallengesPage';
+import { ChallengeEventPage } from './screens/app/ChallengeEventPage';
+import { ChallengeQuizPage } from './screens/app/ChallengeQuizPage';
+import { ChallengeScenarioPage } from './screens/app/ChallengeScenarioPage';
+import { CoinsPage } from './screens/app/CoinsPage';
+import { RequireAuth } from './auth/RequireAuth';
 
 export const router = createHashRouter([
   {
@@ -39,7 +44,7 @@ export const router = createHashRouter([
       { path: 'signup', element: <SignupPage /> },
 
       // ── Full-screen emergency (no shell, no nav)
-      { path: 'app/sos', element: <SosPage /> },
+      { path: 'app/sos', element: <RequireAuth><SosPage /></RequireAuth> },
       { path: 'admin', element: <AdminPanel /> },
 
       // ── Main app with bottom nav
@@ -69,7 +74,7 @@ export const router = createHashRouter([
           // ── Trips (demo)
           { path: 'trips', element: <TripsPage /> },
           { path: 'safety', element: <SafetyHubPage /> },
-          { path: 'travel-safety', element: <TravelSafetyPage /> },
+          { path: 'travel-safety', element: <Navigate to="/app/safety" replace /> },
 
           // ── Safety
           { path: 'medical-id', element: <MedicalIdPage /> },
@@ -77,6 +82,13 @@ export const router = createHashRouter([
 
           // ── Analytics
           { path: 'analytics', element: <AnalyticsDashboardPage /> },
+
+          // ── Health challenges & readiness (specific routes before :eventId)
+          { path: 'challenges', element: <HealthChallengesPage /> },
+          { path: 'challenges/:eventId/quiz', element: <ChallengeQuizPage /> },
+          { path: 'challenges/:eventId/scenario/:scenarioId', element: <ChallengeScenarioPage /> },
+          { path: 'challenges/:eventId', element: <ChallengeEventPage /> },
+          { path: 'points', element: <CoinsPage /> },
 
           // legacy redirects so old links don't 404
           { path: 'settings', element: <Navigate to="/app/profile" replace /> },

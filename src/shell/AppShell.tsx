@@ -5,7 +5,6 @@ import { useAuth } from '../auth/AuthProvider';
 import { listenCurrentSosRequest, type SosRequestDoc } from '../data/sos';
 import { useLiveLocationTracking } from '../hooks/useLiveLocationTracking';
 import { useTranslation } from 'react-i18next';
-import { GlobalTravelWatcher } from '../components/GlobalTravelWatcher';
 
 export const AppShell = () => {
   const { user } = useAuth();
@@ -31,7 +30,6 @@ export const AppShell = () => {
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] dark:bg-[#0a0b0f] light:bg-gray-50 flex flex-col">
-      <GlobalTravelWatcher />
       <main className="flex-1 overflow-y-auto pb-[88px]">
         <Outlet />
       </main>
@@ -53,7 +51,7 @@ export const AppShell = () => {
             id="btn-sos-fab"
             type="button"
             onClick={handleSos}
-            aria-label="Trigger SOS"
+            aria-label={t('nav.sosTrigger')}
             className="absolute left-1/2 -translate-x-1/2 -top-7 h-16 w-16 rounded-full flex flex-col items-center justify-center text-white shadow-[0_10px_30px_rgba(220,38,38,0.55)] active:scale-95 transition"
             style={{
               background: 'radial-gradient(circle at 30% 30%, #ef4444 0%, #dc2626 55%, #991b1b 100%)',
@@ -62,7 +60,7 @@ export const AppShell = () => {
           >
             <span className="absolute inset-0 rounded-full animate-ping bg-red-500/30 -z-10" />
             <Siren className="h-6 w-6" />
-            <span className="text-[9px] font-black tracking-widest leading-none mt-0.5">SOS</span>
+            <span className="text-[9px] font-black tracking-widest leading-none mt-0.5">{t('nav.sos')}</span>
           </button>
         </div>
       </nav>
