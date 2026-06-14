@@ -1,9 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, HardHat, MapPin, Clock, IndianRupee, ShieldCheck, CheckCircle2, BadgeCheck, Car,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { appBackPath, appFromQuery } from '../../lib/challengeNav';
 
 type HelmetDay = {
   dayLabel: string;
@@ -55,6 +56,9 @@ const HELPED_HISTORY: HelpTrip[] = [
 
 export const TripsPage = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = appBackPath(from);
   const [tab, setTab] = useState<'rides' | 'helped' | 'earned'>('rides');
 
   const stats = useMemo(() => {
@@ -75,7 +79,7 @@ export const TripsPage = () => {
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-6 pb-28 max-w-lg mx-auto w-full space-y-4">
       <button
         type="button"
-        onClick={() => nav(-1)}
+        onClick={() => nav(backPath)}
         className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition"
       >
         <ChevronLeft className="h-3.5 w-3.5" /> Back

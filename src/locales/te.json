@@ -5,6 +5,7 @@
     "safety": "భద్రత",
     "profile": "ప్రొఫైల్",
     "analytics": "విశ్లేషణలు",
+    "care": "సంరక్షణ",
     "sos": "SOS",
     "sosTrigger": "SOS ట్రిగ్గర్ చేయండి"
   },
@@ -30,7 +31,8 @@
     "iCanHelp": "నేను సహాయం చేయగలను",
     "iCanHelpDesc": "సమీప అత్యవసర పరిస్థితులకు స్పందించండి",
     "healthChallenges": "హెల్త్ డే ఛాలెంజ్లు",
-    "healthChallengesDesc": "క్వizzes & scenarios · Aarogya Points సంపాదించండి"
+    "healthChallengesDesc": "క్వizzes & scenarios · Aarogya Points సంపాదించండి",
+    "emergencyHelplines": "అత్యవసర హెల్ప్‌లైన్‌లు"
   },
   "location": {
     "connecting": "ఆటోమేటిక్‌గా కనెక్ట్ అవుతోంది...",
@@ -204,6 +206,8 @@
     "emergencyContactsNone": "పరిచయాలను జోడించండి",
     "crashMonitor": "క్రాష్ డిటెక్షన్ మానిటర్",
     "crashMonitorSub": "సెన్సార్ డయాగ్నోస్టిక్స్",
+    "analytics": "కార్యకలాపాలు & విశ్లేషణ",
+    "analyticsSub": "కమ్యూనిటీ గణాంకాలు & SOS ట్రెండ్‌లు",
     "location": "స్థానం",
     "locationSub": "అవసరమైనప్పుడు మాత్రమే ఉపయోగించబడుతుంది",
     "notifications": "నోటిఫికేషన్‌లు",
@@ -249,7 +253,20 @@
     "helplineWomen": "మహిళ",
     "healthDayLive": "🔴 హెల్త్ డే లైవ్",
     "healthDayChallenge": "హెల్త్ అవేర్‌నెస్ చాలెంజ్",
-    "healthDaySub": "క్విజ్‌లు + సందర్భాలు · పాయింట్లు"
+    "healthDaySub": "క్విజ్‌లు + సందర్భాలు · పాయింట్లు",
+    "moreServices": "మరిన్ని సేవలు",
+    "moreServicesHint": "హెల్మెట్, శీఘ్ర చర్యలు, పాయింట్లు & గణాంకాలు",
+    "shortcutCare": "డాక్టర్ బుక్",
+    "shortcutCareSub": "విభాగాలు & ఆసుపత్రులు",
+    "shortcutSafety": "భద్రతా కిట్",
+    "shortcutSafetySub": "మెడికల్ ID, వాల్ట్, సర్కిల్",
+    "shortcutProgress": "నా పురోగతి",
+    "shortcutProgressSub": "స్కోర్ · పాయింట్లు · చాలెంజ్‌లు",
+    "readinessShort": "సిద్ధత",
+    "helmetStatus": "హెల్మెట్",
+    "helmetNotPaired": "జత చేయలేదు",
+    "helmetLive": "కనెక్ట్",
+    "helmetOffline": "ఆఫ్‌లైన్"
   },
   "auth": {
     "enterPhone": "ఫోన్ నంబర్ నమోదు చేయండి",
@@ -418,5 +435,50 @@
     "awaitingHospital": "ఆసుపత్రి ఎంపిక కోసం వేచి...",
     "patientHandedOver": "రోగిని అప్పగించారు",
     "emergencyResolved": "అత్యవసరం పరిష్కరించబడింది"
+  },
+  "care": {
+    "eyebrow": "ఆసుపత్రి & సంరక్షణ",
+    "title": "సరైన డాక్టర్‌ను కనుగొనండి",
+    "subtitle": "విభాగం ఎంచుకోండి → సమీప ఆసుపత్రులు → ఒక నిమిషంలో బుక్ చేయండి.",
+    "searchPlaceholder": "ప్రత్యేకత శోధించండి (ఉదా. కార్డియాలజీ, దంత)",
+    "partnerHospital": "భాగస్వామి ఆసుపత్రి",
+    "bookableSub": "అన్ని విభాగాలు · 24×7 తెరిచి",
+    "myAppts": "నా అపాయింట్‌మెంట్లు",
+    "upcoming": "రాబోయే",
+    "vaultShort": "వాల్ట్",
+    "records": "రికార్డులు",
+    "quickVisit": "త్వరిత సందర్శన",
+    "general": "సాధారణ",
+    "browseDept": "విభాగం వారీగా చూడండి",
+    "deptCount": "{{visible}} / {{total}}",
+    "noDeptFound": "విభాగం కనుగొనబడలేదు",
+    "noDeptHint": "\"General\", \"Heart\" లేదా \"Skin\" ప్రయత్నించండి",
+    "mapTip": "మీకు సమీప ఆసుపత్రులు Google Maps నుండి వస్తాయి. భాగస్వామి Arogya Medicare బుకింగ్‌లను నిర్ధారిస్తుంది మరియు రికార్డులను Health Vault లో సేవ్ చేస్తుంది."
+  },
+  "readiness": {
+    "title": "ఎమర్జెన్సీ సిద్ధత",
+    "scoreTitle": "ఎమర్జెన్సీ సిద్ధత స్కోర్",
+    "improveHint": "ప్రొఫైల్, పరిచయాలు మరియు ఆరోగ్య సవాళ్లతో స్కోర్ మెరుగుపరచండి.",
+    "playChallenges": "మెరుగుపరచడానికి సవాళ్లు ఆడండి",
+    "fix": "సరిచేయి →"
+  },
+  "vault": {
+    "eyebrow": "హెల్త్ వాల్ట్",
+    "title": "మీ రికార్డులు",
+    "subtitle": "Prescriptions, lab reports & scans — సురక్షితంగా.",
+    "upload": "అప్‌లోడ్",
+    "loginPrompt": "రికార్డులు చూడటానికి మరియు అప్‌లోడ్ చేయడానికి లాగిన్ అవ్వండి.",
+    "loginLink": "లాగిన్ →"
+  },
+  "medicalId": {
+    "title": "మెడికల్ ID",
+    "subtitle": "మొదటి responders కు మాత్రమే కనిపిస్తుంది",
+    "showBig": "పెద్దగా చూపించు",
+    "ice": "అత్యవసర సమయంలో",
+    "addName": "ప్రొఫైల్‌లో పేరు జోడించండి",
+    "addDob": "పుట్టిన తేదీ జోడించండి"
+  },
+  "points": {
+    "title": "Arogya Points"
   }
 }

@@ -6,7 +6,7 @@ import { useTheme } from '../../app/ThemeContext';
 import { detectCrash, analyzeSeverityWithML, type SensorSample } from '../../features/sos/crashDetection';
 import {
   User, Phone, Droplets, Plus, Trash2, ShieldCheck,
-  Activity, ShieldAlert, MapPin, Bell, Moon, Sun, LogOut, ChevronRight,
+  Activity, ShieldAlert, MapPin, Bell, Moon, Sun, LogOut, ChevronRight, BarChart2,
   Pencil, Check, Home, Briefcase, Tag, CalendarDays, HeartPulse, Pill as PillIcon, Search,
   Trophy, Sparkles, Lock, Gift, Star, Award, Languages
 } from 'lucide-react';
@@ -304,7 +304,7 @@ export const ProfilePage = () => {
         onOpen={() => setSection('rewards')}
       />
 
-      <ReadinessScoreCard readiness={readiness} showFactors from="profile" />
+      <ReadinessScoreCard readiness={readiness} compact from="profile" />
 
       {/* ── Settings rows ── */}
       <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden divide-y divide-white/[0.04]">
@@ -351,6 +351,13 @@ export const ProfilePage = () => {
           label={t('settings.crashMonitor')}
           sub={t('settings.crashMonitorSub')}
           onClick={() => setSection('sensors')}
+          arrow
+        />
+        <SettingRow
+          icon={<BarChart2 className="h-4 w-4 text-sky-400" />}
+          label={t('settings.analytics')}
+          sub={t('settings.analyticsSub')}
+          onClick={() => nav('/app/analytics?from=profile')}
           arrow
         />
         <SettingRow

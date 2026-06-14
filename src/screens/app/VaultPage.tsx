@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  FolderHeart, Upload, File as FileIcon, AlertCircle, X,
+  FolderHeart, Upload, File as FileIcon, AlertCircle, X, ChevronLeft,
   FlaskConical, FileText, Activity, Pill, Camera, Search,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/AuthProvider';
+import { useTranslation } from 'react-i18next';
+import { appBackPath, appFromQuery } from '../../lib/challengeNav';
 import {
   createRecord, listenRecords, resolveFileUrls,
   type MedicalRecord, type RecordType,
@@ -22,6 +24,11 @@ const TYPE_META: Record<RecordType, { label: string; icon: React.ReactNode; tint
 const TYPES: RecordType[] = ['Prescription', 'LabReport', 'XRay', 'Imaging', 'Consultation'];
 
 export const VaultPage = () => {
+  const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = appBackPath(from);
+  const { t } = useTranslation();
   const { user, ready } = useAuth();
   const [items, setItems] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,22 +63,31 @@ export const VaultPage = () => {
 
   return (
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-8 pb-6 max-w-lg mx-auto w-full space-y-4">
+      {from && (
+        <button
+          type="button"
+          onClick={() => nav(backPath)}
+          className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition -mt-2"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> {t('common.back', { defaultValue: 'Back' })}
+        </button>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
             <FolderHeart className="h-4 w-4 text-pink-300" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-pink-300/80">Health Vault</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-pink-300/80">{t('vault.eyebrow')}</span>
           </div>
-          <h1 className="mt-1 text-2xl font-black text-white">Your records</h1>
-          <p className="mt-1 text-xs text-white/40">Prescriptions, lab reports and scans — kept safe.</p>
+          <h1 className="mt-1 text-2xl font-black text-white">{t('vault.title')}</h1>
+          <p className="mt-1 text-xs text-white/40">{t('vault.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowUpload(true)}
           className="h-10 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-black text-white transition active:scale-95"
           style={{ background: 'linear-gradient(135deg,#ec4899,#9d174d)', boxShadow: '0 0 20px rgba(236,72,153,0.35)' }}
         >
-          <Upload className="h-3.5 w-3.5" /> Upload
+          <Upload className="h-3.5 w-3.5" /> {t('vault.upload')}
         </button>
       </div>
 
@@ -80,8 +96,8 @@ export const VaultPage = () => {
         <div className="rounded-3xl border border-amber-500/20 bg-amber-500/[0.05] p-5 flex items-start gap-3">
           <AlertCircle className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
           <div className="text-xs text-amber-100/80">
-            Log in to see and upload your records.
-            <div className="mt-2"><Link to="/login" className="font-black underline underline-offset-2">Log in →</Link></div>
+            {t('vault.loginPrompt')}
+            <div className="mt-2"><Link to="/login" className="font-black underline underline-offset-2">{t('vault.loginLink')}</Link></div>
           </div>
         </div>
       )}

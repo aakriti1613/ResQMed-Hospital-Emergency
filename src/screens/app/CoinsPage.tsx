@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Award, TrendingUp, History, HeartPulse, Star, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { appBackPath, appFromQuery } from '../../lib/challengeNav';
 import { useAuth } from '../../auth/AuthProvider';
 import {
   listenUserPointsBalance,
@@ -22,6 +24,10 @@ const getTier = (pts: number) => POINT_TIERS.find(t => pts >= t.min && pts < t.m
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 export const CoinsPage = () => {
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = appBackPath(from === 'profile' ? 'profile' : 'home');
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState<PointLedgerEntry[]>([]);
@@ -45,10 +51,10 @@ export const CoinsPage = () => {
   return (
     <div className="flex flex-col items-center max-w-lg mx-auto w-full pb-12 space-y-4 px-4 pt-8">
       <div className="w-full flex items-center gap-3 mb-2">
-        <Link to="/app" className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60">
+        <Link to={backPath} className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-lg font-black text-white">Arogya Points</h1>
+        <h1 className="text-lg font-black text-white">{t('points.title')}</h1>
       </div>
 
       {/* Hero Balance Card */}

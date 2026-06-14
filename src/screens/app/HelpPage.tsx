@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   HandHeart, CheckCircle2, Clock, MapPin, Search, AlertTriangle, Car, Phone, Navigation,
-  Headphones, ShieldCheck, Building2, Heart, MessageSquare,
+  Headphones, ShieldCheck, Building2, Heart, MessageSquare, ChevronLeft,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/AuthProvider';
@@ -27,6 +27,7 @@ import { HospitalAlertPanel } from '../../components/HospitalAlertPanel';
 import type { SosSeverity } from '../../data/sos';
 import { SosChatBridge } from '../../components/ui/SosChatBridge';
 import { useTranslation } from 'react-i18next';
+import { appBackPath, appFromQuery } from '../../lib/challengeNav';
 
 type Tab = 'need-help' | 'leaderboard';
 type Sort = 'nearest' | 'urgent';
@@ -57,6 +58,9 @@ function timeAgo(ts: number) {
 export const HelpPage = () => {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = appBackPath(from);
   const { user, ready } = useAuth();
   const [tab, setTab] = useState<Tab>('need-help');
   const [sort, setSort] = useState<Sort>('nearest');
@@ -74,8 +78,8 @@ export const HelpPage = () => {
   // ── Redirect to login if user is not authenticated ──
   useEffect(() => {
     if (!ready) return;
-    if (!user) nav('/login?redirect=/app/help', { replace: true });
-  }, [ready, user, nav]);
+    if (!user) nav(`/login?redirect=${encodeURIComponent(`/app/help${from ? `?from=${from}` : ''}`)}`, { replace: true });
+  }, [ready, user, nav, from]);
 
   // Use the authenticated user's ID
   const helperUid = user?.uid ?? '';
@@ -260,6 +264,15 @@ export const HelpPage = () => {
 
       {/* Header */}
       <div className="px-4 pt-10 pb-3">
+        {from && (
+          <button
+            type="button"
+            onClick={() => nav(backPath)}
+            className="mb-3 flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" /> {t('common.back', { defaultValue: 'Back' })}
+          </button>
+        )}
         <div className="flex items-center gap-3 mb-5">
           <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0"
             style={{ background: 'linear-gradient(135deg,#1d4ed8,#1e3a8a)', boxShadow: '0 0 20px rgba(29,78,216,0.3)' }}>
@@ -271,7 +284,7 @@ export const HelpPage = () => {
           </div>
           <button
             type="button"
-            onClick={() => nav('/app/trips')}
+            onClick={() => nav('/app/trips?from=help')}
             className="h-10 px-3 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition active:scale-95 flex items-center gap-2 text-[11px] font-black text-white/70 shrink-0"
           >
             <Car className="h-4 w-4 text-amber-300" /> {t('help.trips')}

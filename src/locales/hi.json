@@ -5,6 +5,7 @@
     "safety": "सुरक्षा",
     "profile": "प्रोफ़ाइल",
     "analytics": "एनालिटिक्स",
+    "care": "देखभाल",
     "sos": "SOS",
     "sosTrigger": "SOS ट्रिगर करें"
   },
@@ -30,7 +31,8 @@
     "iCanHelp": "मैं मदद कर सकता/सकती हूँ",
     "iCanHelpDesc": "आस-पास की आपात स्थितियों में मदद करें",
     "healthChallenges": "हेल्थ डे चैलेंज",
-    "healthChallengesDesc": "क्विज़ और परिदृश्य · आरोग्य अंक कमाएँ"
+    "healthChallengesDesc": "क्विज़ और परिदृश्य · आरोग्य अंक कमाएँ",
+    "emergencyHelplines": "आपातकालीन हेल्पलाइन"
   },
   "location": {
     "connecting": "स्वचालित रूप से कनेक्ट हो रहा है...",
@@ -204,6 +206,8 @@
     "emergencyContactsNone": "संपर्क जोड़ें",
     "crashMonitor": "क्रैश डिटेक्शन मॉनिटर",
     "crashMonitorSub": "सेंसर डायग्नोस्टिक्स",
+    "analytics": "गतिविधि और एनालिटिक्स",
+    "analyticsSub": "सामुदायिक आँकड़े और SOS रुझान",
     "location": "स्थान",
     "locationSub": "केवल आवश्यकता होने पर उपयोग किया जाता है",
     "notifications": "सूचनाएं",
@@ -249,7 +253,20 @@
     "helplineWomen": "महिला",
     "healthDayLive": "🔴 हेल्थ डे लाइव",
     "healthDayChallenge": "हेल्थ अवेयरनेस चैलेंज",
-    "healthDaySub": "क्विज़ + परिदृश्य · अंक कमाएँ"
+    "healthDaySub": "क्विज़ + परिदृश्य · अंक कमाएँ",
+    "moreServices": "और सेवाएँ",
+    "moreServicesHint": "हेलमेट, त्वरित कार्रवाइयाँ, अंक और आँकड़े",
+    "shortcutCare": "डॉक्टर बुक करें",
+    "shortcutCareSub": "विभाग और अस्पताल",
+    "shortcutSafety": "सुरक्षा टूलकिट",
+    "shortcutSafetySub": "मेडिकल ID, वॉल्ट, सर्कल",
+    "shortcutProgress": "मेरी प्रगति",
+    "shortcutProgressSub": "स्कोर · अंक · चैलेंज",
+    "readinessShort": "तैयारी",
+    "helmetStatus": "हेलमेट",
+    "helmetNotPaired": "जोड़ा नहीं",
+    "helmetLive": "कनेक्टेड",
+    "helmetOffline": "ऑफ़लाइन"
   },
   "auth": {
     "enterPhone": "फ़ोन नंबर दर्ज करें",
@@ -418,5 +435,50 @@
     "awaitingHospital": "अस्पताल चयन की प्रतीक्षा...",
     "patientHandedOver": "मरीज़ सौंपा गया",
     "emergencyResolved": "आपातकाल समाप्त"
+  },
+  "care": {
+    "eyebrow": "अस्पताल और देखभाल",
+    "title": "सही डॉक्टर खोजें",
+    "subtitle": "विभाग चुनें → पास के अस्पताल → एक मिनट में बुक करें।",
+    "searchPlaceholder": "विशेषता खोजें (जैसे हृदय, दंत)",
+    "partnerHospital": "साझेदार अस्पताल",
+    "bookableSub": "सभी विभाग · 24×7 खुला",
+    "myAppts": "मेरी अपॉइंटमेंट",
+    "upcoming": "आगामी",
+    "vaultShort": "वॉल्ट",
+    "records": "रिकॉर्ड",
+    "quickVisit": "त्वरित विज़िट",
+    "general": "सामान्य",
+    "browseDept": "विभाग के अनुसार देखें",
+    "deptCount": "{{visible}} / {{total}}",
+    "noDeptFound": "कोई विभाग नहीं मिला",
+    "noDeptHint": "\"सामान्य\", \"हृदय\" या \"त्वचा\" आज़माएँ",
+    "mapTip": "पास के अस्पताल Google Maps से आते हैं। साझेदार अस्पताल Arogya Medicare बुकिंग की पुष्टि करता है और रिकॉर्ड आपके Health Vault में सहेजता है।"
+  },
+  "readiness": {
+    "title": "आपातकालीन तैयारी",
+    "scoreTitle": "आपातकालीन तैयारी स्कोर",
+    "improveHint": "प्रोफ़ाइल, संपर्क और स्वास्थ्य चुनौतियों से स्कोर बढ़ाएँ।",
+    "playChallenges": "स्कोर बढ़ाने के लिए चुनौतियाँ खेलें",
+    "fix": "ठीक करें →"
+  },
+  "vault": {
+    "eyebrow": "हेल्थ वॉल्ट",
+    "title": "आपके रिकॉर्ड",
+    "subtitle": "नुस्खे, लैब रिपोर्ट और स्कैन — सुरक्षित।",
+    "upload": "अपलोड",
+    "loginPrompt": "रिकॉर्ड देखने और अपलोड करने के लिए लॉग इन करें।",
+    "loginLink": "लॉग इन →"
+  },
+  "medicalId": {
+    "title": "मेडिकल ID",
+    "subtitle": "केवल प्राथमिक responders को दिखाई देता है",
+    "showBig": "बड़ा दिखाएँ",
+    "ice": "आपात स्थिति में",
+    "addName": "प्रोफ़ाइल में नाम जोड़ें",
+    "addDob": "जन्म तिथि जोड़ें"
+  },
+  "points": {
+    "title": "Arogya Points"
   }
 }

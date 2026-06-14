@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Activity,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAnalytics } from '../../hooks/useAnalytics';
+import { appFromQuery } from '../../lib/challengeNav';
 
 // ── Utility helpers ──────────────────────────────────────────────────────────
 
@@ -224,6 +225,9 @@ const Section = ({ title, icon, children }: { title: string; icon: React.ReactNo
 
 export const AnalyticsDashboardPage = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = from === 'profile' ? '/app/profile' : '/app';
   const a = useAnalytics();
   const { t } = useTranslation();
 
@@ -233,7 +237,7 @@ export const AnalyticsDashboardPage = () => {
       <div className="sticky top-0 z-10 bg-[#0a0b0f]/95 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center gap-3">
         <button
           type="button"
-          onClick={() => nav(-1)}
+          onClick={() => nav(backPath)}
           className="h-9 w-9 rounded-xl border border-white/[0.08] bg-white/[0.04] flex items-center justify-center text-white/60 hover:bg-white/[0.08] transition shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />

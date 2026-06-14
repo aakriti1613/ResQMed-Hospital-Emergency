@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, ShieldCheck, Heart, Droplet, AlertTriangle, Pill, Phone, Maximize2, X,
   User, Cake, ChevronRight,
@@ -7,6 +7,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/AuthProvider';
 import { listenUserProfile, type UserProfile } from '../../data/user';
+import { useTranslation } from 'react-i18next';
+import { appBackPath, appFromQuery, withFromContext, type ChallengeFrom } from '../../lib/challengeNav';
 
 /**
  * Medical ID — a responder-facing summary of the user's vital health info.
@@ -19,14 +21,23 @@ import { listenUserProfile, type UserProfile } from '../../data/user';
  */
 export const MedicalIdPage = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = appFromQuery(searchParams.get('from'));
+  const backPath = appBackPath(from);
+  const circleFrom: ChallengeFrom | null =
+    from === 'safety' || from === 'home' || from === 'profile' ? from : null;
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [bigMode, setBigMode] = useState(false);
 
   useEffect(() => {
-    if (!user) { nav('/login?redirect=/app/medical-id'); return; }
+    if (!user) {
+      nav(`/login?redirect=${encodeURIComponent(`/app/medical-id${from ? `?from=${from}` : ''}`)}`);
+      return;
+    }
     return listenUserProfile(user.uid, setProfile);
-  }, [user, nav]);
+  }, [user, nav, from]);
 
   const ageFromDob = (dob?: string): number | null => {
     if (!dob) return null;
@@ -43,18 +54,18 @@ export const MedicalIdPage = () => {
     <div className="min-h-full bg-[#0a0b0f] max-w-lg mx-auto w-full pb-8">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-[#0a0b0f]/95 backdrop-blur border-b border-white/[0.05] px-4 py-3 flex items-center gap-3">
-        <button onClick={() => nav(-1)} className="h-9 w-9 rounded-full bg-white/[0.05] hover:bg-white/[0.10] flex items-center justify-center transition">
+        <button onClick={() => nav(backPath)} className="h-9 w-9 rounded-full bg-white/[0.05] hover:bg-white/[0.10] flex items-center justify-center transition">
           <ChevronLeft className="h-4 w-4 text-white/70" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-base font-black text-white truncate">Medical ID</h1>
-          <p className="text-[11px] text-white/45 truncate">Visible to first responders only</p>
+          <h1 className="text-base font-black text-white truncate">{t('medicalId.title')}</h1>
+          <p className="text-[11px] text-white/45 truncate">{t('medicalId.subtitle')}</p>
         </div>
         <button
           onClick={() => setBigMode(true)}
           className="h-9 px-3 rounded-full border border-white/15 bg-white/[0.05] hover:bg-white/[0.10] flex items-center gap-1.5 text-[11px] font-black text-white/80 transition active:scale-95"
         >
-          <Maximize2 className="h-3.5 w-3.5" /> Show big
+          <Maximize2 className="h-3.5 w-3.5" /> {t('medicalId.showBig')}
         </button>
       </div>
 
@@ -67,8 +78,8 @@ export const MedicalIdPage = () => {
             <ShieldCheck className="h-6 w-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest text-white/70">In case of emergency</div>
-            <div className="text-lg font-black text-white truncate">{profile?.name || 'Add your name in Profile'}</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-white/70">{t('medicalId.ice')}</div>
+            <div className="text-lg font-black text-white truncate">{profile?.name || t('medicalId.addName')}</div>
             <div className="text-[12px] text-white/75 mt-0.5">
               {age !== null ? `${age} yrs` : 'Add date of birth'}
               {profile?.gender ? ` · ${profile.gender}` : ''}
@@ -133,7 +144,7 @@ export const MedicalIdPage = () => {
           </a>
         ) : (
           <Link
-            to="/app/safety-circle?from=safety"
+            to={withFromContext('/app/safety-circle', circleFrom ?? 'safety')}
             className="flex items-center gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-3 hover:bg-white/[0.04] transition"
           >
             <div className="h-10 w-10 rounded-full bg-white/[0.05] flex items-center justify-center shrink-0">

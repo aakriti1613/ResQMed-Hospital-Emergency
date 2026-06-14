@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Shield, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import type { EmergencyReadinessResult } from '../data/readinessScore';
 import type { ChallengeFrom } from '../lib/challengeNav';
 import { challengesHref, withFromContext } from '../lib/challengeNav';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Props) => {
+  const { t } = useTranslation();
   const { score, grade, gradeColor, factors } = readiness;
   const pct = score;
 
@@ -30,7 +32,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Pr
             <span className="text-lg font-black text-white">{score}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest text-white/40">Emergency Readiness</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('readiness.title')}</div>
             <div className="text-sm font-black text-white">{grade}</div>
             <div className="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden">
               <div
@@ -61,7 +63,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Pr
               <Shield className="h-6 w-6" style={{ color: gradeColor }} />
             </div>
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/40">Emergency Readiness Score</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('readiness.scoreTitle')}</div>
               <div className="text-xl font-black text-white">{grade}</div>
             </div>
           </div>
@@ -81,7 +83,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Pr
           />
         </div>
         <p className="text-[11px] text-white/45 mb-4">
-          Improve your score by completing profile, contacts, and health challenges.
+          {t('readiness.improveHint')}
         </p>
 
         {showFactors && (
@@ -98,7 +100,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Pr
                     to={withFromContext(f.actionPath, from ?? undefined)}
                     className="text-[10px] font-black text-sky-300 shrink-0 hover:text-sky-200"
                   >
-                    Fix →
+                    {t('readiness.fix')}
                   </Link>
                 )}
               </div>
@@ -110,7 +112,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Pr
           to={challengesHref(from ?? undefined)}
           className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] py-3 text-xs font-black text-white/70 hover:bg-white/[0.08] transition"
         >
-          <TrendingUp className="h-4 w-4" /> Play health challenges to improve
+          <TrendingUp className="h-4 w-4" /> {t('readiness.playChallenges')}
         </Link>
       </div>
     </div>

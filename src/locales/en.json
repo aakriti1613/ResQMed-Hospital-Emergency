@@ -5,6 +5,7 @@
     "safety": "Safety",
     "profile": "Profile",
     "analytics": "Analytics",
+    "care": "Care",
     "sos": "SOS",
     "sosTrigger": "Trigger SOS"
   },
@@ -30,7 +31,8 @@
     "iCanHelp": "I Can Help",
     "iCanHelpDesc": "Respond to nearby emergencies",
     "healthChallenges": "Health Day Challenges",
-    "healthChallengesDesc": "Quizzes & scenarios · earn Aarogya Points"
+    "healthChallengesDesc": "Quizzes & scenarios · earn Aarogya Points",
+    "emergencyHelplines": "Emergency helplines"
   },
   "location": {
     "connecting": "Automatically connecting...",
@@ -204,6 +206,8 @@
     "emergencyContactsNone": "Add contacts",
     "crashMonitor": "Crash Detection Monitor",
     "crashMonitorSub": "Sensor diagnostics",
+    "analytics": "Activity & Analytics",
+    "analyticsSub": "Community stats & SOS trends",
     "location": "Location",
     "locationSub": "Used only when needed",
     "notifications": "Notifications",
@@ -249,7 +253,20 @@
     "helplineWomen": "Women",
     "healthDayLive": "🔴 Health Day Live",
     "healthDayChallenge": "Health Awareness Challenge",
-    "healthDaySub": "Quiz + scenarios · earn points"
+    "healthDaySub": "Quiz + scenarios · earn points",
+    "moreServices": "More services",
+    "moreServicesHint": "Helmet details, quick actions, points & stats",
+    "shortcutCare": "Book doctor",
+    "shortcutCareSub": "Departments & hospitals",
+    "shortcutSafety": "Safety toolkit",
+    "shortcutSafetySub": "Medical ID, vault, circle",
+    "shortcutProgress": "My progress",
+    "shortcutProgressSub": "Score · points · challenges",
+    "readinessShort": "Readiness",
+    "helmetStatus": "Helmet",
+    "helmetNotPaired": "Not paired",
+    "helmetLive": "Connected",
+    "helmetOffline": "Offline"
   },
   "auth": {
     "enterPhone": "Enter phone number",
@@ -418,5 +435,50 @@
     "awaitingHospital": "Awaiting hospital selection...",
     "patientHandedOver": "Patient Handed Over",
     "emergencyResolved": "Emergency resolved"
+  },
+  "care": {
+    "eyebrow": "Hospital & Care",
+    "title": "Find the right doctor",
+    "subtitle": "Pick a department → nearby hospitals → book in under a minute.",
+    "searchPlaceholder": "Search specialty (e.g. Cardiology, Dental)",
+    "partnerHospital": "Partner Hospital",
+    "bookableSub": "All departments · Open 24×7",
+    "myAppts": "My appts",
+    "upcoming": "Upcoming",
+    "vaultShort": "Vault",
+    "records": "Records",
+    "quickVisit": "Quick visit",
+    "general": "General",
+    "browseDept": "Browse by Department",
+    "deptCount": "{{visible}} of {{total}}",
+    "noDeptFound": "No department found",
+    "noDeptHint": "Try \"General\", \"Heart\" or \"Skin\"",
+    "mapTip": "Hospitals near you come from Google Maps. Partner hospital Arogya Medicare confirms bookings and saves records to your Health Vault."
+  },
+  "readiness": {
+    "title": "Emergency Readiness",
+    "scoreTitle": "Emergency Readiness Score",
+    "improveHint": "Improve your score with profile, contacts, and health challenges.",
+    "playChallenges": "Play health challenges to improve",
+    "fix": "Fix →"
+  },
+  "vault": {
+    "eyebrow": "Health Vault",
+    "title": "Your records",
+    "subtitle": "Prescriptions, lab reports and scans — kept safe.",
+    "upload": "Upload",
+    "loginPrompt": "Log in to see and upload your records.",
+    "loginLink": "Log in →"
+  },
+  "medicalId": {
+    "title": "Medical ID",
+    "subtitle": "Visible to first responders only",
+    "showBig": "Show big",
+    "ice": "In case of emergency",
+    "addName": "Add your name in Profile",
+    "addDob": "Add date of birth"
+  },
+  "points": {
+    "title": "Arogya Points"
   }
 }

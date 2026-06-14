@@ -1181,7 +1181,7 @@ export const SosPage = () => {
                   </p>
 
                   <Link
-                    to="/app/medical-id"
+                    to="/app/medical-id?from=sos"
                     className="mt-6 block w-full rounded-2xl border border-white/[0.08] bg-white/[0.05] py-4 text-sm font-black text-white hover:bg-white/[0.08] transition"
                   >
                     Show Medical ID

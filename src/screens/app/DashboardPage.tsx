@@ -2,12 +2,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
-  ChevronRight, Clock, Trophy, Mic,
+  ChevronRight, ChevronDown, Clock, Trophy, Mic,
   Users, HardHat, BatteryFull, BatteryLow, BatteryWarning, Wifi, WifiOff, ShieldCheck,
-  Bell, Siren, Share2,
+  Bell, Siren, Share2, Stethoscope, Shield, TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
-import { DEPARTMENTS, SHOWCASE_HOSPITAL, getDepartment } from '../../data/hospitals';
+import { getDepartment } from '../../data/hospitals';
 import { listenUpcomingAppointments, type Appointment } from '../../data/appointments';
 import { listenUserProfile, type UserProfile } from '../../data/user';
 import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice } from '../../data/helmet';
@@ -15,8 +15,6 @@ import { useSharedLocation } from '../../hooks/useSharedLocation';
 import { useVoiceSos } from '../../hooks/useVoiceSos';
 import { useTranslation } from 'react-i18next';
 import { useEmergencyReadiness } from '../../hooks/useEmergencyReadiness';
-import { ReadinessScoreCard } from '../../components/ReadinessScoreCard';
-import { getFeaturedEvent, isEventActive } from '../../data/healthAwareness';
 
 const HELMET_HELP_SEC = 10;
 
@@ -25,14 +23,13 @@ export const DashboardPage = () => {
   const { user } = useAuth();
   const nav = useNavigate();
   const { readiness } = useEmergencyReadiness();
-  const featuredHealthDay = getFeaturedEvent();
-  const healthDayLive = isEventActive(featuredHealthDay);
   const { currentLocation } = useSharedLocation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   const [upcoming, setUpcoming] = useState<Appointment[]>([]);
   const [points, setPoints] = useState(0);
   const [helmet, setHelmet] = useState<HelmetDevice | null>(null);
+  const [showMore, setShowMore] = useState(false);
 
   const { isListening: isVoiceListening, toggleListening: toggleVoiceSos, isSupported: isVoiceSupported } = useVoiceSos(() => {
     nav(`/app/sos?from=${encodeURIComponent('/app')}`);
@@ -85,9 +82,16 @@ export const DashboardPage = () => {
     }
   }, [currentLocation, nav]);
 
+  const helmetLive = helmet ? isHelmetLive(helmet) : false;
+  const helmetLabel = !helmet
+    ? t('dashboard.helmetNotPaired')
+    : helmetLive
+      ? t('dashboard.helmetLive')
+      : t('dashboard.helmetOffline');
+
   return (
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-6 pb-4 max-w-lg mx-auto w-full space-y-4">
-      {/* Helmet One — top bar */}
+      {/* ── Zone 1: Header + compact status ── */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <div className="h-10 w-10 rounded-2xl bg-amber-400/90 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(251,191,36,0.35)]">
@@ -107,36 +111,40 @@ export const DashboardPage = () => {
         </button>
       </div>
 
-      {/* Emergency Readiness Score */}
-      <ReadinessScoreCard readiness={readiness} compact from="home" />
-
-      {/* Health Day mini-games banner */}
-      <Link
-        to={`/app/challenges/${featuredHealthDay.id}?from=home`}
-        className="block rounded-3xl border border-white/[0.08] p-4 relative overflow-hidden hover:border-white/15 transition active:scale-[0.99]"
-        style={{ background: featuredHealthDay.gradient }}
-      >
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative flex items-center gap-3">
-          <span className="text-3xl shrink-0">{featuredHealthDay.emoji}</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest text-white/70">
-              {healthDayLive ? t('dashboard.healthDayLive') : t('dashboard.healthDayChallenge')}
-            </div>
-            <div className="text-sm font-black text-white truncate">{featuredHealthDay.name}</div>
-            <div className="text-[11px] text-white/75 mt-0.5">{t('dashboard.healthDaySub')}</div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="flex items-center gap-2.5 rounded-2xl border border-white/[0.06] bg-[#13141a] px-3 py-2.5 text-left hover:border-white/12 transition active:scale-[0.99]"
+        >
+          <span className={`h-2 w-2 rounded-full shrink-0 ${helmetLive ? 'bg-emerald-400 animate-pulse' : helmet ? 'bg-amber-400' : 'bg-white/25'}`} />
+          <div className="min-w-0 flex-1">
+            <div className="text-[9px] font-bold text-white/35 uppercase tracking-wider">{t('dashboard.helmetStatus')}</div>
+            <div className="text-xs font-black text-white truncate">{helmetLabel}</div>
           </div>
-          <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
-        </div>
-      </Link>
+        </button>
+        <Link
+          to="/app/challenges?from=home"
+          className="flex items-center gap-2.5 rounded-2xl border border-white/[0.06] bg-[#13141a] px-3 py-2.5 hover:border-white/12 transition active:scale-[0.99]"
+        >
+          <div
+            className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-black text-white"
+            style={{ background: `${readiness.gradeColor}22`, border: `1.5px solid ${readiness.gradeColor}55` }}
+          >
+            {readiness.score}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[9px] font-bold text-white/35 uppercase tracking-wider">{t('dashboard.readinessShort')}</div>
+            <div className="text-xs font-black text-white truncate">{readiness.grade}</div>
+          </div>
+        </Link>
+      </div>
 
-      {/* Smart Helmet status card — primary device hero */}
-      <HelmetCard helmet={helmet} uid={user?.uid} />
-
-      {/* Emergency SOS — Helmet One card */}
+      {/* ── Zone 2: Primary SOS ── */}
       <div className="rounded-3xl border-2 border-red-500/40 bg-[#12131a] p-5 shadow-[0_0_32px_rgba(220,38,38,0.12)]">
         <p className="text-sm font-bold text-white/80 text-center leading-snug">
-          {t('dashboard.emergencyText1')} <span className="text-red-400 font-black">{t('dashboard.emergencyText2', { seconds: HELMET_HELP_SEC })}</span>
+          {t('dashboard.emergencyText1')}{' '}
+          <span className="text-red-400 font-black">{t('dashboard.emergencyText2', { seconds: HELMET_HELP_SEC })}</span>
         </p>
         <button
           type="button"
@@ -147,28 +155,27 @@ export const DashboardPage = () => {
           <Siren className="h-5 w-5" />
           {t('dashboard.requestHelp')}
         </button>
-
         {isVoiceSupported && (
           <button
             type="button"
             onClick={toggleVoiceSos}
-            className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold transition border ${
+            className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-[11px] font-bold transition border ${
               isVoiceListening
-                ? 'bg-blue-500/20 border-blue-500/40 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+                ? 'bg-blue-500/20 border-blue-500/40 text-blue-300'
+                : 'bg-transparent border-transparent text-white/45 hover:text-white/65'
             }`}
           >
             {isVoiceListening ? (
               <>
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                 </span>
                 {t('dashboard.listeningVoice')}
               </>
             ) : (
               <>
-                <Mic className="h-4 w-4" />
+                <Mic className="h-3.5 w-3.5" />
                 {t('dashboard.enableVoice')}
               </>
             )}
@@ -176,164 +183,141 @@ export const DashboardPage = () => {
         )}
       </div>
 
-      {/* Helmet health strip */}
-      <div className="rounded-3xl border border-emerald-500/25 bg-emerald-500/[0.07] px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <ShieldCheck className="h-5 w-5 text-emerald-300 shrink-0" />
-          <div className="min-w-0">
-            <div className="text-xs font-black text-emerald-100">{t('dashboard.helmetWorking')}</div>
-            <div className="text-[10px] text-emerald-200/60 truncate">{t('dashboard.helmetSub')}</div>
-          </div>
-        </div>
-        {user?.uid && helmet && (
-          <Link to="/app/profile" className="text-[10px] font-black text-emerald-200 underline shrink-0">
-            {t('dashboard.verifyHelmet')}
-          </Link>
-        )}
+      {/* ── Zone 3: Three clear shortcuts ── */}
+      <div className="grid grid-cols-3 gap-2">
+        <ShortcutTile
+          to="/app/care"
+          icon={<Stethoscope className="h-5 w-5 text-emerald-300" />}
+          label={t('dashboard.shortcutCare')}
+          sub={t('dashboard.shortcutCareSub')}
+          tint="emerald"
+        />
+        <ShortcutTile
+          to="/app/safety"
+          icon={<Shield className="h-5 w-5 text-amber-300" />}
+          label={t('dashboard.shortcutSafety')}
+          sub={t('dashboard.shortcutSafetySub')}
+          tint="amber"
+        />
+        <ShortcutTile
+          to="/app/challenges?from=home"
+          icon={<TrendingUp className="h-5 w-5 text-violet-300" />}
+          label={t('dashboard.shortcutProgress')}
+          sub={t('dashboard.shortcutProgressSub')}
+          tint="violet"
+        />
       </div>
 
-      {/* Upcoming appointment (if any) */}
       {next && <UpcomingCard appt={next} />}
 
-      {/* Partner hospital call-out */}
-      <Link
-        to={`/app/care/hospital/${SHOWCASE_HOSPITAL.id}?dept=general`}
-        className="block rounded-3xl border border-white/[0.08] bg-[#13141a] p-4 relative overflow-hidden hover:border-white/15 transition"
-      >
-        <div className="absolute -top-14 -right-14 h-40 w-40 rounded-full opacity-25 blur-3xl pointer-events-none"
-          style={{ background: 'linear-gradient(135deg,#10b981,#0891b2)' }} />
-        <div className="relative flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
-            style={{ background: 'linear-gradient(135deg,#10b981,#0891b2)' }}>
-            🏥
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{t('dashboard.partnerHospital')}</div>
-            <div className="text-sm font-black text-white truncate">{SHOWCASE_HOSPITAL.name}</div>
-            <div className="text-[11px] text-white/45 truncate">{t('dashboard.bookable')}</div>
-          </div>
-          <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
-        </div>
-      </Link>
-
-      {/* Departments horizontal scroll */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('dashboard.browseDept')}</div>
-          <Link to="/app/care" className="text-[10px] font-bold text-sky-300 hover:text-sky-200">{t('dashboard.seeAll')}</Link>
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
-          {DEPARTMENTS.slice(0, 8).map((d) => (
-            <Link
-              key={d.id}
-              to={`/app/care/department/${d.id}`}
-              className="shrink-0 w-24 rounded-2xl border border-white/[0.06] bg-[#13141a] p-3 hover:border-white/15 transition"
-            >
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg" style={{ background: d.gradient }}>
-                {d.icon}
-              </div>
-              <div className="mt-2 text-[11px] font-black text-white truncate">{t(`departments.${d.id}.name`, { defaultValue: d.name })}</div>
-              <div className="text-[9px] text-white/35 truncate">{t(`departments.${d.id}.tagline`, { defaultValue: d.tagline })}</div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick actions — below hospital & more (Helmet One layout) */}
-      <div>
-        <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-2">{t('dashboard.quickActions')}</div>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => nav(`/app/sos?crash=1&from=${encodeURIComponent('/app')}`)}
-            className="rounded-3xl border border-amber-500/25 bg-amber-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
-          >
-            <div className="h-14 w-14 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">⚠️</div>
-            <span className="text-xs font-black text-amber-100">{t('dashboard.reportAccident')}</span>
-          </button>
-          <a
-            href="tel:108"
-            className="rounded-3xl border border-sky-500/25 bg-sky-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
-          >
-            <div className="h-14 w-14 rounded-full bg-sky-500/20 flex items-center justify-center text-2xl">🚑</div>
-            <span className="text-xs font-black text-sky-100">{t('dashboard.callAmbulance')}</span>
-          </a>
-          <button
-            type="button"
-            onClick={() => void shareLiveLocation()}
-            className="rounded-3xl border border-emerald-500/25 bg-emerald-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
-          >
-            <div className="h-14 w-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <Share2 className="h-6 w-6 text-emerald-300" />
-            </div>
-            <span className="text-xs font-black text-emerald-100">{t('dashboard.shareLocation')}</span>
-          </button>
-          <Link
-            to="/app/safety-circle?from=home"
-            className="rounded-3xl border border-violet-500/25 bg-violet-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
-          >
-            <div className="h-14 w-14 rounded-full bg-violet-500/20 flex items-center justify-center">
-              <Users className="h-6 w-6 text-violet-200" />
-            </div>
-            <span className="text-xs font-black text-violet-100">{t('dashboard.safetyCircle')}</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Community impact strip — Helmet One style metrics */}
-      <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-25 blur-3xl pointer-events-none"
-          style={{ background: 'linear-gradient(135deg,#0ea5e9,#22c55e)' }} />
-        <div className="relative">
-          <div className="flex items-center justify-between mb-2.5">
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-sky-300">{t('dashboard.ridingProtected')}</div>
-              <div className="text-sm font-black text-white">{t('dashboard.communityImpact')}</div>
-            </div>
+      {/* ── Expandable: all secondary features (same links as before) ── */}
+      <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowMore((v) => !v)}
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-white/[0.03] transition"
+        >
+          <div className="h-9 w-9 rounded-xl bg-white/[0.05] flex items-center justify-center shrink-0">
             <Sparkles className="h-4 w-4 text-sky-300" />
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <Stat n="16+" l={t('dashboard.accidentsReported')} />
-            <Stat n="2.9k+" l={t('dashboard.roadsideAssists')} />
-            <Stat n="7.4k+" l={t('dashboard.safeRides')} />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-black text-white">{t('dashboard.moreServices')}</div>
+            <div className="text-[10px] text-white/40 truncate">{t('dashboard.moreServicesHint')}</div>
           </div>
-        </div>
-      </div>
+          <ChevronDown className={`h-5 w-5 text-white/30 shrink-0 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+        </button>
 
-      {/* Arogya points preview */}
-      <Link
-        to="/app/points"
-        className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#13141a] p-3.5 hover:border-white/15 transition"
-      >
-        <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
-          <Trophy className="h-5 w-5 text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-black uppercase tracking-widest text-amber-300">{t('dashboard.arogyaPoints')}</div>
-          <div className="text-sm font-black text-white">{points.toLocaleString()} {t('dashboard.pts')}</div>
-        </div>
-        <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
-      </Link>
+        {showMore && (
+          <div className="px-4 pb-4 space-y-4 border-t border-white/[0.05] pt-4">
+            <HelmetCard helmet={helmet} uid={user?.uid} />
 
-      {/* Helpline strip (compact, no longer dominant) */}
-      <div className="grid grid-cols-4 gap-2">
-        {[
-          { num: '112', label: t('dashboard.helplineEmergency'), color: '#dc2626' },
-          { num: '108', label: t('dashboard.helplineAmbulance'), color: '#10b981' },
-          { num: '100', label: t('dashboard.helplinePolice'), color: '#3b82f6' },
-          { num: '1091', label: t('dashboard.helplineWomen'), color: '#a855f7' },
-        ].map((h) => (
-          <a key={h.num} href={`tel:${h.num}`}
-            className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.05] bg-white/[0.03] py-3 transition active:scale-95">
-            <span className="text-sm font-black" style={{ color: h.color }}>{h.num}</span>
-            <span className="text-[9px] text-white/30 font-semibold">{h.label}</span>
-          </a>
-        ))}
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/35 mb-2">{t('dashboard.quickActions')}</div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => nav(`/app/sos?crash=1&from=${encodeURIComponent('/app')}`)}
+                  className="rounded-2xl border border-amber-500/25 bg-amber-500/[0.08] p-3 flex flex-col items-center text-center gap-1.5 active:scale-[0.98] transition"
+                >
+                  <span className="text-xl">⚠️</span>
+                  <span className="text-[10px] font-black text-amber-100 leading-tight">{t('dashboard.reportAccident')}</span>
+                </button>
+                <a
+                  href="tel:108"
+                  className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.08] p-3 flex flex-col items-center text-center gap-1.5 active:scale-[0.98] transition"
+                >
+                  <span className="text-xl">🚑</span>
+                  <span className="text-[10px] font-black text-sky-100 leading-tight">{t('dashboard.callAmbulance')}</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => void shareLiveLocation()}
+                  className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.08] p-3 flex flex-col items-center text-center gap-1.5 active:scale-[0.98] transition"
+                >
+                  <Share2 className="h-5 w-5 text-emerald-300" />
+                  <span className="text-[10px] font-black text-emerald-100 leading-tight">{t('dashboard.shareLocation')}</span>
+                </button>
+                <Link
+                  to="/app/safety-circle?from=home"
+                  className="rounded-2xl border border-violet-500/25 bg-violet-500/[0.08] p-3 flex flex-col items-center text-center gap-1.5 active:scale-[0.98] transition"
+                >
+                  <Users className="h-5 w-5 text-violet-200" />
+                  <span className="text-[10px] font-black text-violet-100 leading-tight">{t('dashboard.safetyCircle')}</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-black text-white">{t('dashboard.communityImpact')}</div>
+                <Link to="/app/analytics?from=home" className="text-[10px] font-bold text-sky-300">{t('nav.analytics')} →</Link>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                <Stat n="16+" l={t('dashboard.accidentsReported')} />
+                <Stat n="2.9k+" l={t('dashboard.roadsideAssists')} />
+                <Stat n="7.4k+" l={t('dashboard.safeRides')} />
+              </div>
+            </div>
+
+            <Link
+              to="/app/points?from=home"
+              className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 hover:border-white/12 transition"
+            >
+              <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
+                <Trophy className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-300">{t('dashboard.arogyaPoints')}</div>
+                <div className="text-xs font-black text-white">{points.toLocaleString()} {t('dashboard.pts')}</div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-white/25 shrink-0" />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+const TINT_BORDER: Record<string, string> = {
+  emerald: 'border-emerald-500/20 bg-emerald-500/[0.06]',
+  amber: 'border-amber-500/20 bg-amber-500/[0.06]',
+  violet: 'border-violet-500/20 bg-violet-500/[0.06]',
+};
+
+const ShortcutTile = ({
+  to, icon, label, sub, tint,
+}: { to: string; icon: React.ReactNode; label: string; sub: string; tint: string }) => (
+  <Link
+    to={to}
+    className={`rounded-2xl border p-3 flex flex-col items-center text-center gap-1.5 hover:border-white/20 transition active:scale-[0.98] ${TINT_BORDER[tint] ?? TINT_BORDER.emerald}`}
+  >
+    <div className="h-10 w-10 rounded-xl bg-black/20 flex items-center justify-center">{icon}</div>
+    <span className="text-[11px] font-black text-white leading-tight">{label}</span>
+    <span className="text-[8px] text-white/40 leading-tight line-clamp-2">{sub}</span>
+  </Link>
+);
 
 const Stat = ({ n, l }: { n: string; l: string }) => (
   <div className="rounded-2xl bg-white/[0.03] border border-white/[0.04] py-2 px-1 text-center">
