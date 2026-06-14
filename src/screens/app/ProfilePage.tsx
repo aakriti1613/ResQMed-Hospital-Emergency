@@ -304,7 +304,7 @@ export const ProfilePage = () => {
         onOpen={() => setSection('rewards')}
       />
 
-      <ReadinessScoreCard readiness={readiness} showFactors />
+      <ReadinessScoreCard readiness={readiness} showFactors from="profile" />
 
       {/* ── Settings rows ── */}
       <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden divide-y divide-white/[0.04]">
@@ -343,7 +343,7 @@ export const ProfilePage = () => {
           icon={<ShieldCheck className="h-4 w-4 text-blue-400" />}
           label={t('settings.emergencyContacts')}
           sub={contacts.filter(c => c.name).length > 0 ? t('settings.emergencyContactsSub', { count: contacts.filter(c => c.name).length }) : t('settings.emergencyContactsNone')}
-          onClick={() => setSection('contacts')}
+          onClick={() => nav('/app/safety-circle?from=profile')}
           arrow
         />
         <SettingRow

@@ -133,7 +133,7 @@ export const MedicalIdPage = () => {
           </a>
         ) : (
           <Link
-            to="/app/safety-circle"
+            to="/app/safety-circle?from=safety"
             className="flex items-center gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-3 py-3 hover:bg-white/[0.04] transition"
           >
             <div className="h-10 w-10 rounded-full bg-white/[0.05] flex items-center justify-center shrink-0">

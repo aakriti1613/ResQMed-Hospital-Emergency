@@ -37,17 +37,16 @@ export const LocationSearchInput = ({ onSelect, placeholder = 'Search for a loca
           { headers: { 'Accept-Language': 'en' } }
         );
         const data = await res.json();
-        const formatted = data.map((d: any) => ({
-          lat: parseFloat(d.lat),
-          lon: parseFloat(d.lon),
-          displayName: d.display_name,
-        }));
-        setResults(formatted);
-        setOpen(formatted.length > 0);
-      } catch (e) {
-        console.error('[LocationSearchInput] fetch error:', e);
+        setResults(
+          data.map((d: any) => ({
+            lat: parseFloat(d.lat),
+            lon: parseFloat(d.lon),
+            displayName: d.display_name,
+          }))
+        );
+        setOpen(true);
+      } catch {
         setResults([]);
-        setOpen(false);
       } finally {
         setLoading(false);
       }

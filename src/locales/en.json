@@ -246,7 +246,10 @@
     "helplineEmergency": "Emergency",
     "helplineAmbulance": "Ambulance",
     "helplinePolice": "Police",
-    "helplineWomen": "Women"
+    "helplineWomen": "Women",
+    "healthDayLive": "🔴 Health Day Live",
+    "healthDayChallenge": "Health Awareness Challenge",
+    "healthDaySub": "Quiz + scenarios · earn points"
   },
   "auth": {
     "enterPhone": "Enter phone number",
@@ -370,5 +373,50 @@
     "footerBuilt": "Built with care",
     "footerApp": "App",
     "footerGetStarted": "Get started →"
+  },
+  "challenges": {
+    "title": "Health Challenges",
+    "subtitle": "Quizzes & scenarios · earn Aarogya Points",
+    "weekLive": "Health Awareness Week live!",
+    "weekLiveSub": "Bonus points on active health day events",
+    "liveNow": "🔴 Live now",
+    "upcomingIn": "Upcoming in {{days}} days",
+    "quizScenarios": "Quiz + Scenarios",
+    "allHealthDays": "All health days",
+    "live": "Live",
+    "inDays": "in {{days}}d",
+    "quizDone": "✓ Quiz",
+    "scenariosDone": "✓ {{count}} scenario(s)"
+  },
+  "departments": {
+    "general": { "name": "General Physician", "tagline": "Fever, flu, check-ups" },
+    "cardio": { "name": "Cardiology", "tagline": "Heart, BP & chest pain" },
+    "ortho": { "name": "Orthopedics", "tagline": "Bones, joints & injuries" },
+    "derma": { "name": "Dermatology", "tagline": "Skin, hair & nails" },
+    "neuro": { "name": "Neurology", "tagline": "Brain, nerves & headaches" },
+    "peds": { "name": "Pediatrics", "tagline": "Child health & vaccines" },
+    "ent": { "name": "ENT", "tagline": "Ear, nose & throat" },
+    "gyno": { "name": "Gynecology", "tagline": "Women's health" },
+    "dental": { "name": "Dental", "tagline": "Teeth & oral care" },
+    "psych": { "name": "Psychiatry", "tagline": "Mental health support" },
+    "eye": { "name": "Ophthalmology", "tagline": "Eyes & vision" },
+    "onco": { "name": "Oncology", "tagline": "Cancer care" }
+  },
+  "timeline": {
+    "title": "Live Incident Timeline",
+    "emergencyTriggered": "Emergency Triggered",
+    "nearbyAlertsSent": "Nearby Alerts Sent",
+    "respondersNotified": "{{count}} responders notified",
+    "responderAccepted": "Responder Accepted",
+    "respondersAssigned": "{{count}} responder(s) assigned",
+    "waitingResponder": "Waiting for responder...",
+    "ambulanceAssigned": "Ambulance Assigned",
+    "ambulanceDispatched": "Ambulance dispatched to location",
+    "assigningAmbulance": "Assigning ambulance...",
+    "hospitalNotified": "Hospital Notified",
+    "hospitalPreparing": "Emergency room is preparing",
+    "awaitingHospital": "Awaiting hospital selection...",
+    "patientHandedOver": "Patient Handed Over",
+    "emergencyResolved": "Emergency resolved"
   }
 }

@@ -246,7 +246,10 @@
     "helplineEmergency": "అత్యవసర",
     "helplineAmbulance": "అంబులెన్స్",
     "helplinePolice": "పోలీసు",
-    "helplineWomen": "మహిళ"
+    "helplineWomen": "మహిళ",
+    "healthDayLive": "🔴 హెల్త్ డే లైవ్",
+    "healthDayChallenge": "హెల్త్ అవేర్‌నెస్ చాలెంజ్",
+    "healthDaySub": "క్విజ్‌లు + సందర్భాలు · పాయింట్లు"
   },
   "auth": {
     "enterPhone": "ఫోన్ నంబర్ నమోదు చేయండి",
@@ -370,5 +373,50 @@
     "footerBuilt": "జాగ్రత్తతో నిర్మించబడింది",
     "footerApp": "యాప్",
     "footerGetStarted": "ప్రారంభించండి →"
+  },
+  "challenges": {
+    "title": "హెల్త్ చాలెంజ్‌లు",
+    "subtitle": "క్విజ్‌లు & సందర్భాలు · ఆరోగ్య పాయింట్లు",
+    "weekLive": "హెల్త్ అవేర్‌నెస్ వారం లైవ్!",
+    "weekLiveSub": "యాక్టివ్ హెల్త్ డే ఈవెంట్‌లపై బోనస్ పాయింట్లు",
+    "liveNow": "🔴 ఇప్పుడు లైవ్",
+    "upcomingIn": "{{days}} రోజుల్లో",
+    "quizScenarios": "క్విజ్ + సందర్భాలు",
+    "allHealthDays": "అన్ని హెల్త్ డేలు",
+    "live": "లైవ్",
+    "inDays": "{{days}} రోజుల్లో",
+    "quizDone": "✓ క్విజ్",
+    "scenariosDone": "✓ {{count}} సందర్భం(లు)"
+  },
+  "departments": {
+    "general": { "name": "జనరల్ ఫిజిషియన్", "tagline": "జ్వరం, ఫ్లూ, చెకప్" },
+    "cardio": { "name": "కార్డియాలజీ", "tagline": "గుండె, BP & ఛాతీ నొప్పి" },
+    "ortho": { "name": "ఆర్థోపెడిక్స్", "tagline": "ఎముకలు, కీళ్లు & గాయాలు" },
+    "derma": { "name": "చర్మవ్యాధి", "tagline": "చర్మం, జుట్టు & గోరు" },
+    "neuro": { "name": "న్యూరాలజీ", "tagline": "మెదడు, నerves & తలనొప్పి" },
+    "peds": { "name": "పీడియాట్రిక్స్", "tagline": "పిల్లల ఆరోగ్యం" },
+    "ent": { "name": "ENT", "tagline": "చెవి, ముక్కు & గొంతు" },
+    "gyno": { "name": "గైనకాలజీ", "tagline": "మహిళా ఆరోగ్యం" },
+    "dental": { "name": "దంత చికిత్స", "tagline": "పళ్ళు & నోటి సంరక్షణ" },
+    "psych": { "name": "మానసిక ఆరోగ్యం", "tagline": "మానసిక ఆరోగ్య మద్దతు" },
+    "eye": { "name": "నేత్ర చికిత్స", "tagline": "కళ్ళు & దృష్టి" },
+    "onco": { "name": "క్యాన్సర్ చికిత్స", "tagline": "క్యాన్సర్ సంరక్షణ" }
+  },
+  "timeline": {
+    "title": "లైవ్ సంఘటన కాలరేఖ",
+    "emergencyTriggered": "అత్యవసరం ట్రిగ్గర్",
+    "nearbyAlertsSent": "సమీప అలర్ట్‌లు పంపబడ్డాయి",
+    "respondersNotified": "{{count}} స్పందకులకు తెలియజేయబడింది",
+    "responderAccepted": "స్పందకుడు అంగీకరించాడు",
+    "respondersAssigned": "{{count}} స్పందకులు కేటాయించబడ్డారు",
+    "waitingResponder": "స్పందకుడి కోసం వేచి...",
+    "ambulanceAssigned": "అంబులెన్స్ కేటాయించబడింది",
+    "ambulanceDispatched": "అంబులెన్స్ పంపబడింది",
+    "assigningAmbulance": "అంబులెన్స్ కేటాయిస్తోంది...",
+    "hospitalNotified": "ఆసుపత్రికి తెలియజేయబడింది",
+    "hospitalPreparing": "ఎమర్జెన్సీ రూమ్ సిద్ధం",
+    "awaitingHospital": "ఆసుపత్రి ఎంపిక కోసం వేచి...",
+    "patientHandedOver": "రోగిని అప్పగించారు",
+    "emergencyResolved": "అత్యవసరం పరిష్కరించబడింది"
   }
 }

@@ -173,7 +173,7 @@ export const CoinsPage = () => {
           ))}
         </div>
         <Link
-          to="/app/challenges"
+          to="/app/challenges?from=home"
           className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl border border-violet-500/25 bg-violet-500/10 py-3 text-xs font-black text-violet-200 hover:bg-violet-500/15 transition"
         >
           Play Health Day Challenges →

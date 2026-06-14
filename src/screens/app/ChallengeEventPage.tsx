@@ -1,14 +1,18 @@
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Brain, CheckCircle2, HelpCircle, Play, Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getEventById, isEventActive } from '../../data/healthAwareness';
 import { getEventCompletion, isQuizCompleted, isScenarioCompleted } from '../../data/challengeProgress';
 import { useAuth } from '../../auth/AuthProvider';
 import { getChallengeUserId } from '../../lib/challengeUserId';
+import { challengeFromQuery, challengesHref, challengeQuerySuffix } from '../../lib/challengeNav';
 
 export const ChallengeEventPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const from = challengeFromQuery(searchParams.get('from'));
+  const q = challengeQuerySuffix(from);
   const [, setTick] = useState(0);
   const event = eventId ? getEventById(eventId) : undefined;
 
@@ -18,7 +22,7 @@ export const ChallengeEventPage = () => {
     return () => window.removeEventListener('arogya-challenge-progress', refresh);
   }, []);
 
-  if (!event) return <Navigate to="/app/challenges" replace />;
+  if (!event) return <Navigate to={challengesHref(from)} replace />;
 
   const challengeUid = getChallengeUserId(user?.uid);
   const completion = getEventCompletion(challengeUid, event.id);
@@ -29,7 +33,7 @@ export const ChallengeEventPage = () => {
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-8 pb-8 max-w-lg mx-auto w-full space-y-5">
       <div className="flex items-center gap-3">
         <Link
-          to="/app/challenges"
+          to={challengesHref(from)}
           className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60 hover:bg-white/[0.08] transition"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -82,7 +86,7 @@ export const ChallengeEventPage = () => {
           )}
         </div>
         <Link
-          to={`/app/challenges/${event.id}/quiz`}
+          to={`/app/challenges/${event.id}/quiz${q}`}
           className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-black text-white transition active:scale-[0.98]"
           style={{ background: event.gradient }}
         >
@@ -108,7 +112,7 @@ export const ChallengeEventPage = () => {
             return (
               <Link
                 key={scenario.id}
-                to={`/app/challenges/${event.id}/scenario/${scenario.id}`}
+                to={`/app/challenges/${event.id}/scenario/${scenario.id}${q}`}
                 className="flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-[#13141a] p-4 hover:border-cyan-500/25 transition active:scale-[0.99]"
               >
                 <div className="h-10 w-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-sm font-black text-cyan-300 shrink-0">

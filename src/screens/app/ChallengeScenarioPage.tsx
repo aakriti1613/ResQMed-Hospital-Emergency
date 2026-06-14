@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getEventById, isEventActive } from '../../data/healthAwareness';
 import { completeScenario, isScenarioCompleted } from '../../data/challengeProgress';
 import { useAuth } from '../../auth/AuthProvider';
 import { getChallengeUserId } from '../../lib/challengeUserId';
+import { challengeFromQuery, challengesHref, challengeEventHref } from '../../lib/challengeNav';
 
 export const ChallengeScenarioPage = () => {
   const { eventId, scenarioId } = useParams<{ eventId: string; scenarioId: string }>();
   const nav = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const from = challengeFromQuery(searchParams.get('from'));
   const event = eventId ? getEventById(eventId) : undefined;
   const scenario = event?.scenarios.find((s) => s.id === scenarioId);
 
@@ -20,7 +23,7 @@ export const ChallengeScenarioPage = () => {
   const [alreadyEarned, setAlreadyEarned] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  if (!event || !scenario) return <Navigate to="/app/challenges" replace />;
+  if (!event || !scenario) return <Navigate to={challengesHref(from)} replace />;
 
   const live = isEventActive(event);
   const pts = Math.round(scenario.points * (live ? 1.25 : 1));
@@ -74,7 +77,7 @@ export const ChallengeScenarioPage = () => {
                 <div className="text-xs text-white/50">Already completed — practice mode</div>
               ) : !user ? (
                 <div className="text-xs text-sky-300">
-                  <Link to={`/login?redirect=${encodeURIComponent(`/app/challenges/${event.id}`)}`} className="underline font-bold">
+                  <Link to={`/login?redirect=${encodeURIComponent(challengeEventHref(event.id, from))}`} className="underline font-bold">
                     Log in
                   </Link>{' '}
                   to earn points
@@ -96,13 +99,13 @@ export const ChallengeScenarioPage = () => {
 
         <div className="flex flex-col gap-3">
           <Link
-            to={`/app/challenges/${event.id}`}
+            to={challengeEventHref(event.id, from)}
             className="w-full rounded-2xl py-3.5 text-sm font-black text-white text-center"
             style={{ background: event.gradient }}
           >
             Back to {event.name}
           </Link>
-          <Link to="/app/challenges" className="text-center text-xs font-bold text-white/40 hover:text-white/60">
+          <Link to={challengesHref(from)} className="text-center text-xs font-bold text-white/40 hover:text-white/60">
             All health challenges
           </Link>
         </div>
@@ -115,7 +118,7 @@ export const ChallengeScenarioPage = () => {
       <div className="flex items-center gap-3 mb-5">
         <button
           type="button"
-          onClick={() => nav(`/app/challenges/${event.id}`)}
+          onClick={() => nav(challengeEventHref(event.id, from))}
           className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60"
         >
           <ArrowLeft className="h-5 w-5" />

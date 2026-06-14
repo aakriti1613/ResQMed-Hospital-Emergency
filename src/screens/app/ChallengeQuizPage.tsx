@@ -1,16 +1,19 @@
 import { useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, XCircle, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getEventById, isEventActive } from '../../data/healthAwareness';
 import { completeQuiz, isQuizCompleted } from '../../data/challengeProgress';
 import { useAuth } from '../../auth/AuthProvider';
 import { getChallengeUserId } from '../../lib/challengeUserId';
+import { challengeFromQuery, challengesHref, challengeEventHref } from '../../lib/challengeNav';
 
 export const ChallengeQuizPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const nav = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const from = challengeFromQuery(searchParams.get('from'));
   const event = eventId ? getEventById(eventId) : undefined;
 
   const [index, setIndex] = useState(0);
@@ -23,7 +26,7 @@ export const ChallengeQuizPage = () => {
   const [alreadyEarned, setAlreadyEarned] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  if (!event) return <Navigate to="/app/challenges" replace />;
+  if (!event) return <Navigate to={challengesHref(from)} replace />;
 
   const q = event.quiz[index];
   const isLast = index >= event.quiz.length - 1;
@@ -31,7 +34,7 @@ export const ChallengeQuizPage = () => {
   const basePoints = Math.round(event.quizPoints * (live ? 1.25 : 1));
   const challengeUid = getChallengeUserId(user?.uid);
 
-  if (!q) return <Navigate to={`/app/challenges/${event.id}`} replace />;
+  if (!q) return <Navigate to={challengeEventHref(event.id, from)} replace />;
 
   const handleSelect = (optIdx: number) => {
     if (selected !== null) return;
@@ -94,7 +97,7 @@ export const ChallengeQuizPage = () => {
           </div>
         ) : !user ? (
           <div className="mt-4 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sky-200 text-sm">
-            <Link to={`/login?redirect=${encodeURIComponent(`/app/challenges/${event.id}`)}`} className="font-black underline">
+            <Link to={`/login?redirect=${encodeURIComponent(challengeEventHref(event.id, from))}`} className="font-black underline">
               Log in
             </Link>{' '}
             to save Aarogya Points to your account.
@@ -103,13 +106,13 @@ export const ChallengeQuizPage = () => {
         <p className="mt-3 text-xs text-white/40">Your Emergency Readiness Score has been updated.</p>
         <div className="mt-8 flex flex-col gap-3 w-full">
           <Link
-            to={`/app/challenges/${event.id}`}
+            to={challengeEventHref(event.id, from)}
             className="w-full rounded-2xl py-3.5 text-sm font-black text-white text-center"
             style={{ background: event.gradient }}
           >
             Try Interactive Scenarios →
           </Link>
-          <Link to="/app/challenges" className="text-xs font-bold text-white/40 hover:text-white/60">
+          <Link to={challengesHref(from)} className="text-xs font-bold text-white/40 hover:text-white/60">
             Back to all challenges
           </Link>
         </div>
@@ -122,7 +125,7 @@ export const ChallengeQuizPage = () => {
       <div className="flex items-center gap-3 mb-6">
         <button
           type="button"
-          onClick={() => nav(`/app/challenges/${event.id}`)}
+          onClick={() => nav(challengeEventHref(event.id, from))}
           className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60"
         >
           <ArrowLeft className="h-5 w-5" />

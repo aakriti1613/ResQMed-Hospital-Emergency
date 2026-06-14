@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, Users, Phone, UserPlus, Trash2, Star, Pencil, X, ShieldCheck, Check,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../auth/AuthProvider';
 import { listenUserProfile, updateUserProfile, type UserProfile } from '../../data/user';
+import { challengeBackPath, challengeFromQuery } from '../../lib/challengeNav';
 
 type Contact = { name: string; phone: string; relation?: string };
 
@@ -19,6 +20,8 @@ const RELATION_PRESETS = ['Mother', 'Father', 'Sister', 'Brother', 'Spouse', 'Fr
  */
 export const SafetyCirclePage = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const from = challengeFromQuery(searchParams.get('from'));
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [adding, setAdding] = useState(false);
@@ -29,9 +32,13 @@ export const SafetyCirclePage = () => {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) { nav('/login?redirect=/app/safety-circle'); return; }
+    if (!user) {
+      const redirect = from ? `/app/safety-circle?from=${from}` : '/app/safety-circle';
+      nav(`/login?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
     return listenUserProfile(user.uid, setProfile);
-  }, [user, nav]);
+  }, [user, nav, from]);
 
   const contacts: Contact[] = useMemo(() => profile?.contacts ?? [], [profile?.contacts]);
 
@@ -127,7 +134,7 @@ export const SafetyCirclePage = () => {
 
       {/* Header */}
       <div className="sticky top-0 z-10 bg-[#0a0b0f]/95 backdrop-blur border-b border-white/[0.05] px-4 py-3 flex items-center gap-3">
-        <button onClick={() => nav(-1)} className="h-9 w-9 rounded-full bg-white/[0.05] hover:bg-white/[0.10] flex items-center justify-center transition">
+        <button onClick={() => nav(challengeBackPath(from))} className="h-9 w-9 rounded-full bg-white/[0.05] hover:bg-white/[0.10] flex items-center justify-center transition">
           <ChevronLeft className="h-4 w-4 text-white/70" />
         </button>
         <div className="flex-1 min-w-0">

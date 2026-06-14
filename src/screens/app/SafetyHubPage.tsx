@@ -6,9 +6,9 @@ export const SafetyHubPage = () => {
   const { t } = useTranslation();
 
   const rows = [
-    { to: '/app/challenges', titleKey: 'safety.healthChallenges', descKey: 'safety.healthChallengesDesc', icon: <Gamepad2 className="h-5 w-5 text-violet-300" />, tint: 'from-violet-500/20 to-violet-600/5' },
+    { to: '/app/challenges?from=safety', titleKey: 'safety.healthChallenges', descKey: 'safety.healthChallengesDesc', icon: <Gamepad2 className="h-5 w-5 text-violet-300" />, tint: 'from-violet-500/20 to-violet-600/5' },
     { to: '/app/medical-id', titleKey: 'safety.medicalId', descKey: 'safety.medicalIdDesc', icon: <Heart className="h-5 w-5 text-red-300" />, tint: 'from-red-500/20 to-red-600/5' },
-    { to: '/app/safety-circle', titleKey: 'safety.safetyCircle', descKey: 'safety.safetyCircleDesc', icon: <Users className="h-5 w-5 text-sky-300" />, tint: 'from-sky-500/20 to-sky-600/5' },
+    { to: '/app/safety-circle?from=safety', titleKey: 'safety.safetyCircle', descKey: 'safety.safetyCircleDesc', icon: <Users className="h-5 w-5 text-sky-300" />, tint: 'from-sky-500/20 to-sky-600/5' },
     { to: '/app/vault', titleKey: 'safety.healthVault', descKey: 'safety.healthVaultDesc', icon: <FolderHeart className="h-5 w-5 text-pink-300" />, tint: 'from-pink-500/20 to-pink-600/5' },
     { to: '/app/help', titleKey: 'safety.iCanHelp', descKey: 'safety.iCanHelpDesc', icon: <HandHeart className="h-5 w-5 text-emerald-300" />, tint: 'from-emerald-500/20 to-emerald-600/5' },
   ];

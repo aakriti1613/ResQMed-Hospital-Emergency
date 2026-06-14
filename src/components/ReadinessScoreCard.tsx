@@ -2,21 +2,24 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Shield, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { EmergencyReadinessResult } from '../data/readinessScore';
+import type { ChallengeFrom } from '../lib/challengeNav';
+import { challengesHref, withFromContext } from '../lib/challengeNav';
 
 type Props = {
   readiness: EmergencyReadinessResult;
   compact?: boolean;
   showFactors?: boolean;
+  from?: ChallengeFrom | null;
 };
 
-export const ReadinessScoreCard = ({ readiness, compact, showFactors }: Props) => {
+export const ReadinessScoreCard = ({ readiness, compact, showFactors, from }: Props) => {
   const { score, grade, gradeColor, factors } = readiness;
   const pct = score;
 
   if (compact) {
     return (
       <Link
-        to="/app/challenges"
+        to={challengesHref(from ?? undefined)}
         className="block rounded-3xl border border-white/[0.08] bg-[#13141a] p-4 hover:border-white/15 transition active:scale-[0.99]"
       >
         <div className="flex items-center gap-3">
@@ -92,7 +95,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors }: Props) =
                 </div>
                 {!f.complete && f.actionPath && (
                   <Link
-                    to={f.actionPath}
+                    to={withFromContext(f.actionPath, from ?? undefined)}
                     className="text-[10px] font-black text-sky-300 shrink-0 hover:text-sky-200"
                   >
                     Fix →
@@ -104,7 +107,7 @@ export const ReadinessScoreCard = ({ readiness, compact, showFactors }: Props) =
         )}
 
         <Link
-          to="/app/challenges"
+          to={challengesHref(from ?? undefined)}
           className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] py-3 text-xs font-black text-white/70 hover:bg-white/[0.08] transition"
         >
           <TrendingUp className="h-4 w-4" /> Play health challenges to improve

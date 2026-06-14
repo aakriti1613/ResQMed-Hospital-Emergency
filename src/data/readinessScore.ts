@@ -99,7 +99,7 @@ export function computeEmergencyReadiness(
       maxPoints: 25,
       earned: contactPts,
       complete: contactPts >= 18,
-      actionPath: '/app/profile',
+      actionPath: '/app/safety-circle',
       actionLabel: 'Add contacts',
     },
     {

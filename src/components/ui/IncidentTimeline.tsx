@@ -1,4 +1,5 @@
 import { CheckCircle2, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 
 export type TimelineStepStatus = 'completed' | 'active' | 'pending';
@@ -12,10 +13,11 @@ export interface TimelineStep {
 }
 
 export function IncidentTimeline({ steps }: { steps: TimelineStep[] }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-3xl border border-white/[0.05] bg-[#12131a] p-5">
       <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-5">
-        Live Incident Timeline
+        {t('timeline.title')}
       </h3>
       
       <div className="relative space-y-6">

@@ -108,11 +108,11 @@ export const DashboardPage = () => {
       </div>
 
       {/* Emergency Readiness Score */}
-      <ReadinessScoreCard readiness={readiness} compact />
+      <ReadinessScoreCard readiness={readiness} compact from="home" />
 
       {/* Health Day mini-games banner */}
       <Link
-        to={`/app/challenges/${featuredHealthDay.id}`}
+        to={`/app/challenges/${featuredHealthDay.id}?from=home`}
         className="block rounded-3xl border border-white/[0.08] p-4 relative overflow-hidden hover:border-white/15 transition active:scale-[0.99]"
         style={{ background: featuredHealthDay.gradient }}
       >
@@ -121,10 +121,10 @@ export const DashboardPage = () => {
           <span className="text-3xl shrink-0">{featuredHealthDay.emoji}</span>
           <div className="flex-1 min-w-0">
             <div className="text-[10px] font-black uppercase tracking-widest text-white/70">
-              {healthDayLive ? '🔴 Health Day Live' : 'Health Awareness Challenge'}
+              {healthDayLive ? t('dashboard.healthDayLive') : t('dashboard.healthDayChallenge')}
             </div>
             <div className="text-sm font-black text-white truncate">{featuredHealthDay.name}</div>
-            <div className="text-[11px] text-white/75 mt-0.5">Quiz + scenarios · earn points</div>
+            <div className="text-[11px] text-white/75 mt-0.5">{t('dashboard.healthDaySub')}</div>
           </div>
           <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
         </div>
@@ -232,8 +232,8 @@ export const DashboardPage = () => {
               <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg" style={{ background: d.gradient }}>
                 {d.icon}
               </div>
-              <div className="mt-2 text-[11px] font-black text-white truncate">{d.name}</div>
-              <div className="text-[9px] text-white/35 truncate">{d.tagline}</div>
+              <div className="mt-2 text-[11px] font-black text-white truncate">{t(`departments.${d.id}.name`, { defaultValue: d.name })}</div>
+              <div className="text-[9px] text-white/35 truncate">{t(`departments.${d.id}.tagline`, { defaultValue: d.tagline })}</div>
             </Link>
           ))}
         </div>
@@ -269,7 +269,7 @@ export const DashboardPage = () => {
             <span className="text-xs font-black text-emerald-100">{t('dashboard.shareLocation')}</span>
           </button>
           <Link
-            to="/app/safety-circle"
+            to="/app/safety-circle?from=home"
             className="rounded-3xl border border-violet-500/25 bg-violet-500/[0.08] p-4 flex flex-col items-center text-center gap-2 active:scale-[0.98] transition"
           >
             <div className="h-14 w-14 rounded-full bg-violet-500/20 flex items-center justify-center">

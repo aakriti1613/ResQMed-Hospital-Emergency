@@ -246,7 +246,10 @@
     "helplineEmergency": "आपातकाल",
     "helplineAmbulance": "एम्बुलेंस",
     "helplinePolice": "पुलिस",
-    "helplineWomen": "महिला"
+    "helplineWomen": "महिला",
+    "healthDayLive": "🔴 हेल्थ डे लाइव",
+    "healthDayChallenge": "हेल्थ अवेयरनेस चैलेंज",
+    "healthDaySub": "क्विज़ + परिदृश्य · अंक कमाएँ"
   },
   "auth": {
     "enterPhone": "फ़ोन नंबर दर्ज करें",
@@ -370,5 +373,50 @@
     "footerBuilt": "देखभाल के साथ बनाया गया",
     "footerApp": "ऐप",
     "footerGetStarted": "शुरू करें →"
+  },
+  "challenges": {
+    "title": "हेल्थ चैलेंज",
+    "subtitle": "क्विज़ और परिदृश्य · आरोग्य अंक कमाएँ",
+    "weekLive": "हेल्थ अवेयरनेस सप्ताह लाइव!",
+    "weekLiveSub": "सक्रिय हेल्थ डे इवेंट पर बोनस अंक",
+    "liveNow": "🔴 अभी लाइव",
+    "upcomingIn": "{{days}} दिनों में आ रहा है",
+    "quizScenarios": "क्विज़ + परिदृश्य",
+    "allHealthDays": "सभी हेल्थ डे",
+    "live": "लाइव",
+    "inDays": "{{days}} दिन में",
+    "quizDone": "✓ क्विज़",
+    "scenariosDone": "✓ {{count}} परिदृश्य"
+  },
+  "departments": {
+    "general": { "name": "सामान्य चिकित्सक", "tagline": "बुखार, फ्लू, जांच" },
+    "cardio": { "name": "हृदय रोग", "tagline": "दिल, BP और सीने में दर्द" },
+    "ortho": { "name": "हड्डी रोग", "tagline": "हड्डियाँ, जोड़ और चोट" },
+    "derma": { "name": "त्वचा रोग", "tagline": "त्वचा, बाल और नाखून" },
+    "neuro": { "name": "न्यूरोलॉजी", "tagline": "मस्तिष्क, नसें और सिरदर्द" },
+    "peds": { "name": "बाल रोग", "tagline": "बच्चों का स्वास्थ्य" },
+    "ent": { "name": "ईएनटी", "tagline": "कान, नाक और गला" },
+    "gyno": { "name": "स्त्री रोग", "tagline": "महिला स्वास्थ्य" },
+    "dental": { "name": "दंत चिकित्सा", "tagline": "दाँत और मुँह की देखभाल" },
+    "psych": { "name": "मनोचिकित्सा", "tagline": "मानसिक स्वास्थ्य सहायता" },
+    "eye": { "name": "नेत्र रोग", "tagline": "आँखें और दृष्टि" },
+    "onco": { "name": "कैंसर चिकित्सा", "tagline": "कैंसर देखभाल" }
+  },
+  "timeline": {
+    "title": "लाइव घटना समयरेखा",
+    "emergencyTriggered": "आपातकाल ट्रिगर",
+    "nearbyAlertsSent": "पास के अलर्ट भेजे",
+    "respondersNotified": "{{count}} सहायकों को सूचित",
+    "responderAccepted": "सहायक ने स्वीकार किया",
+    "respondersAssigned": "{{count}} सहायक असाइन",
+    "waitingResponder": "सहायक की प्रतीक्षा...",
+    "ambulanceAssigned": "एम्बुलेंस असाइन",
+    "ambulanceDispatched": "एम्बुलेंस स्थान पर भेजी",
+    "assigningAmbulance": "एम्बुलेंस असाइन हो रही...",
+    "hospitalNotified": "अस्पताल को सूचित",
+    "hospitalPreparing": "आपात कक्ष तैयार हो रहा",
+    "awaitingHospital": "अस्पताल चयन की प्रतीक्षा...",
+    "patientHandedOver": "मरीज़ सौंपा गया",
+    "emergencyResolved": "आपातकाल समाप्त"
   }
 }

@@ -509,20 +509,22 @@ export const SosPage = () => {
     const baseSteps: TimelineStep[] = [
       {
         id: '1',
-        label: 'Emergency Triggered',
+        label: t('timeline.emergencyTriggered'),
         status: 'completed',
-        time: 'Just now',
+        time: t('common.justNow'),
       },
       {
         id: '2',
-        label: 'Nearby Alerts Sent',
-        subLabel: `${contactedDisplay} responders notified`,
+        label: t('timeline.nearbyAlertsSent'),
+        subLabel: t('timeline.respondersNotified', { count: contactedDisplay }),
         status: 'completed',
       },
       {
         id: '3',
-        label: 'Responder Accepted',
-        subLabel: activeAssignments.length > 0 ? `${activeAssignments.length} responder(s) assigned` : 'Waiting for responder...',
+        label: t('timeline.responderAccepted'),
+        subLabel: activeAssignments.length > 0
+          ? t('timeline.respondersAssigned', { count: activeAssignments.length })
+          : t('timeline.waitingResponder'),
         status: activeAssignments.length > 0 ? 'completed' : 'active',
       }
     ];
@@ -540,26 +542,26 @@ export const SosPage = () => {
     finalSteps.push(
       {
         id: '4',
-        label: 'Ambulance Assigned',
-        subLabel: ambulanceAssigned ? 'Ambulance dispatched to location' : 'Assigning ambulance...',
+        label: t('timeline.ambulanceAssigned'),
+        subLabel: ambulanceAssigned ? t('timeline.ambulanceDispatched') : t('timeline.assigningAmbulance'),
         status: ambulanceAssigned ? 'completed' : 'active',
       },
       {
         id: '5',
-        label: 'Hospital Notified',
-        subLabel: isHospitalAlerted ? 'Emergency room is preparing' : 'Awaiting hospital selection...',
+        label: t('timeline.hospitalNotified'),
+        subLabel: isHospitalAlerted ? t('timeline.hospitalPreparing') : t('timeline.awaitingHospital'),
         status: isHospitalAlerted ? 'completed' : (ambulanceAssigned ? 'active' : 'pending'),
       },
       {
         id: '6',
-        label: 'Patient Handed Over',
-        subLabel: isResolved ? 'Emergency resolved' : undefined,
+        label: t('timeline.patientHandedOver'),
+        subLabel: isResolved ? t('timeline.emergencyResolved') : undefined,
         status: isResolved ? 'completed' : 'pending',
       }
     );
 
     return finalSteps;
-  }, [contactedDisplay, activeAssignments.length, ambulanceAssigned, hospitalAlerts, liveSosDoc?.status, timelineEvents]);
+  }, [t, contactedDisplay, activeAssignments.length, ambulanceAssigned, hospitalAlerts, liveSosDoc?.status, timelineEvents]);
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] flex flex-col overflow-hidden">
@@ -1290,84 +1292,6 @@ export const SosPage = () => {
                 </div>
               )}
 
-              {/* ── Alert Sent summary (rich) ───────────────────────────── */}
-              {(() => {
-                const contactCount = profile?.contacts?.length ?? 0;
-                const incidentMeta = (() => {
-                  const it = incidentType ?? null;
-                  if (it === 'crash')   return { label: 'High Impact / Crash',  tint: '#ef4444', icon: <Car className="h-3 w-3" /> };
-                  if (it === 'fall')    return { label: 'Vehicle Skid / Fall',  tint: '#f59e0b', icon: <Bandage className="h-3 w-3" /> };
-                  if (it === 'medical') return { label: 'Medical Emergency',    tint: '#ec4899', icon: <HeartPulse className="h-3 w-3" /> };
-                  if (it === 'other')   return { label: 'Other / Not Sure',     tint: '#6366f1', icon: <HelpCircle className="h-3 w-3" /> };
-                  return null;
-                })();
-                return (
-                  <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Alert Sent</div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-2 py-0.5">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        </span>
-                        <Mic className="h-2.5 w-2.5 text-emerald-300" />
-                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-300">audio on</span>
-                      </div>
-                    </div>
-
-                    {incidentMeta && (
-                      <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1"
-                        style={{ borderColor: `${incidentMeta.tint}55`, background: `${incidentMeta.tint}15`, color: incidentMeta.tint }}>
-                        {incidentMeta.icon}
-                        <span className="text-[10px] font-black uppercase tracking-wider">{incidentMeta.label}</span>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 gap-2">
-                      <AlertRow
-                        ok
-                        icon={<ShieldAlert className="h-4 w-4 text-red-300" />}
-                        title="Ambulance"
-                        meta="108 dispatched · ETA pending"
-                      />
-                      <AlertRow
-                        ok={contactCount > 0}
-                        icon={<Users className="h-4 w-4 text-blue-300" />}
-                        title="Emergency Contacts"
-                        meta={
-                          contactCount > 0
-                            ? `${contactCount} ${contactCount === 1 ? 'person' : 'people'} notified`
-                            : 'Add contacts in your Safety Circle'
-                        }
-                      />
-                      <AlertRow
-                        ok={!noLocationMode}
-                        icon={<Phone className="h-4 w-4 text-emerald-300" />}
-                        title={activeAssignments.length > 1 ? "Assigned responders" : "Assigned responder"}
-                        meta={
-                          noLocationMode
-                            ? 'Location required to broadcast'
-                            : activeAssignments.length > 0
-                              ? `${activeAssignments.length} ${activeAssignments.length === 1 ? 'responder is' : 'responders are'} assigned · details below`
-                              : 'Broadcasting within 5 km radius'
-                        }
-                      />
-                      <AlertRow
-                        ok={hospitalAlerts.filter((a) => a.status !== 'cancelled').length > 0}
-                        icon={<Hospital className="h-4 w-4 text-emerald-300" />}
-                        title="Hospital"
-                        meta={
-                          hospitalAlerts.filter((a) => a.status !== 'cancelled').length > 0
-                            ? `${hospitalAlerts.filter((a) => a.status !== 'cancelled').length} alerted by helper`
-                            : 'Helper will alert nearest hospital on arrival'
-                        }
-                      />
-                    </div>
-                  </div>
-                );
-                })()}
-
-                {/* Live Incident Timeline */}
                 <IncidentTimeline steps={timelineSteps} />
 
                 {uiPrimaryResponder && (
@@ -1906,33 +1830,3 @@ export const SosPage = () => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Compact "ambulance / contacts / helpers / hospital" status row used by the
-// rich Alert Sent summary inside the active phase.
-// ─────────────────────────────────────────────────────────────────────────────
-const AlertRow = ({
-  ok, icon, title, meta,
-}: {
-  ok: boolean;
-  icon: React.ReactNode;
-  title: string;
-  meta: string;
-}) => (
-  <div className={[
-    'flex items-center gap-3 rounded-2xl border px-3 py-2.5',
-    ok ? 'border-emerald-500/15 bg-emerald-500/[0.04]' : 'border-amber-500/20 bg-amber-500/[0.05]',
-  ].join(' ')}>
-    <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04]">
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="text-[12px] font-black text-white truncate">{title}</div>
-      <div className="text-[10px] text-white/50 truncate">{meta}</div>
-    </div>
-    {ok ? (
-      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-    ) : (
-      <span className="h-2 w-2 rounded-full bg-amber-400 shrink-0" />
-    )}
-  </div>
-);
