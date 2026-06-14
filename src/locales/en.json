@@ -159,8 +159,8 @@
     "hospitalAlerts": "Hospital Alerts",
     "totalSent": "total sent",
     "severityDist": "Severity Distribution",
-    "sosTrend": "SOS Trend — Last 7 Days",
-    "avgResponseTrend": "Avg Response Time — Last 7 Days",
+    "sosTrend": "SOS Trend. Last 7 Days",
+    "avgResponseTrend": "Avg Response Time. Last 7 Days",
     "responseMetrics": "Response Metrics",
     "networkAnalytics": "Network Analytics",
     "guardianLeaderboard": "Guardian Leaderboard",
@@ -313,12 +313,12 @@
   },
   "landing": {
     "getApp": "Get app",
-    "getAppTitle": "Download app — no login required",
+    "getAppTitle": "Download app. No login required",
     "login": "Log in",
     "signup": "Sign up →",
-    "liveBadge": "LIVE IN YOUR CITY",
-    "heroTitle": "When seconds matter, <1>smart help</1> is <2>already on the way</2>.",
-    "heroDesc": "Aarogya Raksha turns a bike crash into a coordinated rescue. A helmet-mounted ESP32 detects the impact, an AI model classifies severity using WHO/AHA-cited clinical thresholds, and nearby helpers, the closest hospital and your emergency contacts all see live location — at the same second.",
+    "liveBadge": "BUILD WITH AI · SOLUTION CHALLENGE 2026",
+    "heroTitle": "A bike crash.<3/>A <1>helmet that knows</1>.<3/>A hospital that's <2>already ready</2>.",
+    "heroDesc": "The helmet detects the impact in milliseconds. An AI model classifies severity using WHO/AHA-cited clinical thresholds. Nearby helpers, the closest hospital and your emergency contacts all see live location. At the same second.",
     "needHelp": "I need help now",
     "bookDoctor": "Book a doctor",
     "icanHelp": "I can help",
@@ -329,7 +329,7 @@
     "trustMaps": "Live Google Maps coordination",
     "pillarsEyebrow": "ONE PLATFORM. FOUR PORTALS.",
     "pillarsTitle": "Built for the moment between accident and ambulance.",
-    "pillarsDesc": "Aarogya Raksha doesn't just send an alert. It links the victim, the nearest helper, the closest hospital, and the on-call doctor into one live coordination loop — in English, हिन्दी and తెలుగు.",
+    "pillarsDesc": "Aarogya Raksha doesn't just send an alert. It links the victim, the nearest helper, the closest hospital, and the on-call doctor into one live coordination loop. In English, हिन्दी and తెలుగు.",
     "emergencyTitle": "Smart Helmet + Live SOS",
     "emergencySubtitle": "Hardware-triggered. AI-classified. Network-resilient.",
     "emergencyBullets": [
@@ -342,7 +342,7 @@
     "careTitle": "Hospital & Doctor Booking",
     "careSubtitle": "Routine care, never buried under the SOS button.",
     "careBullets": [
-      "12 specialties — Cardiology to Dental",
+      "12 specialties. Cardiology to Dental",
       "Nearby hospitals on Google Maps",
       "Reports & prescriptions in an encrypted Health Vault",
       "Available in English, हिन्दी and తెలుగు"
@@ -353,7 +353,7 @@
     "featureList": [
       {
         "title": "One-Tap SOS",
-        "desc": "Manual SOS, voice SOS, helmet-triggered SOS — same flow, three triggers."
+        "desc": "Manual SOS, voice SOS, helmet-triggered SOS. Same flow, three triggers."
       },
       {
         "title": "I-Can-Help",
@@ -361,7 +361,7 @@
       },
       {
         "title": "12 Departments",
-        "desc": "Cardiology, Ortho, Derma and 9 more — doctor credentials and fees shown upfront."
+        "desc": "Cardiology, Ortho, Derma and 9 more. Doctor credentials and fees shown upfront."
       },
       {
         "title": "Live Appointments",
@@ -373,11 +373,11 @@
       },
       {
         "title": "Aarogya Points",
-        "desc": "Helpers earn points per rescue — free appointments, discount tiers, community badges."
+        "desc": "Helpers earn points per rescue. Free appointments, discount tiers, community badges."
       },
       {
         "title": "Smart Helmet One",
-        "desc": "ESP32 helmet detects crashes via MPU6050. Sends SMS + live data — even with no Wi-Fi."
+        "desc": "ESP32 helmet detects crashes via MPU6050. Sends SMS + live data. Even with no Wi-Fi."
       },
       {
         "title": "Live Tracking",
@@ -411,12 +411,12 @@
     "downloadPwa": "Progressive Web App",
     "webManifest": "Download APK (Android)",
     "openInBrowser": "Open in browser",
-    "installAndroid": "Android / Chrome:",
-    "installAndroidSteps": "Menu → Install app / Add to Home screen.",
-    "installIos": "iOS / Safari:",
-    "installIosSteps": "Share → Add to Home Screen.",
+    "installAndroid": "Android:",
+    "installAndroidSteps": "Download the APK → tap to install → allow installs from this source if prompted.",
+    "installIos": "iOS:",
+    "installIosSteps": "Open the web app in Safari → Share → Add to Home Screen.",
     "joinEyebrow": "Join Aarogya Raksha",
-    "joinTitle": "Your neighbourhood's safety net — and your everyday doctor's waiting room — in one app.",
+    "joinTitle": "Your neighbourhood's safety net. And your everyday doctor's waiting room. In one app.",
     "joinDesc": "Whether it's a crash on the highway or a check-up tomorrow morning, Aarogya Raksha makes it effortless.",
     "createFreeAccount": "Create free account",
     "haveAccount": "I already have an account",
@@ -425,7 +425,14 @@
     "ambulance": "Ambulance",
     "footerBuilt": "Built with care",
     "footerApp": "App",
-    "footerGetStarted": "Get started →"
+    "footerGetStarted": "Get started →",
+    "originLink": "Why we built this",
+    "originBadgeYear": "2022",
+    "originEyebrow": "A FATHER. A BIKE. 40 LOST MINUTES.",
+    "originQuote": "My father had a bike accident. He survived. But the 40 minutes we lost. Not knowing whom to call, where exactly we were, or how quickly help would come. Those minutes nearly took him.",
+    "originAuthor": "Anushka Yadav, Team Lead",
+    "originClosing": "Aarogya Raksha exists so no family loses another 40 minutes.",
+    "originClose": "Close"
   },
   "challenges": {
     "title": "Health Challenges",
@@ -537,7 +544,7 @@
   "vault": {
     "eyebrow": "Health Vault",
     "title": "Your records",
-    "subtitle": "Prescriptions, lab reports and scans — kept safe.",
+    "subtitle": "Prescriptions, lab reports and scans. Kept safe.",
     "upload": "Upload",
     "loginPrompt": "Log in to see and upload your records.",
     "loginLink": "Log in →"

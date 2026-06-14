@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import {
   Siren, HandHeart, Stethoscope, CalendarCheck2, FolderHeart, Trophy, ShieldCheck,
-  Sparkles, MapPin, ChevronRight, Clock, Heart, Phone, Smartphone, Download,
+  Sparkles, MapPin, ChevronRight, Clock, Heart, Phone, Smartphone, Download, X,
 } from 'lucide-react';
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 // Public Google Drive folder containing the Android APK build.
@@ -64,6 +65,27 @@ export const LandingPage = () => {
   const careBullets = t('landing.careBullets', { returnObjects: true }) as string[];
 
   const sosRedirect = '/login?redirect=' + encodeURIComponent('/app/sos?from=landing');
+
+  // Origin-story modal. Also opens on /#/safety/why-we-built-this hash
+  const [originOpen, setOriginOpen] = useState(false);
+  useEffect(() => {
+    const fromHash = () => {
+      if (window.location.hash.includes('why-we-built-this')) setOriginOpen(true);
+    };
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
+    return () => window.removeEventListener('hashchange', fromHash);
+  }, []);
+  useEffect(() => {
+    if (!originOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOriginOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [originOpen]);
 
   return (
     <div className="min-h-dvh bg-[#0a0b0f] overflow-x-hidden text-white">
@@ -157,7 +179,7 @@ export const LandingPage = () => {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] font-black tracking-widest text-emerald-300">{t('landing.liveBadge')}</span>
             </motion.div>
-            <h1 className="text-[2.1rem] sm:text-[2.3rem] font-black leading-[1.06] tracking-tight">
+            <h1 className="text-[2.1rem] sm:text-[2.3rem] font-black leading-[1.08] tracking-tight">
               <Trans
                 i18nKey="landing.heroTitle"
                 components={{
@@ -177,6 +199,7 @@ export const LandingPage = () => {
                       transition={{ delay: 0.22, duration: 0.45 }}
                     />
                   ),
+                  3: <br />,
                 }}
               />
             </h1>
@@ -184,7 +207,7 @@ export const LandingPage = () => {
               {t('landing.heroDesc')}
             </p>
 
-            {/* Helmet hero — compact, framed, captioned. The "this is the thing
+            {/* Helmet hero. Compact, framed, captioned. The "this is the thing
                 we built" anchor for the page. */}
             <motion.div
               initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
@@ -194,7 +217,7 @@ export const LandingPage = () => {
             >
               <img
                 src="/helmet.png"
-                alt="Aarogya Helmet One — ESP32-based smart helmet with MPU6050 crash detection, GPS and GSM"
+                alt="Aarogya Helmet One. ESP32-based smart helmet with MPU6050 crash detection, GPS and GSM"
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="eager"
               />
@@ -454,12 +477,78 @@ export const LandingPage = () => {
             <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-sky-300 font-semibold text-white/50">
               <Download className="h-3 w-3" /> {t('landing.footerApp')}
             </a>
+            <button
+              type="button"
+              onClick={() => setOriginOpen(true)}
+              className="inline-flex items-center gap-1 hover:text-rose-300 font-semibold text-white/50"
+            >
+              <Heart className="h-3 w-3" /> {t('landing.originLink')}
+            </button>
             <a href="tel:112" className="inline-flex items-center gap-1 hover:text-white/60"><Phone className="h-3 w-3" /> 112</a>
             <a href="tel:108" className="inline-flex items-center gap-1 hover:text-white/60"><Phone className="h-3 w-3" /> 108</a>
             <Link to="/signup" className="hover:text-white/60">{t('landing.footerGetStarted')}</Link>
           </div>
         </div>
       </footer>
+
+      {/* Origin-story modal. The slide-2 hook on demand. */}
+      <AnimatePresence>
+        {originOpen && (
+          <motion.div
+            key="origin-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[80] flex items-center justify-center px-4"
+            onClick={() => setOriginOpen(false)}
+          >
+            <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
+            <motion.div
+              initial={{ opacity: 0, y: 18, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-lg rounded-3xl border border-white/[0.08] bg-[#0a0a0a] p-6 sm:p-7 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="origin-quote"
+            >
+              <button
+                type="button"
+                onClick={() => setOriginOpen(false)}
+                aria-label={t('landing.originClose')}
+                className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center transition active:scale-95"
+              >
+                <X className="h-4 w-4 text-white/70" />
+              </button>
+
+              <div className="text-[14px] font-black tracking-widest text-red-400">
+                {t('landing.originBadgeYear')}
+              </div>
+              <div className="mt-1 text-[10px] font-black tracking-[0.25em] text-white/45">
+                {t('landing.originEyebrow')}
+              </div>
+
+              <p
+                id="origin-quote"
+                className="mt-5 text-[20px] sm:text-[22px] leading-[1.35] italic font-serif text-white"
+                style={{ fontFamily: 'Cambria, Georgia, "Times New Roman", serif' }}
+              >
+                “{t('landing.originQuote')}”
+              </p>
+
+              <div className="mt-5 text-[12px] text-white/55">
+                {t('landing.originAuthor')}
+              </div>
+              <div className="mt-5 pt-4 border-t border-white/[0.08] text-[13px] font-black text-white">
+                {t('landing.originClosing')}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

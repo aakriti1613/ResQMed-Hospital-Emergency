@@ -41,7 +41,7 @@ export const LoginPage = () => {
     setError(null);
     setBusy(true);
 
-    // Demo only: pre-check localStorage. Firebase skips this — uses OTP + profile lookup
+    // Demo only: pre-check localStorage. Firebase skips this. Uses OTP + profile lookup
     // (phoneIndex may be missing for accounts created before that index existed).
     if (isDemoMode) {
       try {
@@ -172,7 +172,7 @@ export const LoginPage = () => {
           </div>
         </div>
 
-        {/* Value-props strip — reinforces that this isn't just an SOS app */}
+        {/* Value-props strip. Reinforces that this isn't just an SOS app */}
         <div className="mb-5 grid grid-cols-3 gap-1.5">
           <ValueChip icon={<Siren className="h-3.5 w-3.5 text-red-400" />}        label={t('auth.sosChip')} />
           <ValueChip icon={<Stethoscope className="h-3.5 w-3.5 text-emerald-300" />} label={t('auth.doctorsChip')} />
