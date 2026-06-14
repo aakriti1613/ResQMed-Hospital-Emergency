@@ -317,61 +317,97 @@
     "login": "Log in",
     "signup": "Sign up →",
     "liveBadge": "LIVE IN YOUR CITY",
-    "heroTitle": "One app for every <1>health emergency</1> and every <2>hospital visit</2>.",
-    "heroDesc": "Arogya Raksha is an Uber-for-hospitals that also summons nearby helpers the instant you raise an SOS. Book doctors by department, store prescriptions in your Health Vault, and earn points every time you rescue a neighbour — all from one clean interface.",
+    "heroTitle": "When seconds matter, <1>smart help</1> is <2>already on the way</2>.",
+    "heroDesc": "Aarogya Raksha turns a bike crash into a coordinated rescue. A helmet-mounted ESP32 detects the impact, an AI model classifies severity using WHO/AHA-cited clinical thresholds, and nearby helpers, the closest hospital and your emergency contacts all see live location — at the same second.",
     "needHelp": "I need help now",
     "bookDoctor": "Book a doctor",
     "icanHelp": "I can help",
     "getTheApp": "Get the app",
     "noLogin": "(no login)",
-    "trustSos": "< 10 s SOS dispatch",
-    "trustVault": "End-to-end encrypted vault",
-    "trustMaps": "Live Google Maps tracking",
-    "pillarsEyebrow": "Two apps. One platform.",
-    "pillarsTitle": "Emergency response + Hospital care",
-    "pillarsDesc": "Built for Indian users. Hospital booking and emergency SOS are first-class citizens — not hidden behind menus.",
-    "emergencyTitle": "Emergency Response",
-    "emergencySubtitle": "Uber-style SOS with live helper tracking",
+    "trustSos": "< 10 s helmet-to-helper dispatch",
+    "trustVault": "End-to-end encrypted Health Vault",
+    "trustMaps": "Live Google Maps coordination",
+    "pillarsEyebrow": "ONE PLATFORM. FOUR PORTALS.",
+    "pillarsTitle": "Built for the moment between accident and ambulance.",
+    "pillarsDesc": "Aarogya Raksha doesn't just send an alert. It links the victim, the nearest helper, the closest hospital, and the on-call doctor into one live coordination loop — in English, हिन्दी and తెలుగు.",
+    "emergencyTitle": "Smart Helmet + Live SOS",
+    "emergencySubtitle": "Hardware-triggered. AI-classified. Network-resilient.",
     "emergencyBullets": [
-      "Auto crash detection + manual SOS",
-      "Popup alerts on every nearby helper",
-      "Live Google Maps ETA for helpers & ambulance",
-      "Emergency contacts notified in real time"
+      "ESP32 + MPU6050 + GPS auto-detect a crash",
+      "Two ML models for accident → severity, with a WHO/AHA/ATLS rule layer",
+      "Live helper, ambulance and hospital coordination",
+      "Works on full, low or no network (Guardian Relay)"
     ],
     "emergencyCta": "Try the SOS flow →",
     "careTitle": "Hospital & Doctor Booking",
-    "careSubtitle": "Find a doctor by department, book in seconds",
+    "careSubtitle": "Routine care, never buried under the SOS button.",
     "careBullets": [
-      "12 departments — Cardiology to Dental",
+      "12 specialties — Cardiology to Dental",
       "Nearby hospitals on Google Maps",
-      "Partner hospital with curated doctor roster",
-      "Prescription & report vault, synced"
+      "Reports & prescriptions in an encrypted Health Vault",
+      "Available in English, हिन्दी and తెలుగు"
     ],
     "careCta": "Browse doctors →",
     "featuresEyebrow": "What's inside",
-    "featuresTitle": "Everything you need, in one place",
+    "featuresTitle": "Built end-to-end. Hardware, AI, app and hospital.",
     "featureList": [
-      { "title": "Instant SOS", "desc": "One tap raises an alert to nearby volunteers + ambulances + emergency contacts." },
-      { "title": "I-Can-Help popup", "desc": "Nearby helpers get a Rapido-style request popup, with distance, ETA and one-tap accept." },
-      { "title": "Department finder", "desc": "Browse Cardio, Ortho, Derma and 9 more. See doctor credentials and fees upfront." },
-      { "title": "Real slots, real doctors", "desc": "Pick a day, a time, describe your symptoms and get a confirmed booking." },
-      { "title": "Health Vault", "desc": "Upload prescriptions, lab reports and imaging. Access them anywhere, anytime." },
-      { "title": "Arogya points", "desc": "Earn 200 points per rescue. Unlock free appointments, discounts and community badges." },
-      { "title": "Built on Firebase", "desc": "Realtime Firestore, phone OTP auth and Google Maps — fast, secure, scalable." },
-      { "title": "Live tracking", "desc": "Victims see their helper's marker approach on a live map — just like Uber / Rapido." },
-      { "title": "Community-first", "desc": "Leaderboards celebrate the top rescuers in your city every month." }
+      {
+        "title": "One-Tap SOS",
+        "desc": "Manual SOS, voice SOS, helmet-triggered SOS — same flow, three triggers."
+      },
+      {
+        "title": "I-Can-Help",
+        "desc": "Verified nearby helpers get a Rapido-style accept request with distance and ETA."
+      },
+      {
+        "title": "12 Departments",
+        "desc": "Cardiology, Ortho, Derma and 9 more — doctor credentials and fees shown upfront."
+      },
+      {
+        "title": "Live Appointments",
+        "desc": "Pick a slot, describe symptoms, get a confirmed booking with hospital pre-alert."
+      },
+      {
+        "title": "Health Vault",
+        "desc": "Encrypted storage for prescriptions, lab reports and medical history."
+      },
+      {
+        "title": "Aarogya Points",
+        "desc": "Helpers earn points per rescue — free appointments, discount tiers, community badges."
+      },
+      {
+        "title": "Smart Helmet One",
+        "desc": "ESP32 helmet detects crashes via MPU6050. Sends SMS + live data — even with no Wi-Fi."
+      },
+      {
+        "title": "Live Tracking",
+        "desc": "Victims see helpers approach on Google Maps. ETA recomputes every 30 seconds."
+      },
+      {
+        "title": "Three Languages",
+        "desc": "Full interface plus voice SOS in English, हिन्दी and తెలుగు."
+      }
     ],
     "howEyebrow": "How it works",
     "howTitle": "From tap to care in 3 steps",
     "steps": [
-      { "title": "Sign up with your mobile", "desc": "One-time phone OTP. Add your emergency contacts and blood group." },
-      { "title": "Pick your service", "desc": "Raise an SOS, book a doctor in any department, or upload a report." },
-      { "title": "We handle the rest", "desc": "Helpers are notified. Bookings land in your appointments. Rewards stack up." }
+      {
+        "title": "Sign up with your mobile",
+        "desc": "One phone OTP. Add emergency contacts, blood group and any allergies."
+      },
+      {
+        "title": "Wear the helmet (or just open the app)",
+        "desc": "Auto crash detection runs on the helmet. Manual SOS, voice SOS and the I Need Help button work without it."
+      },
+      {
+        "title": "We coordinate the rescue",
+        "desc": "Helpers accept on a live map. Hospitals get pre-alerted with vitals. You see everything happening, live."
+      }
     ],
     "stepLabel": "Step {{n}}",
     "downloadBadge": "Get the app",
-    "downloadTitle": "Download Arogya Raksha",
-    "downloadDesc": "Install on your phone for faster SOS, offline-friendly shortcuts, and optional home-screen alerts. Store builds ship soon — for now use the web app as a",
+    "downloadTitle": "Download Aarogya Raksha",
+    "downloadDesc": "Install on your phone for faster SOS, offline-friendly shortcuts and home-screen alerts. Store builds ship soon — for now use the web app as a",
     "downloadPwa": "Progressive Web App",
     "webManifest": "Web manifest",
     "openInBrowser": "Open in browser",
@@ -379,9 +415,9 @@
     "installAndroidSteps": "Menu → Install app / Add to Home screen.",
     "installIos": "iOS / Safari:",
     "installIosSteps": "Share → Add to Home Screen.",
-    "joinEyebrow": "Join Arogya Raksha",
-    "joinTitle": "Your neighbourhood's safety net — and your doctor's waiting room — in the same app.",
-    "joinDesc": "Whether you need instant emergency help or a routine check-up tomorrow morning, Arogya Raksha makes it effortless.",
+    "joinEyebrow": "Join Aarogya Raksha",
+    "joinTitle": "Your neighbourhood's safety net — and your everyday doctor's waiting room — in one app.",
+    "joinDesc": "Whether it's a crash on the highway or a check-up tomorrow morning, Aarogya Raksha makes it effortless.",
     "createFreeAccount": "Create free account",
     "haveAccount": "I already have an account",
     "emergencyCall": "In a real emergency, call",
@@ -406,18 +442,54 @@
     "scenariosDone": "✓ {{count}} scenario(s)"
   },
   "departments": {
-    "general": { "name": "General Physician", "tagline": "Fever, flu, check-ups" },
-    "cardio": { "name": "Cardiology", "tagline": "Heart, BP & chest pain" },
-    "ortho": { "name": "Orthopedics", "tagline": "Bones, joints & injuries" },
-    "derma": { "name": "Dermatology", "tagline": "Skin, hair & nails" },
-    "neuro": { "name": "Neurology", "tagline": "Brain, nerves & headaches" },
-    "peds": { "name": "Pediatrics", "tagline": "Child health & vaccines" },
-    "ent": { "name": "ENT", "tagline": "Ear, nose & throat" },
-    "gyno": { "name": "Gynecology", "tagline": "Women's health" },
-    "dental": { "name": "Dental", "tagline": "Teeth & oral care" },
-    "psych": { "name": "Psychiatry", "tagline": "Mental health support" },
-    "eye": { "name": "Ophthalmology", "tagline": "Eyes & vision" },
-    "onco": { "name": "Oncology", "tagline": "Cancer care" }
+    "general": {
+      "name": "General Physician",
+      "tagline": "Fever, flu, check-ups"
+    },
+    "cardio": {
+      "name": "Cardiology",
+      "tagline": "Heart, BP & chest pain"
+    },
+    "ortho": {
+      "name": "Orthopedics",
+      "tagline": "Bones, joints & injuries"
+    },
+    "derma": {
+      "name": "Dermatology",
+      "tagline": "Skin, hair & nails"
+    },
+    "neuro": {
+      "name": "Neurology",
+      "tagline": "Brain, nerves & headaches"
+    },
+    "peds": {
+      "name": "Pediatrics",
+      "tagline": "Child health & vaccines"
+    },
+    "ent": {
+      "name": "ENT",
+      "tagline": "Ear, nose & throat"
+    },
+    "gyno": {
+      "name": "Gynecology",
+      "tagline": "Women's health"
+    },
+    "dental": {
+      "name": "Dental",
+      "tagline": "Teeth & oral care"
+    },
+    "psych": {
+      "name": "Psychiatry",
+      "tagline": "Mental health support"
+    },
+    "eye": {
+      "name": "Ophthalmology",
+      "tagline": "Eyes & vision"
+    },
+    "onco": {
+      "name": "Oncology",
+      "tagline": "Cancer care"
+    }
   },
   "timeline": {
     "title": "Live Incident Timeline",

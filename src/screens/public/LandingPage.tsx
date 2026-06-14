@@ -87,7 +87,7 @@ export const LandingPage = () => {
             >
               <Siren className="h-4 w-4" />
             </motion.div>
-            <span className="text-sm font-black tracking-tight group-hover:text-white/90 transition">Arogya Raksha</span>
+            <span className="text-sm font-black tracking-tight group-hover:text-white/90 transition">Aarogya Raksha</span>
           </Link>
           <div className="flex items-center gap-1.5 shrink-0">
             <LanguageSwitcher compact />
@@ -177,8 +177,38 @@ export const LandingPage = () => {
               {t('landing.heroDesc')}
             </p>
 
+            {/* Helmet hero — compact, framed, captioned. The "this is the thing
+                we built" anchor for the page. */}
             <motion.div
-              className="mt-6 grid grid-cols-1 gap-2"
+              initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
+              animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+              transition={{ delay: 0.24, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative mt-5 rounded-3xl overflow-hidden border border-white/[0.08] bg-black/40 aspect-video"
+            >
+              <img
+                src="/helmet.png"
+                alt="Aarogya Helmet One — ESP32-based smart helmet with MPU6050 crash detection, GPS and GSM"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-emerald-500/90 backdrop-blur px-2.5 py-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-white">Working Prototype</span>
+              </div>
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-white/65">Aarogya Helmet One</div>
+                  <div className="text-[13px] font-black text-white truncate">ESP32 · MPU6050 · GPS · GSM</div>
+                </div>
+                <div className="shrink-0 text-[10px] font-black text-white/75 rounded-full bg-white/10 border border-white/15 px-2 py-0.5">
+                  Auto crash detect
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mt-5 grid grid-cols-1 gap-2"
               initial={reduceMotion ? undefined : { opacity: 0, y: 12 }}
               animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               transition={{ delay: 0.28, duration: 0.45 }}
@@ -409,7 +439,7 @@ export const LandingPage = () => {
 
       <footer className="border-t border-white/[0.06] py-6">
         <div className="max-w-lg mx-auto px-4 flex flex-col items-center text-center gap-3">
-          <div className="text-[11px] text-white/35">© {new Date().getFullYear()} Arogya Raksha · {t('landing.footerBuilt')}</div>
+          <div className="text-[11px] text-white/35">© {new Date().getFullYear()} Aarogya Raksha · {t('landing.footerBuilt')}</div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
             <a href="/#download-app" className="inline-flex items-center gap-1 hover:text-sky-300 font-semibold text-white/50">
               <Download className="h-3 w-3" /> {t('landing.footerApp')}
