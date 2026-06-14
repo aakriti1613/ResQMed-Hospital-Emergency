@@ -31,9 +31,12 @@ service cloud.firestore {
     // registered BEFORE sending an OTP (avoids SMS waste + orphan auth users).
     // Doc id is the 10-digit phone; value is { uid }.
     match /phoneIndex/{phone} {
-      allow get: if true;                     // anyone can check if a phone exists
-      allow create: if request.auth != null;  // only authed users (post-OTP) can claim
-      allow update, delete: if false;
+      allow get: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == uid();
+      allow update: if isSignedIn()
+        && request.resource.data.uid == uid()
+        && resource.data.uid == uid();
+      allow delete: if false;
     }
 
     // Patient profile (we keep patientId = uid for simple rules)
@@ -132,10 +135,27 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Coin ledger is append-only; read limited
+    // Points ledger + balances (used by src/data/points.ts)
+    match /pointLedger/{entryId} {
+      allow read: if isSignedIn() && (resource.data.userId == uid() || hasRole('admin'));
+      allow create: if isSignedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.points is number
+        && request.resource.data.points > 0
+        && request.resource.data.points <= 500;
+      allow update, delete: if false;
+    }
+
+    match /pointBalances/{userId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && userId == uid();
+      allow delete: if false;
+    }
+
+    // Legacy name kept for older deployments
     match /coinLedger/{entryId} {
       allow read: if isSignedIn() && (resource.data.userId == uid() || hasRole('admin'));
-      allow create: if hasRole('admin'); // in MVP, points awarded via Cloud Functions as admin service
+      allow create: if hasRole('admin');
       allow update, delete: if false;
     }
   }

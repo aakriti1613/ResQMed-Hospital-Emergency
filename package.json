@@ -11,7 +11,11 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:functions": "npm run build -w resqmed-functions",
-    "serve:functions": "npm run serve -w resqmed-functions"
+    "serve:functions": "npm run serve -w resqmed-functions",
+    "build:all": "npm run build && npm run build:functions",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage",
+    "deploy": "npm run build:all && firebase deploy"
   },
   "devDependencies": {
     "@capacitor/android": "^8.4.0",
