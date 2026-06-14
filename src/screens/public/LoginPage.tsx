@@ -149,7 +149,7 @@ export const LoginPage = () => {
       <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-4 py-4">
         <LanguageSwitcher compact menuAlign="left" />
         <a
-          href="/#download-app"
+          href="https://drive.google.com/drive/folders/1lcX9y4pkPlJKCTaNreWLOFRCKlNniMSS?usp=drive_link" target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[11px] font-black text-sky-100 hover:bg-sky-500/20 transition active:scale-95"
         >
           <Download className="h-3.5 w-3.5" /> {t('landing.getApp')}
@@ -284,7 +284,7 @@ export const LoginPage = () => {
               {t('auth.noAccount')}{' '}
               <Link to={`/signup?redirect=${encodeURIComponent(redirectPath)}`} className="font-bold text-white/55 hover:text-white transition">{t('auth.signUp')}</Link>
             </div>
-            <a href="/#download-app" className="inline-flex items-center justify-center gap-1 font-bold text-sky-300/80 hover:text-sky-200 transition">
+            <a href="https://drive.google.com/drive/folders/1lcX9y4pkPlJKCTaNreWLOFRCKlNniMSS?usp=drive_link" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-1 font-bold text-sky-300/80 hover:text-sky-200 transition">
               <Download className="h-3 w-3" /> {t('auth.downloadApp')}
             </a>
           </div>

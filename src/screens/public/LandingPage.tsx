@@ -7,6 +7,11 @@ import {
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
+// Public Google Drive folder containing the Android APK build.
+// Update this in one place when a newer build is uploaded.
+const APK_DOWNLOAD_URL =
+  'https://drive.google.com/drive/folders/1lcX9y4pkPlJKCTaNreWLOFRCKlNniMSS?usp=drive_link';
+
 const blockReveal = {
   hidden: { opacity: 0, y: 26 },
   visible: {
@@ -92,7 +97,9 @@ export const LandingPage = () => {
           <div className="flex items-center gap-1.5 shrink-0">
             <LanguageSwitcher compact />
             <a
-              href="#download-app"
+              href={APK_DOWNLOAD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               title={t('landing.getAppTitle')}
               className="inline-flex h-8 shrink-0 px-2.5 rounded-full text-[10px] font-black text-sky-200/90 hover:text-white border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/15 items-center transition gap-1"
             >
@@ -240,7 +247,9 @@ export const LandingPage = () => {
                 <HandHeart className="h-4 w-4" /> {t('landing.icanHelp')}
               </motion.button>
               <motion.a
-                href="#download-app"
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.97 }}
                 className="h-12 w-full px-5 rounded-full inline-flex items-center justify-center gap-2 text-sm font-black bg-sky-500/15 border border-sky-400/30 text-sky-100 hover:bg-sky-500/25 transition"
@@ -373,8 +382,9 @@ export const LandingPage = () => {
             </div>
             <div className="grid grid-cols-1 gap-2 w-full">
               <a
-                href="/manifest.webmanifest"
-                download="arogya-raksha.webmanifest"
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-12 w-full px-5 rounded-2xl flex items-center justify-center gap-2 text-sm font-black bg-white text-slate-950 hover:bg-white/95 transition active:scale-[0.98]"
               >
                 <Download className="h-4 w-4" /> {t('landing.webManifest')}
@@ -441,7 +451,7 @@ export const LandingPage = () => {
         <div className="max-w-lg mx-auto px-4 flex flex-col items-center text-center gap-3">
           <div className="text-[11px] text-white/35">© {new Date().getFullYear()} Aarogya Raksha · {t('landing.footerBuilt')}</div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
-            <a href="/#download-app" className="inline-flex items-center gap-1 hover:text-sky-300 font-semibold text-white/50">
+            <a href={APK_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-sky-300 font-semibold text-white/50">
               <Download className="h-3 w-3" /> {t('landing.footerApp')}
             </a>
             <a href="tel:112" className="inline-flex items-center gap-1 hover:text-white/60"><Phone className="h-3 w-3" /> 112</a>
