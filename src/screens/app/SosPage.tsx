@@ -41,6 +41,7 @@ import {
 import { IncidentTimeline, type TimelineStep } from '../../components/ui/IncidentTimeline';
 import { listenTimelineEvents, type TimelineEventDoc } from '../../data/timeline';
 import { useSosEscalationMonitor } from '../../features/sos/useSosEscalationMonitor';
+import { useTranslation } from 'react-i18next';
 
 /** Helmet One reference: 10s auto-send countdown (same for manual SOS + crash). */
 const HELMET_COUNTDOWN_SEC = 10;
@@ -55,6 +56,7 @@ const HELPLINES = [
 ];
 
 export const SosPage = () => {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -588,13 +590,13 @@ export const SosPage = () => {
                 🚑
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Responder accepted</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{t('sos.responderAccepted')}</div>
                 <div className="text-sm font-black text-white truncate">{helperAcceptedToast.helperName}</div>
                 {helperAcceptedToast.helperSub && (
                   <div className="text-[11px] text-white/55 truncate">{helperAcceptedToast.helperSub}</div>
                 )}
                 {helperAcceptedToast.etaLine && (
-                  <div className="mt-1 text-[11px] font-black text-emerald-200">{helperAcceptedToast.etaLine} away</div>
+                  <div className="mt-1 text-[11px] font-black text-emerald-200">{helperAcceptedToast.etaLine} {t('sos.away')}</div>
                 )}
               </div>
               <button
@@ -770,10 +772,10 @@ export const SosPage = () => {
                   <Siren className="h-8 w-8" />
                 </motion.div>
                 <h1 className="text-2xl font-black text-white tracking-tight">
-                  {isHardwareCrash ? 'Crash detected!' : 'Emergency detected!'}
+                  {isHardwareCrash ? t('sos.crashDetected') : t('sos.emergencyDetected')}
                 </h1>
                 <p className="mt-2 text-sm text-red-100/70">
-                  Auto-sending help in <span className="text-white font-black">{cdown}</span> seconds unless you cancel.
+                  {t('sos.autoSending', { seconds: cdown })}
                 </p>
               </div>
 
@@ -793,7 +795,7 @@ export const SosPage = () => {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-4xl font-black text-white leading-none">{cdown}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">seconds</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40 mt-1">{t('sos.secondsLabel')}</span>
                   </div>
                 </div>
               </div>
@@ -805,7 +807,7 @@ export const SosPage = () => {
                   onClick={stopAlert}
                   className="rounded-2xl border border-white/15 bg-white/[0.04] py-3.5 text-sm font-black text-white/80 hover:bg-white/[0.08] transition active:scale-[0.98]"
                 >
-                  I&apos;m OK, Cancel
+                  {t('sos.imOkCancel')}
                 </button>
                 <button
                   type="button"
@@ -814,15 +816,15 @@ export const SosPage = () => {
                   className="rounded-2xl py-3.5 text-sm font-black text-white shadow-[0_0_24px_rgba(220,38,38,0.45)] transition active:scale-[0.98]"
                   style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)' }}
                 >
-                  Send Help Now
+                  {t('sos.sendHelpNow')}
                 </button>
               </div>
 
               <div className="mt-8 w-full space-y-2">
                 {[
-                  { done: currentLocation !== null, label: 'Detecting location' },
-                  { done: cdown <= 45, label: 'Preparing alert data' },
-                  { done: cdown <= 15, label: 'Finding nearby helpers' },
+                  { done: currentLocation !== null, label: t('sos.detectingLocation') },
+                  { done: cdown <= 45, label: t('sos.preparingAlert') },
+                  { done: cdown <= 15, label: t('sos.findingNearbyHelpers') },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <div className={`h-4 w-4 rounded-full flex items-center justify-center shrink-0 transition-all ${item.done ? 'bg-emerald-500' : 'bg-white/10'}`}>

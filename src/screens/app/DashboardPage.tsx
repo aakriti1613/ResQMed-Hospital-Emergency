@@ -14,13 +14,19 @@ import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice
 import { useSharedLocation } from '../../hooks/useSharedLocation';
 import { useVoiceSos } from '../../hooks/useVoiceSos';
 import { useTranslation } from 'react-i18next';
+import { useEmergencyReadiness } from '../../hooks/useEmergencyReadiness';
+import { ReadinessScoreCard } from '../../components/ReadinessScoreCard';
+import { getFeaturedEvent, isEventActive } from '../../data/healthAwareness';
 
 const HELMET_HELP_SEC = 10;
 
 export const DashboardPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const nav = useNavigate();
+  const { readiness } = useEmergencyReadiness();
+  const featuredHealthDay = getFeaturedEvent();
+  const healthDayLive = isEventActive(featuredHealthDay);
   const { currentLocation } = useSharedLocation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -30,7 +36,7 @@ export const DashboardPage = () => {
 
   const { isListening: isVoiceListening, toggleListening: toggleVoiceSos, isSupported: isVoiceSupported } = useVoiceSos(() => {
     nav(`/app/sos?from=${encodeURIComponent('/app')}`);
-  });
+  }, i18n.language);
 
   useEffect(() => {
     if (!user?.uid) { setUpcoming([]); return; }
@@ -100,6 +106,29 @@ export const DashboardPage = () => {
           <Bell className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Emergency Readiness Score */}
+      <ReadinessScoreCard readiness={readiness} compact />
+
+      {/* Health Day mini-games banner */}
+      <Link
+        to={`/app/challenges/${featuredHealthDay.id}`}
+        className="block rounded-3xl border border-white/[0.08] p-4 relative overflow-hidden hover:border-white/15 transition active:scale-[0.99]"
+        style={{ background: featuredHealthDay.gradient }}
+      >
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative flex items-center gap-3">
+          <span className="text-3xl shrink-0">{featuredHealthDay.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-widest text-white/70">
+              {healthDayLive ? '🔴 Health Day Live' : 'Health Awareness Challenge'}
+            </div>
+            <div className="text-sm font-black text-white truncate">{featuredHealthDay.name}</div>
+            <div className="text-[11px] text-white/75 mt-0.5">Quiz + scenarios · earn points</div>
+          </div>
+          <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
+        </div>
+      </Link>
 
       {/* Smart Helmet status card — primary device hero */}
       <HelmetCard helmet={helmet} uid={user?.uid} />
@@ -258,22 +287,22 @@ export const DashboardPage = () => {
         <div className="relative">
           <div className="flex items-center justify-between mb-2.5">
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-sky-300">Riding protected</div>
-              <div className="text-sm font-black text-white">Community impact</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-sky-300">{t('dashboard.ridingProtected')}</div>
+              <div className="text-sm font-black text-white">{t('dashboard.communityImpact')}</div>
             </div>
             <Sparkles className="h-4 w-4 text-sky-300" />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <Stat n="16+" l="Accidents reported" />
-            <Stat n="2.9k+" l="Roadside assists" />
-            <Stat n="7.4k+" l="Safe rides" />
+            <Stat n="16+" l={t('dashboard.accidentsReported')} />
+            <Stat n="2.9k+" l={t('dashboard.roadsideAssists')} />
+            <Stat n="7.4k+" l={t('dashboard.safeRides')} />
           </div>
         </div>
       </div>
 
       {/* Arogya points preview */}
       <Link
-        to="/app/profile"
+        to="/app/points"
         className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[#13141a] p-3.5 hover:border-white/15 transition"
       >
         <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
@@ -281,8 +310,8 @@ export const DashboardPage = () => {
           <Trophy className="h-5 w-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-black uppercase tracking-widest text-amber-300">Arogya Points</div>
-          <div className="text-sm font-black text-white">{points.toLocaleString()} pts</div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-amber-300">{t('dashboard.arogyaPoints')}</div>
+          <div className="text-sm font-black text-white">{points.toLocaleString()} {t('dashboard.pts')}</div>
         </div>
         <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
       </Link>
@@ -290,10 +319,10 @@ export const DashboardPage = () => {
       {/* Helpline strip (compact, no longer dominant) */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { num: '112', label: 'Emergency', color: '#dc2626' },
-          { num: '108', label: 'Ambulance', color: '#10b981' },
-          { num: '100', label: 'Police',    color: '#3b82f6' },
-          { num: '1091', label: 'Women',    color: '#a855f7' },
+          { num: '112', label: t('dashboard.helplineEmergency'), color: '#dc2626' },
+          { num: '108', label: t('dashboard.helplineAmbulance'), color: '#10b981' },
+          { num: '100', label: t('dashboard.helplinePolice'), color: '#3b82f6' },
+          { num: '1091', label: t('dashboard.helplineWomen'), color: '#a855f7' },
         ].map((h) => (
           <a key={h.num} href={`tel:${h.num}`}
             className="flex flex-col items-center gap-1 rounded-2xl border border-white/[0.05] bg-white/[0.03] py-3 transition active:scale-95">

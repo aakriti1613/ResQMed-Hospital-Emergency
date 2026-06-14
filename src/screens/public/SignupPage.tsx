@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Siren, Phone, AlertCircle, ArrowLeft, Plus, X, CheckCircle2, Stethoscope, FolderHeart, HandHeart, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +9,7 @@ import { auth } from '../../firebase/client';
 import { isDemoMode } from '../../app/env';
 import { useLocation } from 'react-router-dom';
 import { updateUserProfile, registerPhoneIndex } from '../../data/user';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 type Step = 'phone' | 'otp' | 'profile';
 
@@ -20,10 +22,12 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
 export const SignupPage = () => {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const loc = useLocation();
   const preVerifiedUid = loc.state?.uid as string | undefined;
   const preVerifiedPhone = loc.state?.phone as string | undefined;
-  const redirectPath = loc.state?.redirect as string | undefined;
+  const searchParams = new URLSearchParams(loc.search);
+  const redirectPath = (loc.state?.redirect as string | undefined) || searchParams.get('redirect') || undefined;
   const fromLogin = Boolean(loc.state?.fromLogin);
 
   const [step, setStep] = useState<Step>(preVerifiedUid ? 'profile' : 'phone');
@@ -148,18 +152,22 @@ export const SignupPage = () => {
   const stepLabel = step === 'phone' ? 1 : step === 'otp' ? 2 : 3;
 
   return (
-    <div className="min-h-dvh bg-[#0a0b0f] relative flex items-center justify-center overflow-hidden px-6 py-10">
+    <div className="min-h-dvh bg-[#0a0b0f] relative overflow-hidden">
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none"
         style={{ background: 'radial-gradient(ellipse, rgba(29,78,216,0.07) 0%, transparent 65%)' }} />
 
-      <a
-        href="/#download-app"
-        className="absolute top-4 right-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[11px] font-black text-sky-100 hover:bg-sky-500/20 transition active:scale-95"
-      >
-        <Download className="h-3.5 w-3.5" /> Get app
-      </a>
+      <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-4 py-4">
+        <LanguageSwitcher compact menuAlign="left" />
+        <a
+          href="/#download-app"
+          className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[11px] font-black text-sky-100 hover:bg-sky-500/20 transition active:scale-95"
+        >
+          <Download className="h-3.5 w-3.5" /> {t('landing.getApp')}
+        </a>
+      </div>
 
-      <div className="relative z-10 w-full max-w-xs">
+      <div className="relative z-10 min-h-dvh flex items-center justify-center px-6 py-10 pt-16">
+      <div className="w-full max-w-xs">
         {/* Logo */}
         <div className="flex flex-col items-center mb-4">
           <Link to="/" className="flex flex-col items-center gap-3">
@@ -169,17 +177,17 @@ export const SignupPage = () => {
             </div>
             <div className="text-center">
               <div className="text-lg font-black text-white tracking-tight">Arogya Raksha</div>
-              <div className="text-[11px] text-white/40">Emergency SOS · Doctors · Health Vault</div>
+              <div className="text-[11px] text-white/40">{t('auth.tagline')}</div>
             </div>
           </Link>
         </div>
 
         {/* Value-props strip */}
         <div className="mb-5 grid grid-cols-4 gap-1.5">
-          <ValueChip icon={<Siren className="h-3 w-3 text-red-400" />}            label="SOS" />
-          <ValueChip icon={<HandHeart className="h-3 w-3 text-blue-400" />}       label="Help" />
-          <ValueChip icon={<Stethoscope className="h-3 w-3 text-emerald-300" />} label="Care" />
-          <ValueChip icon={<FolderHeart className="h-3 w-3 text-pink-300" />}    label="Vault" />
+          <ValueChip icon={<Siren className="h-3 w-3 text-red-400" />}            label={t('auth.sosChip')} />
+          <ValueChip icon={<HandHeart className="h-3 w-3 text-blue-400" />}       label={t('auth.helpChip')} />
+          <ValueChip icon={<Stethoscope className="h-3 w-3 text-emerald-300" />} label={t('auth.careChip')} />
+          <ValueChip icon={<FolderHeart className="h-3 w-3 text-pink-300" />}    label={t('auth.vaultChip')} />
         </div>
 
         {/* Step indicator */}
@@ -195,15 +203,13 @@ export const SignupPage = () => {
             {/* ── Step 1: Phone ── */}
             {step === 'phone' && (
               <motion.div key="s1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <div className="text-xl font-black text-white">Create account</div>
-                <p className="mt-1 text-xs text-white/35">Emergency response, always ready</p>
+                <div className="text-xl font-black text-white">{t('auth.createAccount')}</div>
+                <p className="mt-1 text-xs text-white/35">{t('auth.createAccountSub')}</p>
 
                 {fromLogin && (
                   <div className="mt-4 flex items-start gap-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5">
                     <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <span className="text-xs text-amber-200">
-                      This number isn't registered yet. Let's set up your account.
-                    </span>
+                    <span className="text-xs text-amber-200">{t('auth.notRegistered')}</span>
                   </div>
                 )}
 
@@ -215,7 +221,7 @@ export const SignupPage = () => {
                 )}
 
                 <div className="mt-5 space-y-1">
-                  <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Mobile Number</label>
+                  <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">{t('auth.mobileNumber')}</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                       <Phone className="h-3.5 w-3.5 text-white/30" />
@@ -253,7 +259,7 @@ export const SignupPage = () => {
                   disabled={phone.length !== 10 || !/^[6-9]/.test(phone) || busy}
                   className="mt-5 w-full h-12 rounded-full text-sm font-black text-white transition active:scale-95 disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
-                  {busy ? 'Sending...' : 'Send OTP →'}
+                  {busy ? t('auth.sending') : t('auth.sendOtp')}
                 </button>
                 <div id="signup-recaptcha-wrapper" className="mt-4">
                   <div id="signup-recaptcha-container"></div>
@@ -266,11 +272,11 @@ export const SignupPage = () => {
               <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <button onClick={() => { setStep('phone'); setOtp(['', '', '', '', '', '']); setError(null); }}
                   className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition mb-4">
-                  <ArrowLeft className="h-3.5 w-3.5" /> Change number
+                  <ArrowLeft className="h-3.5 w-3.5" /> {t('auth.changeNumber')}
                 </button>
-                <div className="text-xl font-black text-white">Verify OTP</div>
-                <p className="mt-1 text-xs text-white/35">Sent to <span className="text-white/70">+91 {phone}</span></p>
-                <p className="mt-0.5 text-[10px] text-white/25">(Demo: use any 6 digits)</p>
+                <div className="text-xl font-black text-white">{t('auth.verifyOtp')}</div>
+                <p className="mt-1 text-xs text-white/35">{t('auth.sentTo')} <span className="text-white/70">+91 {phone}</span></p>
+                <p className="mt-0.5 text-[10px] text-white/25">{t('auth.demoOtpHint')}</p>
 
                 {error && (
                   <div className="mt-4 flex items-start gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2.5">
@@ -295,7 +301,7 @@ export const SignupPage = () => {
                 <button id="signup-verify-otp" type="button" onClick={handleVerifyOtp} disabled={otp.join('').length < 6 || busy}
                   className="mt-5 w-full h-12 rounded-full text-sm font-black text-white transition active:scale-95 disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
-                  {busy ? 'Verifying...' : 'Next →'}
+                  {busy ? t('auth.verifying') : t('auth.next')}
                 </button>
               </motion.div>
             )}
@@ -306,13 +312,13 @@ export const SignupPage = () => {
                 {success ? (
                   <div className="py-6 text-center">
                     <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto mb-3" />
-                    <div className="text-lg font-black text-white">Account created!</div>
-                    <p className="mt-1 text-xs text-white/40">Emergency contacts notified. Redirecting…</p>
+                    <div className="text-lg font-black text-white">{t('auth.accountCreated')}</div>
+                    <p className="mt-1 text-xs text-white/40">{t('auth.redirecting')}</p>
                   </div>
                 ) : (
                   <>
-                    <div className="text-xl font-black text-white">Your Profile</div>
-                    <p className="mt-1 text-xs text-white/35">Help us help you faster in an emergency</p>
+                    <div className="text-xl font-black text-white">{t('auth.yourProfile')}</div>
+                    <p className="mt-1 text-xs text-white/35">{t('auth.profileSub')}</p>
 
                     {error && (
                       <div className="mt-4 flex items-start gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2.5">
@@ -324,7 +330,7 @@ export const SignupPage = () => {
                     <div className="mt-5 space-y-4">
                       {/* Name */}
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Full Name <span className="text-red-500">*</span></label>
+                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">{t('auth.fullName')} <span className="text-red-500">*</span></label>
                         <input id="signup-name" type="text" value={name} onChange={(e) => setName(e.target.value)}
                           placeholder="Rahul Sharma"
                           className="w-full h-11 rounded-2xl border border-white/[0.07] bg-white/[0.04] px-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-red-500/40 focus:ring-2 focus:ring-red-500/15 transition" />
@@ -332,7 +338,7 @@ export const SignupPage = () => {
 
                       {/* Blood Group */}
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Blood Group <span className="text-white/20">(optional)</span></label>
+                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">{t('auth.bloodGroup')} <span className="text-white/20">{t('auth.optional')}</span></label>
                         <div className="flex flex-wrap gap-1.5">
                           {BLOOD_GROUPS.map(bg => (
                             <button key={bg} type="button" onClick={() => setBloodGroup(bg === bloodGroup ? '' : bg)}
@@ -345,7 +351,7 @@ export const SignupPage = () => {
 
                       {/* Emergency Contacts */}
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Emergency Contacts <span className="text-red-500">*</span></label>
+                        <label className="text-[10px] font-bold text-white/35 uppercase tracking-widest">{t('auth.emergencyContacts')} <span className="text-red-500">*</span></label>
                         {contacts.map((c, i) => (
                           <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 space-y-2">
                             <div className="flex items-center justify-between">
@@ -358,16 +364,16 @@ export const SignupPage = () => {
                               )}
                             </div>
                             <input type="text" value={c.name} onChange={(e) => updateContact(i, 'name', e.target.value)}
-                              placeholder="Contact name"
+                              placeholder={t('auth.contactName')}
                               className="w-full h-9 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 text-xs text-white placeholder:text-white/20 outline-none focus:border-red-500/30 transition" />
                             <input type="tel" value={c.phone} onChange={(e) => updateContact(i, 'phone', e.target.value)}
-                              placeholder="Phone number"
+                              placeholder={t('auth.phoneNumber')}
                               className="w-full h-9 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3 text-xs text-white placeholder:text-white/20 outline-none focus:border-red-500/30 transition" />
                           </div>
                         ))}
                         <button type="button" onClick={addContact}
                           className="w-full h-9 flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-white/15 text-xs font-semibold text-white/40 hover:border-white/30 hover:text-white/60 transition">
-                          <Plus className="h-3.5 w-3.5" /> Add another contact
+                          <Plus className="h-3.5 w-3.5" /> {t('auth.addContact')}
                         </button>
                       </div>
                     </div>
@@ -375,7 +381,7 @@ export const SignupPage = () => {
                     <button id="signup-complete" type="button" onClick={handleSignup} disabled={busy}
                       className="mt-5 w-full h-12 rounded-full text-sm font-black text-white transition active:scale-95 disabled:opacity-40"
                       style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
-                      {busy ? 'Creating account…' : 'Complete Sign Up →'}
+                      {busy ? t('auth.creatingAccount') : t('auth.completeSignup')}
                     </button>
                   </>
                 )}
@@ -387,15 +393,16 @@ export const SignupPage = () => {
           <div className="mt-5 pt-4 border-t border-white/5 text-center text-xs text-white/25 space-y-2">
             {step === 'phone' && (
               <div>
-                Already have an account?{' '}
-                <Link to="/login" className="font-bold text-white/60 hover:text-white transition">Sign in</Link>
+                {t('auth.alreadyHaveAccount')}{' '}
+                <Link to={redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : '/login'} className="font-bold text-white/60 hover:text-white transition">{t('auth.signIn')}</Link>
               </div>
             )}
             <a href="/#download-app" className="inline-flex items-center justify-center gap-1 font-bold text-sky-300/80 hover:text-sky-200 transition">
-              <Download className="h-3 w-3" /> Download app (no login)
+              <Download className="h-3 w-3" /> {t('auth.downloadApp')}
             </a>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

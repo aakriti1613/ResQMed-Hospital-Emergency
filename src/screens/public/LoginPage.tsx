@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Siren, Phone, AlertCircle, ArrowLeft, Stethoscope, FolderHeart, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { auth } from '../../firebase/client';
 import { isDemoMode } from '../../app/env';
-import { getUserProfile, isPhoneRegistered } from '../../data/user';
+import { getUserProfile, isPhoneRegistered, registerPhoneIndex } from '../../data/user';
+import { expireStaleSosForUser } from '../../data/sos';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 type Step = 'phone' | 'otp';
 
@@ -19,6 +22,7 @@ function validatePhone(raw: string) {
 export const LoginPage = () => {
   const nav = useNavigate();
   const loc = useLocation();
+  const { t } = useTranslation();
   const searchParams = new URLSearchParams(loc.search);
   const redirectPath = searchParams.get('redirect') || '/app';
   const [step, setStep] = useState<Step>('phone');
@@ -37,22 +41,22 @@ export const LoginPage = () => {
     setError(null);
     setBusy(true);
 
-    // ── Pre-OTP registration check ──
-    // If the phone isn't registered, bounce straight to /signup.
-    // This avoids wasting an SMS OTP and prevents orphan Firebase Auth users.
-    try {
-      const registered = await isPhoneRegistered(digits);
-      if (!registered) {
-        setBusy(false);
-        nav('/signup', {
-          state: { phone: digits, fromLogin: true, redirect: redirectPath },
-          replace: true,
-        });
-        return;
+    // Demo only: pre-check localStorage. Firebase skips this — uses OTP + profile lookup
+    // (phoneIndex may be missing for accounts created before that index existed).
+    if (isDemoMode) {
+      try {
+        const registered = await isPhoneRegistered(digits);
+        if (!registered) {
+          setBusy(false);
+          nav('/signup', {
+            state: { phone: digits, fromLogin: true, redirect: redirectPath },
+            replace: true,
+          });
+          return;
+        }
+      } catch {
+        // fall through to demo OTP
       }
-    } catch {
-      // If the check itself fails (e.g. rules), fall through to the OTP flow;
-      // the post-OTP profile check below will still redirect unregistered users.
     }
 
     if (isDemoMode) {
@@ -105,7 +109,11 @@ export const LoginPage = () => {
         const uid = await loginWithPhone(digits, otp.join(''));
         const profile = await getUserProfile(uid);
         setBusy(false);
-        if (profile) return nav(redirectPath);
+        if (profile) {
+          await registerPhoneIndex(digits, uid).catch(console.warn);
+          await expireStaleSosForUser(uid).catch(console.warn);
+          return nav(redirectPath);
+        }
         return nav('/signup', {
           state: { uid, phone: digits, fromLogin: true, redirect: redirectPath },
           replace: true,
@@ -119,6 +127,8 @@ export const LoginPage = () => {
       // still route unregistered users to signup after OTP verify.
       const profile = await getUserProfile(result.user.uid);
       if (profile) {
+        await registerPhoneIndex(digits, result.user.uid).catch(console.warn);
+        await expireStaleSosForUser(result.user.uid).catch(console.warn);
         nav(redirectPath);
       } else {
         nav('/signup', {
@@ -132,18 +142,22 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-dvh bg-[#0a0b0f] relative flex items-center justify-center px-5">
+    <div className="min-h-dvh bg-[#0a0b0f] relative">
       <div className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(220,38,38,0.07) 0%, transparent 60%)' }} />
 
-      <a
-        href="/#download-app"
-        className="absolute top-4 right-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[11px] font-black text-sky-100 hover:bg-sky-500/20 transition active:scale-95"
-      >
-        <Download className="h-3.5 w-3.5" /> Get app
-      </a>
+      <div className="absolute top-0 inset-x-0 z-30 flex items-center justify-between px-4 py-4">
+        <LanguageSwitcher compact menuAlign="left" />
+        <a
+          href="/#download-app"
+          className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-[11px] font-black text-sky-100 hover:bg-sky-500/20 transition active:scale-95"
+        >
+          <Download className="h-3.5 w-3.5" /> {t('landing.getApp')}
+        </a>
+      </div>
 
-      <div className="relative z-10 w-full max-w-xs">
+      <div className="relative z-10 min-h-dvh flex items-center justify-center px-5 pt-16">
+      <div className="w-full max-w-xs">
         {/* Logo */}
         <div className="flex flex-col items-center mb-6 gap-3">
           <Link to="/">
@@ -154,28 +168,28 @@ export const LoginPage = () => {
           </Link>
           <div className="text-center">
             <div className="text-lg font-black text-white">Arogya Raksha</div>
-            <div className="text-xs text-white/40">Emergency SOS · Hospital booking · Health Vault</div>
+            <div className="text-xs text-white/40">{t('auth.tagline')}</div>
           </div>
         </div>
 
         {/* Value-props strip — reinforces that this isn't just an SOS app */}
         <div className="mb-5 grid grid-cols-3 gap-1.5">
-          <ValueChip icon={<Siren className="h-3.5 w-3.5 text-red-400" />}        label="SOS" />
-          <ValueChip icon={<Stethoscope className="h-3.5 w-3.5 text-emerald-300" />} label="Doctors" />
-          <ValueChip icon={<FolderHeart className="h-3.5 w-3.5 text-pink-300" />} label="Vault" />
+          <ValueChip icon={<Siren className="h-3.5 w-3.5 text-red-400" />}        label={t('auth.sosChip')} />
+          <ValueChip icon={<Stethoscope className="h-3.5 w-3.5 text-emerald-300" />} label={t('auth.doctorsChip')} />
+          <ValueChip icon={<FolderHeart className="h-3.5 w-3.5 text-pink-300" />} label={t('auth.vaultChip')} />
         </div>
 
         <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-6 shadow-2xl">
           <AnimatePresence mode="wait">
             {step === 'phone' ? (
               <motion.div key="phone" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 16 }}>
-                <h2 className="text-lg font-black text-white">Enter phone number</h2>
-                <p className="mt-1 text-xs text-white/35">We'll send a one-time OTP to verify</p>
+                <h2 className="text-lg font-black text-white">{t('auth.enterPhone')}</h2>
+                <p className="mt-1 text-xs text-white/35">{t('auth.otpHint')}</p>
 
                 {error && <ErrorBox msg={error} />}
 
                 <div className="mt-5 space-y-1">
-                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Mobile Number</label>
+                  <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{t('auth.mobileNumber')}</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                       <Phone className="h-3.5 w-3.5 text-white/30" />
@@ -198,14 +212,14 @@ export const LoginPage = () => {
                   </div>
                   {phoneError && <p className="text-[10px] text-red-400 font-medium">{phoneError}</p>}
                   {digits.length === 10 && !phoneError && (
-                    <p className="text-[10px] text-emerald-400 font-medium">✓ Valid number</p>
+                    <p className="text-[10px] text-emerald-400 font-medium">{t('auth.validNumber')}</p>
                   )}
                 </div>
 
                 <button id="login-send-otp" onClick={handleSendOtp} disabled={digits.length !== 10 || !!phoneError || busy}
                   className="mt-4 w-full h-12 rounded-full text-sm font-black text-white transition active:scale-95 disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
-                  {busy ? <Spinner /> : 'Send OTP →'}
+                  {busy ? <Spinner label={t('auth.verifying')} /> : t('auth.sendOtp')}
                 </button>
                 <div id="login-recaptcha-wrapper" className="mt-4">
                   <div id="login-recaptcha-container"></div>
@@ -215,11 +229,11 @@ export const LoginPage = () => {
               <motion.div key="otp" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }}>
                 <button onClick={() => { setStep('phone'); setOtp(['', '', '', '', '', '']); setError(null); }}
                   className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition mb-4">
-                  <ArrowLeft className="h-3.5 w-3.5" /> Change number
+                  <ArrowLeft className="h-3.5 w-3.5" /> {t('auth.changeNumber')}
                 </button>
-                <h2 className="text-lg font-black text-white">Verify OTP</h2>
-                <p className="mt-1 text-xs text-white/35">Sent to <span className="text-white/65">+91 {digits}</span></p>
-                <p className="mt-0.5 text-[10px] text-white/20">(Demo mode: any 6 digits)</p>
+                <h2 className="text-lg font-black text-white">{t('auth.verifyOtp')}</h2>
+                <p className="mt-1 text-xs text-white/35">{t('auth.sentTo')} <span className="text-white/65">+91 {digits}</span></p>
+                <p className="mt-0.5 text-[10px] text-white/20">{t('auth.demoOtpHint')}</p>
 
                 {error && <ErrorBox msg={error} />}
 
@@ -259,7 +273,7 @@ export const LoginPage = () => {
                   disabled={busy || otp.join('').length < 6}
                   className="mt-4 w-full h-12 rounded-full text-sm font-black text-white transition active:scale-95 disabled:opacity-40"
                   style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 0 20px rgba(220,38,38,0.3)' }}>
-                  {busy ? <Spinner /> : 'Verify & Sign In →'}
+                  {busy ? <Spinner label={t('auth.verifying')} /> : t('auth.verifySignIn')}
                 </button>
               </motion.div>
             )}
@@ -267,14 +281,15 @@ export const LoginPage = () => {
 
           <div className="mt-5 pt-4 border-t border-white/[0.04] text-center text-xs text-white/25 space-y-2">
             <div>
-              No account?{' '}
-              <Link to="/signup" className="font-bold text-white/55 hover:text-white transition">Sign up</Link>
+              {t('auth.noAccount')}{' '}
+              <Link to={`/signup?redirect=${encodeURIComponent(redirectPath)}`} className="font-bold text-white/55 hover:text-white transition">{t('auth.signUp')}</Link>
             </div>
             <a href="/#download-app" className="inline-flex items-center justify-center gap-1 font-bold text-sky-300/80 hover:text-sky-200 transition">
-              <Download className="h-3 w-3" /> Download app (no login)
+              <Download className="h-3 w-3" /> {t('auth.downloadApp')}
             </a>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -293,12 +308,12 @@ const ValueChip = ({ icon, label }: { icon: React.ReactNode; label: string }) =>
   </div>
 );
 
-const Spinner = () => (
+const Spinner = ({ label }: { label?: string }) => (
   <span className="flex items-center justify-center gap-2">
     <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
-    Verifying…
+    {label ?? '…'}
   </span>
 );

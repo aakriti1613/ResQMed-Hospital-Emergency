@@ -327,7 +327,7 @@ export const AnalyticsDashboardPage = () => {
                 <BarChart7Day
                   days={a.last7Days}
                   valueKey="count"
-                  label="Daily SOS count"
+                  label={t('analytics.dailySosCount')}
                   color="url(#redGrad)"
                 />
               ) : (
@@ -354,7 +354,7 @@ export const AnalyticsDashboardPage = () => {
                 <BarChart7Day
                   days={a.last7Days}
                   valueKey="avgResponseSec"
-                  label="Seconds to first helper acceptance"
+                  label={t('analytics.secondsToAcceptance')}
                   color="url(#skyGrad)"
                 />
               ) : (

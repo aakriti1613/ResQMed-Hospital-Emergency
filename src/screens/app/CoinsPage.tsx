@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Award, TrendingUp, History, HeartPulse, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Award, TrendingUp, History, HeartPulse, Star, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import {
   listenUserPointsBalance,
@@ -42,7 +43,13 @@ export const CoinsPage = () => {
   const pctToNext = nextTier ? Math.min(100, ((balance - tier.min) / (nextTier.min - tier.min)) * 100) : 100;
 
   return (
-    <div className="flex flex-col items-center max-w-lg mx-auto w-full pb-12 space-y-4">
+    <div className="flex flex-col items-center max-w-lg mx-auto w-full pb-12 space-y-4 px-4 pt-8">
+      <div className="w-full flex items-center gap-3 mb-2">
+        <Link to="/app" className="h-10 w-10 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-white/60">
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="text-lg font-black text-white">Arogya Points</h1>
+      </div>
 
       {/* Hero Balance Card */}
       <div className={`w-full rounded-3xl border ${tier.border} bg-[#13141a] p-6 text-center ${tier.glow} relative overflow-hidden`}>
@@ -155,9 +162,9 @@ export const CoinsPage = () => {
         <div className="grid grid-cols-2 gap-2">
           {[
             { action: 'Respond to SOS', pts: '+50 pts', color: 'text-rose-400' },
-            { action: 'Navigate to victim', pts: '+3/step', color: 'text-blue-400' },
+            { action: 'Health day quiz', pts: '+40 pts', color: 'text-violet-400' },
+            { action: 'Scenario challenge', pts: '+30 pts', color: 'text-cyan-400' },
             { action: 'First responder', pts: '+20 pts', color: 'text-emerald-400' },
-            { action: 'Book appointment', pts: '+10 pts', color: 'text-amber-400' },
           ].map((item) => (
             <div key={item.action} className="rounded-2xl bg-white/3 p-3">
               <div className="text-xs font-semibold text-white/60">{item.action}</div>
@@ -165,6 +172,12 @@ export const CoinsPage = () => {
             </div>
           ))}
         </div>
+        <Link
+          to="/app/challenges"
+          className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl border border-violet-500/25 bg-violet-500/10 py-3 text-xs font-black text-violet-200 hover:bg-violet-500/15 transition"
+        >
+          Play Health Day Challenges →
+        </Link>
       </div>
     </div>
   );

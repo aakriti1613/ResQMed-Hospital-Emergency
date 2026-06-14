@@ -1,9 +1,11 @@
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import {
   Siren, HandHeart, Stethoscope, CalendarCheck2, FolderHeart, Trophy, ShieldCheck,
   Sparkles, MapPin, ChevronRight, Clock, Heart, Phone, Smartphone, Download,
 } from 'lucide-react';
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 const blockReveal = {
   hidden: { opacity: 0, y: 26 },
@@ -29,16 +31,37 @@ const gridChild = {
   },
 };
 
+const FEATURE_ICONS = [
+  { icon: Siren, tint: '#ef4444' },
+  { icon: HandHeart, tint: '#3b82f6' },
+  { icon: Stethoscope, tint: '#10b981' },
+  { icon: CalendarCheck2, tint: '#f59e0b' },
+  { icon: FolderHeart, tint: '#ec4899' },
+  { icon: Trophy, tint: '#8b5cf6' },
+  { icon: ShieldCheck, tint: '#14b8a6' },
+  { icon: MapPin, tint: '#6366f1' },
+  { icon: Heart, tint: '#d946ef' },
+] as const;
+
+const STEP_NUMS = ['01', '02', '03'] as const;
+
 export const LandingPage = () => {
   const nav = useNavigate();
+  const { t } = useTranslation();
   const reduceMotion = useReducedMotion();
   const { scrollYProgress, scrollY } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 220, damping: 30, mass: 0.5 });
   const heroParallaxY = useTransform(scrollY, [0, 500], [0, -24]);
 
+  const featureList = t('landing.featureList', { returnObjects: true }) as { title: string; desc: string }[];
+  const steps = t('landing.steps', { returnObjects: true }) as { title: string; desc: string }[];
+  const emergencyBullets = t('landing.emergencyBullets', { returnObjects: true }) as string[];
+  const careBullets = t('landing.careBullets', { returnObjects: true }) as string[];
+
+  const sosRedirect = '/login?redirect=' + encodeURIComponent('/app/sos?from=landing');
+
   return (
     <div className="min-h-dvh bg-[#0a0b0f] overflow-x-hidden text-white">
-      {/* Scroll progress (subtle) */}
       <motion.div
         aria-hidden
         className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left"
@@ -48,7 +71,6 @@ export const LandingPage = () => {
         }}
       />
 
-      {/* Top bar */}
       <motion.header
         initial={{ y: -12, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -68,27 +90,27 @@ export const LandingPage = () => {
             <span className="text-sm font-black tracking-tight group-hover:text-white/90 transition">Arogya Raksha</span>
           </Link>
           <div className="flex items-center gap-1.5 shrink-0">
+            <LanguageSwitcher compact />
             <a
               href="#download-app"
-              title="Download app — no login required"
+              title={t('landing.getAppTitle')}
               className="inline-flex h-8 shrink-0 px-2.5 rounded-full text-[10px] font-black text-sky-200/90 hover:text-white border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/15 items-center transition gap-1"
             >
               <Download className="h-3.5 w-3.5 shrink-0" />
-              <span className="whitespace-nowrap">Get app</span>
+              <span className="whitespace-nowrap">{t('landing.getApp')}</span>
             </a>
             <Link to="/login" className="h-8 px-2.5 rounded-full text-[10px] font-black text-white/70 hover:text-white hover:bg-white/[0.06] flex items-center transition">
-              Log in
+              {t('landing.login')}
             </Link>
             <Link to="/signup"
               className="h-8 px-2.5 rounded-full text-[10px] font-black text-white flex items-center transition active:scale-95"
               style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 16px rgba(220,38,38,0.35)' }}>
-              Sign up →
+              {t('landing.signup')}
             </Link>
           </div>
         </div>
       </motion.header>
 
-      {/* Hero */}
       <section className="relative px-4 pt-8 pb-12 max-w-lg mx-auto overflow-hidden">
         {!reduceMotion && (
           <>
@@ -126,26 +148,33 @@ export const LandingPage = () => {
               className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 mb-4"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-black tracking-widest text-emerald-300">LIVE IN YOUR CITY</span>
+              <span className="text-[10px] font-black tracking-widest text-emerald-300">{t('landing.liveBadge')}</span>
             </motion.div>
             <h1 className="text-[2.1rem] sm:text-[2.3rem] font-black leading-[1.06] tracking-tight">
-              One app for every <motion.span
-                className="text-red-400 inline-block"
-                initial={reduceMotion ? undefined : { opacity: 0, x: -8 }}
-                animate={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ delay: 0.15, duration: 0.45 }}
-              >health emergency</motion.span> and every
-              <motion.span
-                className="text-emerald-300 inline-block"
-                initial={reduceMotion ? undefined : { opacity: 0, x: 8 }}
-                animate={reduceMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ delay: 0.22, duration: 0.45 }}
-              > hospital visit</motion.span>.
+              <Trans
+                i18nKey="landing.heroTitle"
+                components={{
+                  1: (
+                    <motion.span
+                      className="text-red-400 inline-block"
+                      initial={reduceMotion ? undefined : { opacity: 0, x: -8 }}
+                      animate={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+                      transition={{ delay: 0.15, duration: 0.45 }}
+                    />
+                  ),
+                  2: (
+                    <motion.span
+                      className="text-emerald-300 inline-block"
+                      initial={reduceMotion ? undefined : { opacity: 0, x: 8 }}
+                      animate={reduceMotion ? undefined : { opacity: 1, x: 0 }}
+                      transition={{ delay: 0.22, duration: 0.45 }}
+                    />
+                  ),
+                }}
+              />
             </h1>
             <p className="mt-4 text-sm text-white/55 max-w-lg leading-relaxed">
-              Arogya Raksha is an Uber-for-hospitals that also summons nearby helpers the instant you
-              raise an SOS. Book doctors by department, store prescriptions in your Health Vault, and
-              earn points every time you rescue a neighbour — all from one clean interface.
+              {t('landing.heroDesc')}
             </p>
 
             <motion.div
@@ -157,11 +186,11 @@ export const LandingPage = () => {
               <motion.button
                 whileHover={reduceMotion ? undefined : { scale: 1.03 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-                onClick={() => nav('/app/sos?from=landing')}
+                onClick={() => nav(sosRedirect)}
                 className="h-12 w-full px-5 rounded-full flex items-center justify-center gap-2 text-sm font-black transition"
                 style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 24px rgba(220,38,38,0.45)' }}
               >
-                <Siren className="h-4 w-4" /> I need help now
+                <Siren className="h-4 w-4" /> {t('landing.needHelp')}
               </motion.button>
               <motion.button
                 whileHover={reduceMotion ? undefined : { scale: 1.03 }}
@@ -170,7 +199,7 @@ export const LandingPage = () => {
                 className="h-12 w-full px-5 rounded-full flex items-center justify-center gap-2 text-sm font-black transition"
                 style={{ background: 'linear-gradient(135deg,#10b981,#047857)', boxShadow: '0 0 24px rgba(16,185,129,0.35)' }}
               >
-                <Stethoscope className="h-4 w-4" /> Book a doctor
+                <Stethoscope className="h-4 w-4" /> {t('landing.bookDoctor')}
               </motion.button>
               <motion.button
                 whileHover={reduceMotion ? undefined : { scale: 1.02 }}
@@ -178,7 +207,7 @@ export const LandingPage = () => {
                 onClick={() => nav('/login?redirect=/app/help')}
                 className="h-12 w-full px-5 rounded-full flex items-center justify-center gap-2 text-sm font-black bg-white/[0.05] border border-white/10 hover:bg-white/[0.08] transition"
               >
-                <HandHeart className="h-4 w-4" /> I can help
+                <HandHeart className="h-4 w-4" /> {t('landing.icanHelp')}
               </motion.button>
               <motion.a
                 href="#download-app"
@@ -186,21 +215,20 @@ export const LandingPage = () => {
                 whileTap={reduceMotion ? undefined : { scale: 0.97 }}
                 className="h-12 w-full px-5 rounded-full inline-flex items-center justify-center gap-2 text-sm font-black bg-sky-500/15 border border-sky-400/30 text-sky-100 hover:bg-sky-500/25 transition"
               >
-                <Download className="h-4 w-4" /> Get the app <span className="text-[10px] font-bold text-sky-200/70">(no login)</span>
+                <Download className="h-4 w-4" /> {t('landing.getTheApp')}{' '}
+                <span className="text-[10px] font-bold text-sky-200/70">{t('landing.noLogin')}</span>
               </motion.a>
             </motion.div>
 
             <div className="mt-6 grid grid-cols-1 gap-2 text-[11px] text-white/40">
-              <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> &lt; 10 s SOS dispatch</span>
-              <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> End-to-end encrypted vault</span>
-              <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Live Google Maps tracking</span>
+              <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {t('landing.trustSos')}</span>
+              <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> {t('landing.trustVault')}</span>
+              <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {t('landing.trustMaps')}</span>
             </div>
           </motion.div>
-
         </motion.div>
       </section>
 
-      {/* Platform pillars */}
       <motion.section
         className="px-4 pb-12 max-w-lg mx-auto"
         initial="hidden"
@@ -209,47 +237,33 @@ export const LandingPage = () => {
         variants={blockReveal}
       >
         <div className="text-center mb-8">
-          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">Two apps. One platform.</div>
-          <h2 className="mt-1 text-2xl font-black">Emergency response + Hospital care</h2>
-          <p className="mt-2 text-sm text-white/45 max-w-xl mx-auto">
-            Built for Indian users. Hospital booking and emergency SOS are first-class citizens — not
-            hidden behind menus.
-          </p>
+          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">{t('landing.pillarsEyebrow')}</div>
+          <h2 className="mt-1 text-2xl font-black">{t('landing.pillarsTitle')}</h2>
+          <p className="mt-2 text-sm text-white/45 max-w-xl mx-auto">{t('landing.pillarsDesc')}</p>
         </div>
 
         <div className="grid gap-3">
           <PillarCard
             tint="#ef4444"
-            title="Emergency Response"
-            subtitle="Uber-style SOS with live helper tracking"
-            bullets={[
-              'Auto crash detection + manual SOS',
-              'Popup alerts on every nearby helper',
-              'Live Google Maps ETA for helpers & ambulance',
-              'Emergency contacts notified in real time',
-            ]}
-            cta="Try the SOS flow →"
-            onCta={() => nav('/app/sos?from=landing')}
+            title={t('landing.emergencyTitle')}
+            subtitle={t('landing.emergencySubtitle')}
+            bullets={emergencyBullets}
+            cta={t('landing.emergencyCta')}
+            onCta={() => nav(sosRedirect)}
             icon={<Siren className="h-6 w-6" />}
           />
           <PillarCard
             tint="#10b981"
-            title="Hospital &amp; Doctor Booking"
-            subtitle="Find a doctor by department, book in seconds"
-            bullets={[
-              '12 departments — Cardiology to Dental',
-              'Nearby hospitals on Google Maps',
-              'Partner hospital with curated doctor roster',
-              'Prescription & report vault, synced',
-            ]}
-            cta="Browse doctors →"
+            title={t('landing.careTitle')}
+            subtitle={t('landing.careSubtitle')}
+            bullets={careBullets}
+            cta={t('landing.careCta')}
             onCta={() => nav('/login?redirect=/app/care')}
             icon={<Stethoscope className="h-6 w-6" />}
           />
         </div>
       </motion.section>
 
-      {/* Feature grid */}
       <motion.section
         className="px-4 pb-12 max-w-lg mx-auto"
         initial="hidden"
@@ -258,8 +272,8 @@ export const LandingPage = () => {
         variants={blockReveal}
       >
         <div className="mb-6">
-          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">What's inside</div>
-          <h2 className="mt-1 text-2xl font-black">Everything you need, in one place</h2>
+          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">{t('landing.featuresEyebrow')}</div>
+          <h2 className="mt-1 text-2xl font-black">{t('landing.featuresTitle')}</h2>
         </div>
         <motion.div
           className="grid grid-cols-1 gap-2"
@@ -268,19 +282,18 @@ export const LandingPage = () => {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          <FeatureCard icon={<Siren className="h-5 w-5" />} title="Instant SOS" desc="One tap raises an alert to nearby volunteers + ambulances + emergency contacts." tint="#ef4444" />
-          <FeatureCard icon={<HandHeart className="h-5 w-5" />} title="I-Can-Help popup" desc="Nearby helpers get a Rapido-style request popup, with distance, ETA and one-tap accept." tint="#3b82f6" />
-          <FeatureCard icon={<Stethoscope className="h-5 w-5" />} title="Department finder" desc="Browse Cardio, Ortho, Derma and 9 more. See doctor credentials and fees upfront." tint="#10b981" />
-          <FeatureCard icon={<CalendarCheck2 className="h-5 w-5" />} title="Real slots, real doctors" desc="Pick a day, a time, describe your symptoms and get a confirmed booking." tint="#f59e0b" />
-          <FeatureCard icon={<FolderHeart className="h-5 w-5" />} title="Health Vault" desc="Upload prescriptions, lab reports and imaging. Access them anywhere, anytime." tint="#ec4899" />
-          <FeatureCard icon={<Trophy className="h-5 w-5" />} title="Arogya points" desc="Earn 200 points per rescue. Unlock free appointments, discounts and community badges." tint="#8b5cf6" />
-          <FeatureCard icon={<ShieldCheck className="h-5 w-5" />} title="Built on Firebase" desc="Realtime Firestore, phone OTP auth and Google Maps — fast, secure, scalable." tint="#14b8a6" />
-          <FeatureCard icon={<MapPin className="h-5 w-5" />} title="Live tracking" desc="Victims see their helper's marker approach on a live map — just like Uber / Rapido." tint="#6366f1" />
-          <FeatureCard icon={<Heart className="h-5 w-5" />} title="Community-first" desc="Leaderboards celebrate the top rescuers in your city every month." tint="#d946ef" />
+          {FEATURE_ICONS.map((f, i) => (
+            <FeatureCard
+              key={i}
+              icon={<f.icon className="h-5 w-5" />}
+              title={featureList[i]?.title ?? ''}
+              desc={featureList[i]?.desc ?? ''}
+              tint={f.tint}
+            />
+          ))}
         </motion.div>
       </motion.section>
 
-      {/* How it works */}
       <motion.section
         className="px-4 pb-12 max-w-lg mx-auto"
         initial="hidden"
@@ -289,23 +302,22 @@ export const LandingPage = () => {
         variants={blockReveal}
       >
         <div className="mb-6">
-          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">How it works</div>
-          <h2 className="mt-1 text-2xl font-black">From tap to care in 3 steps</h2>
+          <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">{t('landing.howEyebrow')}</div>
+          <h2 className="mt-1 text-2xl font-black">{t('landing.howTitle')}</h2>
         </div>
         <div className="grid grid-cols-1 gap-3">
-          <Step n="01" title="Sign up with your mobile"
-            desc="One-time phone OTP. Add your emergency contacts and blood group."
-          />
-          <Step n="02" title="Pick your service"
-            desc="Raise an SOS, book a doctor in any department, or upload a report."
-          />
-          <Step n="03" title="We handle the rest"
-            desc="Helpers are notified. Bookings land in your appointments. Rewards stack up."
-          />
+          {STEP_NUMS.map((n, i) => (
+            <Step
+              key={n}
+              n={n}
+              stepLabel={t('landing.stepLabel', { n })}
+              title={steps[i]?.title ?? ''}
+              desc={steps[i]?.desc ?? ''}
+            />
+          ))}
         </div>
       </motion.section>
 
-      {/* Download app */}
       <section id="download-app" className="px-4 pb-12 max-w-lg mx-auto scroll-mt-24">
         <motion.div
           initial={reduceMotion ? undefined : { opacity: 0, y: 24 }}
@@ -321,12 +333,12 @@ export const LandingPage = () => {
             <div className="flex-1">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 mb-3">
                 <Smartphone className="h-3.5 w-3.5 text-sky-300" />
-                <span className="text-[10px] font-black tracking-widest text-white/70 uppercase">Get the app</span>
+                <span className="text-[10px] font-black tracking-widest text-white/70 uppercase">{t('landing.downloadBadge')}</span>
               </div>
-              <h2 className="text-2xl font-black leading-tight">Download Arogya Raksha</h2>
+              <h2 className="text-2xl font-black leading-tight">{t('landing.downloadTitle')}</h2>
               <p className="mt-2 text-sm text-white/55 max-w-lg leading-relaxed">
-                Install on your phone for faster SOS, offline-friendly shortcuts, and optional home-screen alerts.
-                Store builds ship soon — for now use the web app as a <strong className="text-white/80">Progressive Web App</strong>.
+                {t('landing.downloadDesc')}{' '}
+                <strong className="text-white/80">{t('landing.downloadPwa')}</strong>.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-2 w-full">
@@ -335,26 +347,25 @@ export const LandingPage = () => {
                 download="arogya-raksha.webmanifest"
                 className="h-12 w-full px-5 rounded-2xl flex items-center justify-center gap-2 text-sm font-black bg-white text-slate-950 hover:bg-white/95 transition active:scale-[0.98]"
               >
-                <Download className="h-4 w-4" /> Web manifest
+                <Download className="h-4 w-4" /> {t('landing.webManifest')}
               </a>
               <button
                 type="button"
                 onClick={() => nav('/signup')}
                 className="h-12 w-full px-5 rounded-2xl flex items-center justify-center gap-2 text-sm font-black border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] transition active:scale-[0.98]"
               >
-                Open in browser <ChevronRight className="h-4 w-4" />
+                {t('landing.openInBrowser')} <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
           <p className="relative mt-4 text-[11px] text-white/40">
-            <strong className="text-white/55">Android / Chrome:</strong> Menu → Install app / Add to Home screen.
+            <strong className="text-white/55">{t('landing.installAndroid')}</strong> {t('landing.installAndroidSteps')}
             <span className="mx-2 text-white/25">·</span>
-            <strong className="text-white/55">iOS / Safari:</strong> Share → Add to Home Screen.
+            <strong className="text-white/55">{t('landing.installIos')}</strong> {t('landing.installIosSteps')}
           </p>
         </motion.div>
       </section>
 
-      {/* CTA */}
       <motion.section
         className="px-4 pb-14 max-w-lg mx-auto"
         initial="hidden"
@@ -367,14 +378,9 @@ export const LandingPage = () => {
             style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(220,38,38,0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(16,185,129,0.18) 0%, transparent 55%)' }} />
           <div className="relative grid grid-cols-1 gap-5 items-center">
             <div>
-              <div className="text-[10px] font-black tracking-widest text-white/50 uppercase">Join Arogya Raksha</div>
-              <h3 className="mt-1 text-2xl font-black leading-tight">
-                Your neighbourhood's safety net — and your doctor's waiting room — in the same app.
-              </h3>
-              <p className="mt-2 text-sm text-white/50 max-w-md">
-                Whether you need instant emergency help or a routine check-up tomorrow morning, Arogya
-                Raksha makes it effortless.
-              </p>
+              <div className="text-[10px] font-black tracking-widest text-white/50 uppercase">{t('landing.joinEyebrow')}</div>
+              <h3 className="mt-1 text-2xl font-black leading-tight">{t('landing.joinTitle')}</h3>
+              <p className="mt-2 text-sm text-white/50 max-w-md">{t('landing.joinDesc')}</p>
             </div>
             <div className="flex flex-col gap-3">
               <button
@@ -382,35 +388,35 @@ export const LandingPage = () => {
                 className="h-12 rounded-full text-sm font-black transition active:scale-95"
                 style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 24px rgba(220,38,38,0.45)' }}
               >
-                Create free account
+                {t('landing.createFreeAccount')}
               </button>
               <Link
                 to="/login"
                 className="h-12 rounded-full flex items-center justify-center text-sm font-black bg-white/[0.05] border border-white/10 hover:bg-white/[0.08] transition active:scale-95"
               >
-                I already have an account
+                {t('landing.haveAccount')}
               </Link>
               <div className="mt-2 text-center text-[11px] text-white/35">
-                In a real emergency, call <a href="tel:112" className="text-white/80 underline underline-offset-2">112</a>
-                {' '}(Emergency) ·
-                <a href="tel:108" className="text-white/80 underline underline-offset-2 ml-1">108</a> (Ambulance).
+                {t('landing.emergencyCall')}{' '}
+                <a href="tel:112" className="text-white/80 underline underline-offset-2">112</a>
+                {' '}({t('landing.emergency')}) ·
+                <a href="tel:108" className="text-white/80 underline underline-offset-2 ml-1">108</a> ({t('landing.ambulance')}).
               </div>
             </div>
           </div>
         </div>
       </motion.section>
 
-      {/* Footer */}
       <footer className="border-t border-white/[0.06] py-6">
         <div className="max-w-lg mx-auto px-4 flex flex-col items-center text-center gap-3">
-          <div className="text-[11px] text-white/35">© {new Date().getFullYear()} Arogya Raksha · Built with care</div>
+          <div className="text-[11px] text-white/35">© {new Date().getFullYear()} Arogya Raksha · {t('landing.footerBuilt')}</div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-white/35">
             <a href="/#download-app" className="inline-flex items-center gap-1 hover:text-sky-300 font-semibold text-white/50">
-              <Download className="h-3 w-3" /> App
+              <Download className="h-3 w-3" /> {t('landing.footerApp')}
             </a>
             <a href="tel:112" className="inline-flex items-center gap-1 hover:text-white/60"><Phone className="h-3 w-3" /> 112</a>
             <a href="tel:108" className="inline-flex items-center gap-1 hover:text-white/60"><Phone className="h-3 w-3" /> 108</a>
-            <Link to="/signup" className="hover:text-white/60">Get started →</Link>
+            <Link to="/signup" className="hover:text-white/60">{t('landing.footerGetStarted')}</Link>
           </div>
         </div>
       </footer>
@@ -418,7 +424,6 @@ export const LandingPage = () => {
   );
 };
 
-// ── Sub-components ──────────────────────────────────────────────────────────
 const PillarCard = ({
   tint, title, subtitle, bullets, cta, onCta, icon,
 }: {
@@ -481,7 +486,7 @@ const FeatureCard = ({
   </motion.div>
 );
 
-const Step = ({ n, title, desc }: { n: string; title: string; desc: string }) => (
+const Step = ({ n, stepLabel, title, desc }: { n: string; stepLabel: string; title: string; desc: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 18 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -493,7 +498,7 @@ const Step = ({ n, title, desc }: { n: string; title: string; desc: string }) =>
       {n}
     </div>
     <div className="relative">
-      <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">Step {n}</div>
+      <div className="text-[10px] font-black tracking-widest text-white/45 uppercase">{stepLabel}</div>
       <div className="mt-1 text-base font-black text-white">{title}</div>
       <p className="mt-1 text-[12px] text-white/55 leading-relaxed">{desc}</p>
       <Sparkles className="h-4 w-4 text-white/20 mt-3" />

@@ -80,6 +80,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         contacts: u.emergencyContacts || u.contacts || [],
         trustScore: u.trustScore ?? 98,
         badges: u.badges || ['Verified Helper', 'CPR Certified'],
+        points: typeof u.points === 'number' ? u.points : 0,
+        helpedCount: typeof u.helpedCount === 'number' ? u.helpedCount : 0,
       } as UserProfile;
     } catch { return null; }
   }
@@ -106,7 +108,7 @@ export async function isPhoneRegistered(phone: string): Promise<boolean> {
     try {
       const u = JSON.parse(raw);
       const stored = String(u.phone || '').replace(/\D/g, '');
-      return stored === clean;
+      return stored === clean || stored.endsWith(clean) || clean.endsWith(stored);
     } catch { return false; }
   }
 
@@ -169,9 +171,11 @@ export function listenUserProfile(
   }
 
   if (isDemoMode) {
-    // Demo mode has no realtime feed; fire once from localStorage and bail.
-    getUserProfile(uid).then(cb).catch(() => cb(null));
-    return () => {};
+    const load = () => getUserProfile(uid).then(cb).catch(() => cb(null));
+    load();
+    const onUpdate = () => { load(); };
+    window.addEventListener('arogya-challenge-progress', onUpdate);
+    return () => window.removeEventListener('arogya-challenge-progress', onUpdate);
   }
 
   const ref = doc(db, 'users', uid);

@@ -20,6 +20,8 @@ import {
 } from '../../data/user';
 import { REWARD_TIERS, tierProgress, type RewardTier } from '../../data/rewards';
 import { LocationSearchModal } from '../../components/LocationSearchModal';
+import { ReadinessScoreCard } from '../../components/ReadinessScoreCard';
+import { useEmergencyReadiness } from '../../hooks/useEmergencyReadiness';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
@@ -53,6 +55,7 @@ export const ProfilePage = () => {
   const { user } = useAuth();
   const { theme, toggle: toggleTheme } = useTheme();
   const { t, i18n } = useTranslation();
+  const { readiness } = useEmergencyReadiness();
   const [busy, setBusy] = useState(false);
   const [section, setSection] = useState<Section>('main');
   const [toast, setToast] = useState<string | null>(null);
@@ -300,6 +303,8 @@ export const ProfilePage = () => {
         helpedCount={helpedCount}
         onOpen={() => setSection('rewards')}
       />
+
+      <ReadinessScoreCard readiness={readiness} showFactors />
 
       {/* ── Settings rows ── */}
       <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden divide-y divide-white/[0.04]">

@@ -28,7 +28,10 @@ export type UserPointsBalance = {
 
 export async function awardPoints(userId: string, points: number, reason: string) {
   if (isDemoMode) {
-    // In demo mode, we just return a fake ID
+    const key = 'arogya_demo_points_balance';
+    const current = Number(localStorage.getItem(key) || '120');
+    localStorage.setItem(key, String(current + points));
+    window.dispatchEvent(new CustomEvent('arogya-challenge-progress'));
     return `demo-${Date.now()}`;
   }
 
@@ -60,9 +63,14 @@ export async function awardPoints(userId: string, points: number, reason: string
 
 export function listenUserPointsBalance(userId: string, cb: (balance: number) => void) {
   if (isDemoMode) {
-    // Mock baseline
-    cb(120);
-    return () => {};
+    const read = () => {
+      const fromKey = Number(localStorage.getItem('arogya_demo_points_balance') || '120');
+      cb(fromKey);
+    };
+    read();
+    const onUpdate = () => read();
+    window.addEventListener('arogya-challenge-progress', onUpdate);
+    return () => window.removeEventListener('arogya-challenge-progress', onUpdate);
   }
   return onSnapshot(doc(db, 'pointBalances', userId), (snap) => {
     if (snap.exists()) {

@@ -266,15 +266,15 @@ export const HelpPage = () => {
             <HandHeart className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-black text-white">I Can Help</h1>
-            <p className="text-xs text-white/35">Respond to nearby emergencies</p>
+            <h1 className="text-xl font-black text-white">{t('help.iCanHelp')}</h1>
+            <p className="text-xs text-white/35">{t('help.subtitle')}</p>
           </div>
           <button
             type="button"
             onClick={() => nav('/app/trips')}
             className="h-10 px-3 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition active:scale-95 flex items-center gap-2 text-[11px] font-black text-white/70 shrink-0"
           >
-            <Car className="h-4 w-4 text-amber-300" /> Trips
+            <Car className="h-4 w-4 text-amber-300" /> {t('help.trips')}
           </button>
         </div>
 
@@ -288,7 +288,7 @@ export const HelpPage = () => {
                   ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
                   : 'text-white/35 hover:text-white/60',
               ].join(' ')}>
-              {id === 'need-help' ? '🆘 Need Help' : '🏆 Leaderboard'}
+              {id === 'need-help' ? `🆘 ${t('help.needHelp')}` : `🏆 ${t('help.leaderboard')}`}
             </button>
           ))}
         </div>

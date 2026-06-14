@@ -68,6 +68,51 @@ export type SosRequestDoc = {
   helpersAccepted?: string[];   // UIDs who clicked "Help Now"
 };
 
+/** Active SOS docs older than this are treated as stale (won't auto-resume or redirect). */
+export const SOS_STALE_MS = 30 * 60 * 1000;
+
+function getCreatedMs(data: Record<string, unknown>): number {
+  const createdAt = data.createdAt as { seconds?: number } | number | undefined;
+  if (createdAt && typeof createdAt === 'object' && createdAt.seconds) {
+    return createdAt.seconds * 1000;
+  }
+  if (typeof createdAt === 'number') return createdAt;
+  return 0;
+}
+
+function isSosStale(data: Record<string, unknown>): boolean {
+  const createdMs = getCreatedMs(data);
+  if (!createdMs) return false;
+  return Date.now() - createdMs > SOS_STALE_MS;
+}
+
+function mapSosDoc(id: string, data: Record<string, unknown>): SosRequestDoc {
+  return {
+    id,
+    victimId: data.victimId as string,
+    status: data.status as SosStatus,
+    severity: data.severity as SosSeverity,
+    source: ((data.source as string) || 'mobile') as 'hardware' | 'mobile',
+    countdown: (data.countdown as number) ?? 0,
+    location: (data.location as { lat: number; lon: number } | null) ?? null,
+    hasValidLocation: (data.hasValidLocation as boolean) ?? false,
+    isApproximate: (data.isApproximate as boolean) ?? false,
+    radiusKm: (data.radiusKm as number) ?? 5,
+    primaryHelperId: data.primaryHelperId as string | undefined,
+    incidentType: data.incidentType as IncidentType | undefined,
+    symptomNotes: data.symptomNotes as string | undefined,
+    victimBrief: data.victimBrief as ParticipantBrief | undefined,
+    priority: (data.priority as number) ?? 1,
+    escalated: (data.escalated as boolean) ?? false,
+    escalationLevel: (data.escalationLevel as number) ?? 0,
+    lastEscalationTime: data.lastEscalationTime as number | undefined,
+    possibleUnconscious: (data.possibleUnconscious as boolean) ?? false,
+    monitoringStarted: (data.monitoringStarted as boolean) ?? false,
+    helpersAssigned: (data.helpersAssigned as string[]) ?? [],
+    helpersAccepted: (data.helpersAccepted as string[]) ?? [],
+  };
+}
+
 export type SosAssignmentDoc = {
   id: string;
   requestId: string;
@@ -104,34 +149,38 @@ export async function getActiveSosForUser(victimId: string): Promise<SosRequestD
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  const activeDocs = snap.docs.filter(d => (d.data() as any).status === 'active');
+  const activeDocs = snap.docs
+    .map((d) => ({ id: d.id, data: d.data() as Record<string, unknown> }))
+    .filter(({ data }) => data.status === 'active' && !isSosStale(data))
+    .sort((a, b) => getCreatedMs(b.data) - getCreatedMs(a.data));
   if (activeDocs.length === 0) return null;
-  const d = activeDocs[0]!;
-  const data: any = d.data();
-  return {
-    id: d.id,
-    victimId: data.victimId,
-    status: data.status,
-    severity: data.severity,
-    source: data.source || 'mobile',
-    countdown: data.countdown ?? 0,
-    location: data.location ?? null,
-    hasValidLocation: data.hasValidLocation ?? false,
-    isApproximate: data.isApproximate ?? false,
-    radiusKm: data.radiusKm ?? 5,
-    primaryHelperId: data.primaryHelperId,
-    incidentType: data.incidentType,
-    symptomNotes: data.symptomNotes,
-    victimBrief: data.victimBrief,
-    priority: data.priority ?? 1,
-    escalated: data.escalated ?? false,
-    escalationLevel: data.escalationLevel ?? 0,
-    lastEscalationTime: data.lastEscalationTime,
-    possibleUnconscious: data.possibleUnconscious ?? false,
-    monitoringStarted: data.monitoringStarted ?? false,
-    helpersAssigned: data.helpersAssigned ?? [],
-    helpersAccepted: data.helpersAccepted ?? [],
-  };
+  const { id, data } = activeDocs[0]!;
+  return mapSosDoc(id, data);
+}
+
+/** Mark stale active/countdown SOS docs as expired (e.g. on fresh login). */
+export async function expireStaleSosForUser(victimId: string): Promise<string[]> {
+  if (isDemoMode) return [];
+  const q = query(
+    collection(db, 'sosRequests'),
+    where('victimId', '==', victimId),
+    limit(50)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return [];
+  const stale = snap.docs.filter((d) => {
+    const data = d.data() as Record<string, unknown>;
+    const status = data.status as string;
+    return (status === 'active' || status === 'countdown') && isSosStale(data);
+  });
+  if (stale.length === 0) return [];
+  await Promise.all(
+    stale.map((d) =>
+      updateDoc(doc(db, 'sosRequests', d.id), { status: 'expired', updatedAt: serverTimestamp() })
+        .catch(console.warn)
+    )
+  );
+  return stale.map((d) => d.id);
 }
 
 /**
@@ -261,41 +310,17 @@ export function listenCurrentSosRequest(victimId: string, cb: (item: SosRequestD
     (snap) => {
       if (snap.empty) { cb(null); return; }
       const active = snap.docs
-        .map((d) => ({ id: d.id, ...(d.data() as any) }))
-        .filter((d) => d.status === 'countdown' || d.status === 'active')
-        .sort((a, b) => {
-          const ta = a.createdAt?.seconds ?? (typeof a.createdAt === 'number' ? a.createdAt / 1000 : 0);
-          const tb = b.createdAt?.seconds ?? (typeof b.createdAt === 'number' ? b.createdAt / 1000 : 0);
-          return tb - ta;
-        });
+        .map((d) => ({ id: d.id, data: d.data() as Record<string, unknown> }))
+        .filter(({ data }) => {
+          const status = data.status as string;
+          return (status === 'countdown' || status === 'active') && !isSosStale(data);
+        })
+        .sort((a, b) => getCreatedMs(b.data) - getCreatedMs(a.data));
 
       if (!active.length) { cb(null); return; }
-      const data = active[0];
-      console.log('[SOS Listener] Active SOS found:', data.id, data.status);
-      cb({
-        id: data.id,
-        victimId: data.victimId,
-        status: data.status,
-        severity: data.severity,
-        source: data.source,
-        countdown: data.countdown,
-        location: data.location,
-        hasValidLocation: data.hasValidLocation,
-        isApproximate: data.isApproximate ?? false,
-        radiusKm: data.radiusKm ?? 5,
-        primaryHelperId: data.primaryHelperId,
-        incidentType: data.incidentType,
-        symptomNotes: data.symptomNotes,
-        victimBrief: data.victimBrief,
-        priority: data.priority ?? 1,
-        escalated: data.escalated ?? false,
-        escalationLevel: data.escalationLevel ?? 0,
-        lastEscalationTime: data.lastEscalationTime,
-        possibleUnconscious: data.possibleUnconscious ?? false,
-        monitoringStarted: data.monitoringStarted ?? false,
-        helpersAssigned: data.helpersAssigned ?? [],
-        helpersAccepted: data.helpersAccepted ?? [],
-      });
+      const { id, data } = active[0]!;
+      console.log('[SOS Listener] Active SOS found:', id, data.status);
+      cb(mapSosDoc(id, data));
     },
     (err) => {
       console.error('[SOS Listener] onSnapshot error:', err.code, err.message);

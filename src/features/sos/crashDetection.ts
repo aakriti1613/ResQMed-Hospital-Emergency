@@ -1,3 +1,5 @@
+import { mlSeverityUrl } from '../../app/env';
+
 export type SensorSample = {
   lat: number;
   lon: number;
@@ -86,6 +88,8 @@ export async function analyzeSeverityWithML(
   speedBeforeKmh: number,
   healthContext?: { heartRate?: number; spo2?: number; noMovementDuration?: number }
 ): Promise<MLSeverityResponse | null> {
+  if (!mlSeverityUrl) return null;
+
   try {
     const window = simulateSensorWindow(sample.accelerationG);
     
@@ -98,7 +102,7 @@ export async function analyzeSeverityWithML(
       no_movement_duration: healthContext?.noMovementDuration || null
     };
 
-    const res = await fetch('http://localhost:8001/predict/severity', {
+    const res = await fetch(mlSeverityUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
