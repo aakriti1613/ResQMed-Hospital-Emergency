@@ -6,22 +6,6 @@
 
 **Uber-style emergency help** · **Hospital booking** · **Health vault** · **Safety toolkit**
 
-<br />
-
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Prototype-Coming_Soon-ef4444?style=for-the-badge)](https://your-firebase-hosting-url.web.app)
-[![Languages](https://img.shields.io/badge/🌐_Languages-EN_·_HI_·_TE-10b981?style=for-the-badge)]()
-[![License](https://img.shields.io/badge/📚_Project-Academic-6366f1?style=for-the-badge)]()
-
-<br />
-
-![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-
-<br />
-
 *English · हिन्दी · తెలుగు*
 
 </div>
@@ -31,8 +15,6 @@
 <br />
 
 ## 🎬 Live Prototype & Demo
-
-> 👇 **Yahan apna live link aur screenshots add karo** — mentors & judges ke liye sabse pehle yahi dikhega!
 
 <div align="center">
 
@@ -57,7 +39,7 @@
 
 | 🏠 Home | 🚨 SOS | 🏥 Care | 🛡️ Safety |
 |:---:|:---:|:---:|:---:|
-| image.png | *screenshot yahan | *screenshot yahan* | *screenshot yahan* |
+|<img width="532" height="1025" alt="image" src="https://github.com/user-attachments/assets/cf2c94e4-fe33-4ec7-bafb-49e4e3622b2d" />| <img width="499" height="1024" alt="image" src="https://github.com/user-attachments/assets/b56125f2-a798-446c-a1b8-ba56ce4fe6b7" />| <img width="506" height="931" alt="image" src="https://github.com/user-attachments/assets/954381f2-b69c-4aea-b881-26c1ef731a27" /> | <img width="494" height="930" alt="image" src="https://github.com/user-attachments/assets/7a26317c-ddca-47d3-86db-70a30aa8c030" />|
 | Dashboard · SOS card · Shortcuts | Live timeline · Helpers | Departments · Booking | Medical ID · Vault · Help |
 
 <br />
@@ -67,8 +49,7 @@
 <!--
 ![Demo GIF](./docs/demo.gif)
 -->
-
-> 🎬 *Screen recording ya GIF yahan embed karo — `docs/demo.gif` upload karke comment hata do*
+https://drive.google.com/drive/folders/1QgGScPH1PEJyWkn8pM74n7fJYiNJWjdL?usp=drive_link
 
 </div>
 
