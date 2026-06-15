@@ -1,199 +1,400 @@
-# Arogya Raksha (ResQMed)
+<div align="center">
 
-Emergency SOS + hospital booking platform for Indian users. One app for **instant emergency help** (Uber-style helper dispatch) and **routine care** (department-based doctor booking, health vault, appointments).
+# 🛡️ Arogya Raksha · ResQMed
 
-Built with **React 19**, **TypeScript**, **Vite**, **Firebase**, and **Hash Router** (works on static hosting without server-side routing).
+### *Emergency ho ya check-up — sab ek hi app mein.* 🇮🇳
 
----
+**Uber-style emergency help** · **Hospital booking** · **Health vault** · **Safety toolkit**
 
-## Features
+<br />
 
-| Area | Highlights |
-|------|------------|
-| **Emergency SOS** | One-tap SOS, live helper tracking, voice SOS (EN / HI / TE), crash detection |
-| **Helper network** | Rapido-style popup for nearby responders, chat, live maps ETA |
-| **Hospital care** | Browse departments → hospitals → doctors → book appointments |
-| **Health vault** | Upload prescriptions & reports (Firebase Storage) |
-| **Safety** | Medical ID, safety circle, emergency contacts |
-| **Gamification** | Aarogya Points, health-day quizzes & scenarios, emergency readiness score |
-| **Analytics** | SOS trends, response metrics, guardian leaderboard |
-| **i18n** | English, Hindi (हिन्दी), Telugu (తెలుగు) on landing, login, signup, and in-app |
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Prototype-Coming_Soon-ef4444?style=for-the-badge)](https://your-firebase-hosting-url.web.app)
+[![Languages](https://img.shields.io/badge/🌐_Languages-EN_·_HI_·_TE-10b981?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/📚_Project-Academic-6366f1?style=for-the-badge)]()
 
----
+<br />
 
-## Tech stack
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 
-- **Frontend:** React 19, TypeScript, Vite 8, Tailwind CSS, Framer Motion, React Router (hash)
-- **Backend:** Firebase Auth (phone OTP), Firestore, Storage, Cloud Functions (Node 18+)
-- **Maps:** Google Maps JavaScript API
-- **i18n:** i18next + react-i18next
+<br />
+
+*English · हिन्दी · తెలుగు*
+
+</div>
 
 ---
 
-## Prerequisites
+<br />
 
-- **Node.js** 18+ (20+ recommended)
-- **npm** 9+
-- **Firebase CLI** (for deploy): `npm install -g firebase-tools`
-- Firebase project with **Phone Authentication** enabled
-- Google Maps API key (Maps JavaScript API + Places, if used)
+## 🎬 Live Prototype & Demo
+
+> 👇 **Yahan apna live link aur screenshots add karo** — mentors & judges ke liye sabse pehle yahi dikhega!
+
+<div align="center">
+
+### 🔗 Live App Link : https://res-q-med-hospital-emergency.vercel.app
+
+<br />
+
+### 📱 App Screenshots
+
+<!-- 
+  📌 HOW TO ADD:
+  1. Create folder: docs/screenshots/
+  2. Add images: home.png, sos.png, care.png, safety.png
+  3. Uncomment the lines below
+-->
+
+<!--
+| 🏠 Home | 🚨 SOS | 🏥 Care | 🛡️ Safety |
+|:---:|:---:|:---:|:---:|
+| ![Home](./docs/screenshots/home.png) | ![SOS](./docs/screenshots/sos.png) | ![Care](./docs/screenshots/care.png) | ![Safety](./docs/screenshots/safety.png) |
+-->
+
+| 🏠 Home | 🚨 SOS | 🏥 Care | 🛡️ Safety |
+|:---:|:---:|:---:|:---:|
+| image.png | *screenshot yahan | *screenshot yahan* | *screenshot yahan* |
+| Dashboard · SOS card · Shortcuts | Live timeline · Helpers | Departments · Booking | Medical ID · Vault · Help |
+
+<br />
+
+### 🎥 Demo Video / GIF *(optional)*
+
+<!--
+![Demo GIF](./docs/demo.gif)
+-->
+
+> 🎬 *Screen recording ya GIF yahan embed karo — `docs/demo.gif` upload karke comment hata do*
+
+</div>
 
 ---
 
-## Quick start (local)
+<br />
+
+## 💡 Problem → Solution
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 😰 The Problem
+- Emergencies mein **help late** milti hai  
+- Hospital booking **alag apps** mein  
+- Medical records **kho jaate** hain  
+- Safety info **phone unlock** ke bina nahi milti  
+
+</td>
+<td width="50%" valign="top">
+
+### ✨ Our Solution
+- **One-tap SOS** → nearby helpers + ambulance flow  
+- **Care tab** → doctor book karo 1 minute mein  
+- **Health Vault** → prescriptions safe rahein  
+- **Medical ID** → responders turant dekhein  
+
+</td>
+</tr>
+</table>
+
+---
+
+<br />
+
+## ✨ Features — Detail Mein
+
+<div align="center">
+
+### 🗺️ App Flow
+
+```mermaid
+flowchart LR
+    A[🏠 Landing] --> B[📱 Phone OTP]
+    B --> C[🏡 Home]
+    C --> D[🚨 SOS]
+    C --> E[🏥 Care]
+    C --> F[🛡️ Safety]
+    C --> G[👤 Profile]
+    F --> H[❤️ Medical ID]
+    F --> I[📁 Health Vault]
+    F --> J[🤝 I Can Help]
+    F --> K[🎮 Challenges]
+```
+
+**Bottom Navigation:**  
+🏠 Home · 🩺 Care · **🚨 SOS** *(center FAB)* · 🛡️ Safety · 👤 Profile
+
+</div>
+
+<br />
+
+### 🚨 Emergency SOS
+
+| | |
+|---|---|
+| 🔴 | **One-tap SOS** — Big red button, instant trigger |
+| 🎙️ | **Voice SOS** — Bol ke help maango *(EN / HI / TE)* |
+| ⚠️ | **Crash mode** — Accident report + auto-alert |
+| 📍 | **Live location** — Share & track on map |
+| ⏱️ | **Live incident timeline** — Trigger → Helpers → Ambulance → Hospital |
+| 💬 | **In-app chat** — Victim ↔ Helper real-time |
+| 🏥 | **Hospital alerts** — ER prep notification |
+| ⛑️ | **Smart helmet sync** — Crash detection from Aarogya Helmet One |
+
+<br />
+
+### 🤝 Helper Network *(Rapido-style)*
+
+| | |
+|---|---|
+| 📡 | **Nearby SOS feed** — Live emergencies around you |
+| ✅ | **Accept & navigate** — ETA, distance, live map |
+| 🏆 | **Leaderboard** — Top helpers & Arogya Points |
+| 🚗 | **Trip history** — Helmet rides + help history |
+| 🔔 | **Popup overlay** — Incoming SOS alert even in-app |
+
+<br />
+
+### 🏥 Hospital & Care
+
+| | |
+|---|---|
+| 🩺 | **12+ departments** — Cardiology, Ortho, Dental, Pediatrics… |
+| 🗺️ | **Google Maps hospitals** — Nearby options live |
+| 🏨 | **Partner hospital** — Arogya Medicare · 24×7 booking |
+| 📅 | **Slot booking** — Dept → Hospital → Doctor → Confirm |
+| 🔔 | **Upcoming appointments** — Reminder on home screen |
+| 📁 | **Auto vault save** — Consultation records stored |
+
+<br />
+
+### 🛡️ Safety Toolkit
+
+| | |
+|---|---|
+| ❤️ | **Medical ID** — Blood group, allergies, meds · "Show Big" for paramedics |
+| 👥 | **Safety Circle** — Emergency contacts · WhatsApp/SMS cascade on SOS |
+| 📁 | **Health Vault** — Prescriptions, lab reports, X-rays upload |
+| 📞 | **Emergency helplines** — 112 · 108 · 100 · 1091 one-tap dial |
+| 🎮 | **Health challenges** — Quizzes & real-life scenarios |
+| 📊 | **Readiness score** — Profile + contacts + challenges = /100 |
+
+<br />
+
+### 🎮 Gamification & Learning
+
+| | |
+|---|---|
+| 🏅 | **Arogya Points** — Earn for helping, learning, completing profile |
+| 🎯 | **Health Day events** — Themed quizzes *(World Heart Day, etc.)* |
+| 🧠 | **Scenario challenges** — "What would you do?" first-aid situations |
+| 📈 | **Tier badges** — Rookie → Protector → Guardian → Hero |
+| 🏆 | **Community leaderboard** — Top guardians in your city |
+
+<br />
+
+### 📊 Analytics Dashboard
+
+| | |
+|---|---|
+| 📉 | **SOS trends** — Volume, severity, response times |
+| ⏱️ | **Avg. response metrics** — Helper accept · Ambulance · Hospital |
+| 🗺️ | **Hotspot map** — High-incident areas |
+| 👥 | **Guardian stats** — Community impact numbers |
+
+<br />
+
+### 🌐 Multilingual — Poora App
+
+| Language | Script | Coverage |
+|----------|--------|----------|
+| 🇬🇧 English | Latin | Full UI + voice SOS |
+| 🇮🇳 Hindi | हिन्दी | Dashboard, SOS timeline, departments, challenges |
+| 🇮🇳 Telugu | తెలుగు | Dashboard, SOS timeline, departments, challenges |
+
+<br />
+
+### ⛑️ Smart Helmet Integration
+
+| | |
+|---|---|
+| 🔗 | **Pair helmet** — BLE / QR demo pairing |
+| 🔋 | **Live status** — Battery, connection, sensor health |
+| 💥 | **Crash detection** — Auto SOS trigger |
+| 🛣️ | **Ride history** — Daily km & trip log |
+
+---
+
+<br />
+
+## 🏗️ Tech Stack
+
+<div align="center">
+
+| Layer | Tools |
+|-------|-------|
+| ⚛️ **Frontend** | React 19 · TypeScript · Vite 8 · Tailwind CSS · Framer Motion |
+| 🧭 **Routing** | React Router — Hash mode *(static hosting friendly)* |
+| 🔥 **Backend** | Firebase Auth · Firestore · Storage · Cloud Functions |
+| 🗺️ **Maps** | Google Maps JavaScript API |
+| 🌐 **i18n** | i18next · react-i18next |
+| 📱 **Mobile-ready** | Capacitor *(Android / iOS scaffold)* |
+
+</div>
+
+---
+
+<br />
+
+## 🚀 Quick Start
 
 ```bash
-# 1. Clone and install
-git clone <your-repo-url>
-cd ResQMed-Hospital-Emergency-main
+# 1️⃣ Clone
+git clone https://github.com/aakriti1613/ResQMed-Hospital-Emergency.git
+cd ResQMed-Hospital-Emergency
+
+# 2️⃣ Install
 npm install
 
-# 2. Environment
+# 3️⃣ Environment
 cp .env.example .env
-# Fill in VITE_FIREBASE_* and VITE_GOOGLE_MAPS_API_KEY (see below)
+# ✏️ Fill VITE_FIREBASE_* and VITE_GOOGLE_MAPS_API_KEY
 
-# 3. Run dev server
+# 4️⃣ Run 🎉
 npm run dev
 ```
 
-Open **http://localhost:5173/** (hash routes, e.g. `/#/`, `/#/login`, `/#/app`).
+🌐 Open **http://localhost:5173/**  
+Routes: `/#/` · `/#/login` · `/#/app`
 
-### Demo mode (no Firebase)
+<details>
+<summary>🧪 <b>Demo mode</b> — Firebase ke bina bhi chalega!</summary>
 
-If `.env` is missing Firebase keys, the app runs in **demo mode**:
+<br />
 
-- Phone OTP accepts any 6 digits
-- Data stored in `localStorage` / in-memory mocks
-- Good for UI development; **not** for production
+`.env` mein Firebase keys **mat** daalo → app **demo mode** mein khulega:
+- ✅ Koi bhi 6-digit OTP accept  
+- ✅ UI poora explore kar sakte ho  
+- ⚠️ Production ke liye Firebase setup zaroori hai  
 
----
-
-## Environment variables
-
-Copy `.env.example` → `.env`. **Never commit `.env`.**
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_FIREBASE_API_KEY` | Production | Firebase web API key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Production | e.g. `your-project.firebaseapp.com` |
-| `VITE_FIREBASE_PROJECT_ID` | Production | Firebase project ID |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Production | Storage bucket |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Production | FCM sender ID |
-| `VITE_FIREBASE_APP_ID` | Production | Firebase app ID |
-| `VITE_GOOGLE_MAPS_API_KEY` | Recommended | Restrict by HTTP referrer in GCP |
-| `VITE_FIREBASE_VAPID_KEY` | Optional | Web push notifications |
-| `VITE_FUNCTIONS_ORIGIN` | Optional | Cloud Functions base (emulator: `http://127.0.0.1:5001`) |
-| `VITE_ML_SEVERITY_URL` | Optional | Local ML crash API only |
+</details>
 
 ---
 
-## NPM scripts
+<br />
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Typecheck + production build → `dist/` |
-| `npm run preview` | Preview production build locally |
-| `npm run build:functions` | Compile Cloud Functions → `functions/lib/` |
-| `npm run build:all` | Build app + functions |
-| `npm run deploy:rules` | Deploy Firestore rules, indexes, Storage rules |
-| `npm run deploy:hosting` | Build + deploy Firebase Hosting |
-| `npm run deploy` | Full build + deploy (hosting, functions, rules) |
+## 🔐 Environment Variables
 
----
+| Variable | Required | Kya karta hai |
+|----------|:--------:|---------------|
+| `VITE_FIREBASE_*` | ✅ Prod | Auth · Firestore · Storage |
+| `VITE_GOOGLE_MAPS_API_KEY` | ⭐ Recommended | Hospital maps |
+| `VITE_FIREBASE_VAPID_KEY` | Optional | Push notifications |
+| `VITE_FUNCTIONS_ORIGIN` | Optional | Cloud Functions / emulator |
 
-## Deploy to Firebase
-
-```bash
-# Login once
-firebase login
-firebase use <your-project-id>
-
-# Deploy security rules & indexes (do this after cloning / when rules change)
-npm run deploy:rules
-
-# Deploy the web app
-npm run deploy:hosting
-
-# Or everything
-npm run deploy
-```
-
-### Firebase Console checklist
-
-1. **Authentication** → Sign-in method → **Phone** enabled  
-2. **Authentication** → Settings → **Authorized domains** → add your hosting domain  
-3. **Firestore** & **Storage** → rules deployed via `npm run deploy:rules`  
-4. **Google Cloud** → restrict Maps API key to your domains  
-
-Hosting serves the **`dist/`** folder (generated by `npm run build`, not committed to git).
+> ⚠️ `.env` kabhi commit mat karo — sirf `.env.example` commit karo.
 
 ---
 
-## Project structure
+<br />
+
+## 📦 NPM Scripts
+
+| Command | Kya hota hai |
+|---------|--------------|
+| `npm run dev` | 🔧 Dev server start |
+| `npm run build` | 🏗️ Typecheck + `dist/` build |
+| `npm run preview` | 👀 Production preview locally |
+| `npm run deploy:hosting` | 🚀 Firebase Hosting deploy |
+| `npm run deploy:rules` | 🔒 Firestore + Storage rules |
+| `npm run deploy` | 🌍 Full deploy (hosting + functions + rules) |
+
+<details>
+<summary>☁️ <b>Firebase deploy checklist</b></summary>
+
+<br />
+
+1. ✅ **Authentication** → Phone OTP enabled  
+2. ✅ **Authorized domains** → Hosting domain add karo  
+3. ✅ `npm run deploy:rules` → Security rules deploy  
+4. ✅ Google Cloud → Maps API key domain-restrict karo  
+
+</details>
+
+---
+
+<br />
+
+## 📂 Project Structure
 
 ```
-├── public/                 # Static assets (favicon, PWA manifest, FCM SW)
-├── src/
-│   ├── app/                # env helpers, theme
-│   ├── auth/               # AuthProvider, RequireAuth, auth actions
-│   ├── components/         # Shared UI (maps, language switcher, …)
-│   ├── data/               # Firestore/data layer (SOS, users, hospitals, …)
-│   ├── firebase/           # Firebase client init
-│   ├── hooks/              # React hooks
-│   ├── i18n/               # i18n config + voice SOS phrases
-│   ├── locales/            # en.json, hi.json, te.json
-│   ├── screens/            # Pages (public, app, admin, portals)
-│   ├── shell/              # AppShell, RootLayout, global watchers
-│   └── router.tsx          # Hash routes
-├── functions/
-│   └── src/index.ts        # Cloud Functions (assistant, nearby hospitals, …)
-├── firestore.rules
-├── firestore.indexes.json
-├── storage.rules
-├── firebase.json
-├── .env.example            # Commit this — not .env
-└── package.json
+📦 ResQMed-Hospital-Emergency
+├── 📁 public/              Icons · PWA manifest · FCM service worker
+├── 📁 src/
+│   ├── 📁 screens/         Landing · Login · App pages · Admin · Portals
+│   ├── 📁 components/      Maps · Timeline · Readiness card · Language switcher
+│   ├── 📁 data/            SOS · Users · Hospitals · Points · Challenges
+│   ├── 📁 locales/         🇬🇧 en.json · 🇮🇳 hi.json · 🇮🇳 te.json
+│   ├── 📁 shell/           AppShell · Bottom nav · Global SOS watcher
+│   └── 📄 router.tsx       Hash routes
+├── 📁 functions/src/       ☁️ Cloud Functions
+├── 📄 firebase.json        Firebase config
+├── 📄 firestore.rules      🔒 Database security
+└── 📄 .env.example         Environment template
 ```
 
 ---
 
-## What to commit (git)
+<br />
 
-**Include:**
+## 🗺️ Key Routes
 
-- `src/`, `public/`, `functions/src/`
-- Config: `package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig.json`, `tailwind.config.js`, `firebase.json`, `firestore.rules`, `firestore.indexes.json`, `storage.rules`
-- `.env.example`, `.gitignore`, `README.md`
-
-**Exclude** (already in `.gitignore`):
-
-- `node_modules/`, `dist/`, `.env`, `functions/lib/`, `_tmp_fromrepo/`
-
----
-
-## Main routes
-
-| Route | Description |
-|-------|-------------|
-| `/#/` | Landing page |
-| `/#/login`, `/#/signup` | Phone OTP auth |
-| `/#/app` | Dashboard (requires login) |
-| `/#/app/sos` | SOS flow (requires login) |
-| `/#/app/care` | Hospital / doctor booking |
-| `/#/app/help` | Helper dashboard |
-| `/#/app/challenges` | Health day quizzes |
-| `/#/app/analytics` | Emergency analytics |
-| `/#/app/profile` | Profile & language settings |
+| Route | Screen | Emoji |
+|-------|--------|-------|
+| `/#/` | Landing page | 🏠 |
+| `/#/login` | Phone OTP login | 📱 |
+| `/#/app` | Home dashboard | 🏡 |
+| `/#/app/sos` | Emergency SOS | 🚨 |
+| `/#/app/care` | Hospital & departments | 🏥 |
+| `/#/app/safety` | Safety hub | 🛡️ |
+| `/#/app/help` | Helper dashboard | 🤝 |
+| `/#/app/challenges` | Health day quizzes | 🎮 |
+| `/#/app/analytics` | Emergency analytics | 📊 |
+| `/#/app/profile` | Profile & settings | 👤 |
 
 ---
 
-## License
+<br />
 
-Private / academic project — adjust as needed for your submission or organization.
+## ⚠️ Important Disclaimer
+
+<div align="center">
+
+### 🆘 Asli emergency mein pehle official numbers call karo
+
+# **112** · **108** · **100**
+
+*Yeh app official emergency services ko replace nahi karti — unke saath kaam karti hai.*
+
+</div>
 
 ---
 
-## Emergency numbers (India)
+<br />
 
-In a real emergency, call **112** (unified emergency) or **108** (ambulance). This app supplements — it does not replace — official emergency services.
+<div align="center">
+
+### 💚 Built with care for safer roads & healthier communities
+
+**Arogya Raksha · ResQMed**  
+*Private / Academic Project*
+
+<br />
+
+⭐ *Repo pasand aaye toh star dena mat bhoolna!* ⭐
+
+</div>
