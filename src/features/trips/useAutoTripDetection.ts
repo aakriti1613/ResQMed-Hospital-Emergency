@@ -153,10 +153,10 @@ export function useAutoTripDetection(uid: string | null | undefined) {
           const next: AutoTrip = { ...cur };
           if (typeof h?.lat === 'number' && typeof h?.lon === 'number') {
             const pt: TripPoint = { t: now, lat: h.lat, lon: h.lon };
-            if (next.route.length === 0 || haversineKm(next.route[next.route.length - 1], pt) > 0.005) {
+            if (next.route.length === 0 || haversineKm(next.route[next.route.length - 1]!, pt) > 0.005) {
               next.route = [...next.route, pt];
               next.distanceKm = next.route.length < 2 ? 0
-                : next.route.slice(1).reduce((acc, p, i) => acc + haversineKm(next.route[i], p), 0);
+                : next.route.slice(1).reduce((acc, p, i) => acc + haversineKm(next.route[i]!, p), 0);
             }
           }
           if (typeof h?.heartRate === 'number') {

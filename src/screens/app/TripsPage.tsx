@@ -295,7 +295,7 @@ const AutoTripStrip = () => {
             <AutoTripStat label="Smooth"   value={`${activeTrip.smoothness}`} unit="/100" tint="#38bdf8" />
           </div>
           {activeTrip.route.length > 0 && (() => {
-            const last = activeTrip.route[activeTrip.route.length - 1];
+            const last = activeTrip.route[activeTrip.route.length - 1]!;
             const url = googleMapsUrl(last.lat, last.lon);
             return url ? (
               <a

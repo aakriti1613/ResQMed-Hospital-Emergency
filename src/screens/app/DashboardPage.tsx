@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
   ChevronRight, ChevronDown, Clock, Trophy, Mic,
   Users, HardHat, BatteryFull, BatteryLow, BatteryWarning, Wifi, WifiOff, ShieldCheck,
-  Bell, Siren, Share2, Stethoscope, Shield, TrendingUp, MapPin,
+  Bell, Siren, Share2, Stethoscope, Shield, TrendingUp, MapPin, AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { getDepartment } from '../../data/hospitals';
@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { useEmergencyReadiness } from '../../hooks/useEmergencyReadiness';
 
 const HELMET_HELP_SEC = 10;
+const CRASH_AUTO_SOS_SEC = 5;
 
 export const DashboardPage = () => {
   const { t, i18n } = useTranslation();
@@ -37,6 +38,14 @@ export const DashboardPage = () => {
   const [showMore, setShowMore] = useState(false);
   // 60-second rolling history per vital — feeds sparklines below.
   const helmetHist = useHelmetHistory(user?.uid, 60);
+
+  // ── Crash Detection State (auto-SOS from live sensor data) ───────────────
+  const [crashDetected, setCrashDetected] = useState(false);
+  const [crashCountdown, setCrashCountdown] = useState(CRASH_AUTO_SOS_SEC);
+  const crashDismissedRef = useRef(false);
+  const crashFiredRef = useRef(false);
+  /** Consecutive critical ticks needed before firing (debounce transient spikes). */
+  const criticalTicksRef = useRef(0);
 
   const { isListening: isVoiceListening, toggleListening: toggleVoiceSos, isSupported: isVoiceSupported } = useVoiceSos(() => {
     nav(`/app/sos?from=${encodeURIComponent('/app')}`);
@@ -96,8 +105,122 @@ export const DashboardPage = () => {
       ? t('dashboard.helmetLive')
       : t('dashboard.helmetOffline');
 
+  // ── Crash detection from live sensor data ──────────────────────────────────
+  // When predictLive() returns risk === 'critical', show crash overlay.
+  // This matches the hardware logic: high vibration (> 2000 / 4095) = crash.
+  useEffect(() => {
+    if (!helmet || !helmetLive || crashDismissedRef.current) return;
+    const pred = predictLive(helmet);
+
+    if (pred.risk === 'critical') {
+      criticalTicksRef.current += 1;
+      // Require 2+ consecutive critical ticks (debounce)
+      if (criticalTicksRef.current >= 2 && !crashDetected && !crashFiredRef.current) {
+        console.log('[Dashboard] 🚨 CRASH DETECTED from live sensors', {
+          confidence: pred.confidence, severity: pred.severity, reasons: pred.reasons,
+        });
+        setCrashDetected(true);
+        setCrashCountdown(CRASH_AUTO_SOS_SEC);
+      }
+    } else {
+      criticalTicksRef.current = 0;
+    }
+  }, [helmet, helmetLive]); // re-runs on every helmet telemetry update
+
+  // ── Crash countdown timer ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (!crashDetected) return;
+    if (crashCountdown <= 0) {
+      // Auto-navigate to SOS
+      if (!crashFiredRef.current) {
+        crashFiredRef.current = true;
+        console.log('[Dashboard] ⏰ Crash countdown reached 0, auto-navigating to SOS');
+        nav(`/app/sos?crash=1&from=${encodeURIComponent('/app')}`);
+      }
+      return;
+    }
+    const timer = setTimeout(() => setCrashCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [crashDetected, crashCountdown, nav]);
+
+  const dismissCrash = useCallback(() => {
+    crashDismissedRef.current = true;
+    setCrashDetected(false);
+    setCrashCountdown(CRASH_AUTO_SOS_SEC);
+    criticalTicksRef.current = 0;
+    // Reset after 60s so future crashes can still be detected
+    setTimeout(() => { crashDismissedRef.current = false; }, 60_000);
+  }, []);
+
   return (
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-6 pb-4 max-w-lg mx-auto w-full space-y-4">
+      {/* ── CRASH DETECTED OVERLAY ─────────────────────────────────────────── */}
+      {crashDetected && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-md" style={{ animation: 'crashPulse 1.2s ease-in-out infinite' }}>
+          <style>{`
+            @keyframes crashPulse {
+              0%, 100% { background: rgba(0,0,0,0.95); }
+              50% { background: rgba(127,29,29,0.85); }
+            }
+            @keyframes crashIconPulse {
+              0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(239,68,68,0.5); }
+              50% { transform: scale(1.12); box-shadow: 0 0 80px rgba(239,68,68,0.8); }
+            }
+          `}</style>
+          <div
+            className="h-24 w-24 rounded-full bg-red-600 flex items-center justify-center mb-6"
+            style={{ animation: 'crashIconPulse 1s ease-in-out infinite' }}
+          >
+            <AlertTriangle className="h-12 w-12 text-white" />
+          </div>
+          <h1 className="text-3xl font-black text-red-400 tracking-tight mb-2">🚨 CRASH DETECTED</h1>
+          <p className="text-sm text-red-200/70 mb-1">High impact / vibration detected from helmet sensors</p>
+          <p className="text-sm text-white/60 mb-6">Auto SOS enabled — sending help automatically</p>
+
+          {/* Countdown ring */}
+          <div className="relative h-32 w-32 mb-6">
+            <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" fill="none">
+              <circle cx="60" cy="60" r="52" stroke="rgba(239,68,68,0.15)" strokeWidth="7" />
+              <circle
+                cx="60" cy="60" r="52"
+                stroke="#ef4444"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 52}
+                strokeDashoffset={2 * Math.PI * 52 * (1 - (CRASH_AUTO_SOS_SEC - crashCountdown) / CRASH_AUTO_SOS_SEC)}
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-5xl font-black text-red-400 tabular-nums">{crashCountdown}</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-white/50 mb-6">SOS will be sent in <span className="text-red-400 font-black">{crashCountdown}s</span></p>
+
+          <div className="flex flex-col gap-3 w-64">
+            <button
+              type="button"
+              onClick={() => {
+                crashFiredRef.current = true;
+                nav(`/app/sos?crash=1&from=${encodeURIComponent('/app')}`);
+              }}
+              className="w-full py-3.5 rounded-2xl text-sm font-black text-white shadow-[0_0_28px_rgba(220,38,38,0.5)] active:scale-[0.97] transition"
+              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)' }}
+            >
+              <Siren className="inline h-4 w-4 mr-2" />
+              Send SOS Now
+            </button>
+            <button
+              type="button"
+              onClick={dismissCrash}
+              className="w-full py-3 rounded-2xl text-sm font-black text-white/70 border border-white/15 bg-white/[0.05] hover:bg-white/[0.08] active:scale-[0.97] transition"
+            >
+              I'm OK — Cancel
+            </button>
+          </div>
+        </div>
+      )}
       {/* ── Zone 1: Header + compact status ── */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">

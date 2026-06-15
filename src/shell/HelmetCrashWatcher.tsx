@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { listenHelmet } from '../data/helmet';
 import { createSosRequest, getActiveSosForUser } from '../data/sos';
+import { predictLive } from '../features/sos/liveCrashPrediction';
 
 /**
  * HelmetCrashWatcher
@@ -22,10 +23,19 @@ import { createSosRequest, getActiveSosForUser } from '../data/sos';
  *   and navigates the user to /app/sos — the same countdown + helper-dispatch
  *   flow as a manually-pressed SOS.
  *
+ * Live Sensor Crash Detection:
+ *   In addition to crashEvent, this component also monitors live helmet
+ *   telemetry. When the predictLive() function returns risk === 'critical'
+ *   (e.g. vibration at 4095, high acceleration, etc.), it auto-creates
+ *   an SOS with a 5-second auto-trigger — matching the hardware's own
+ *   crash detection thresholds.
+ *
  * Safety:
  *   - Only fires once per unique `crashEvent.at` timestamp (de-dup via ref).
  *   - Only fires if the crashEvent is fresh (< 60 s old). Prevents old test
  *     data from auto-triggering when a user logs back in.
+ *   - Live sensor crash: requires 2 consecutive critical readings (debounce)
+ *     to avoid false positives from transient spikes.
  *   - Does nothing if the user already has an active SOS — createSosRequest
  *     itself has duplicate-prevention, but we short-circuit early too.
  *   - Doesn't touch any existing logic. Adds a new code path only.
@@ -34,64 +44,113 @@ import { createSosRequest, getActiveSosForUser } from '../data/sos';
 export const HelmetCrashWatcher = () => {
   const { user } = useAuth();
   const seenAtRef = useRef<number | null>(null);
+  /** Tracks consecutive critical readings for live sensor crash detection. */
+  const criticalCountRef = useRef(0);
+  /** Prevents duplicate live-sensor SOS triggers (one per "critical episode"). */
+  const liveCrashFiredRef = useRef(false);
 
   useEffect(() => {
     if (!user?.uid) return;
 
     return listenHelmet(user.uid, (helmet) => {
-      const ce = helmet?.crashEvent;
-      if (!ce) return;
+      if (!helmet) return;
 
-      const eventMs = ce.at instanceof Date ? ce.at.getTime() : new Date(ce.at as any).getTime();
-      if (!Number.isFinite(eventMs)) return;
+      // ── Path 1: Explicit crashEvent from hardware bridge ─────────────────
+      const ce = helmet.crashEvent;
+      if (ce) {
+        const eventMs = ce.at instanceof Date ? ce.at.getTime() : new Date(ce.at as any).getTime();
+        if (Number.isFinite(eventMs) && seenAtRef.current !== eventMs) {
+          const ageMs = Date.now() - eventMs;
+          seenAtRef.current = eventMs;
 
-      // De-dup: same crashEvent timestamp we've already acted on -> ignore.
-      if (seenAtRef.current === eventMs) return;
+          if (ageMs <= 60_000) {
+            void (async () => {
+              try {
+                const existing = await getActiveSosForUser(user.uid);
+                if (existing) {
+                  console.log('[HelmetCrashWatcher] crash detected but active SOS already exists, skipping');
+                  return;
+                }
 
-      // Freshness gate: only auto-trigger if the crash happened within the last minute.
-      const ageMs = Date.now() - eventMs;
-      if (ageMs > 60_000) {
-        seenAtRef.current = eventMs; // remember, but don't fire stale events
-        return;
+                const lat = typeof ce.lat === 'number' ? ce.lat : helmet.lat;
+                const lon = typeof ce.lon === 'number' ? ce.lon : helmet.lon;
+                const hasLoc = typeof lat === 'number' && typeof lon === 'number';
+
+                console.log('[HelmetCrashWatcher] 🚨 helmet crash detected, creating SOS', {
+                  severity: ce.severity, lat, lon,
+                });
+
+                await createSosRequest({
+                  victimId: user.uid,
+                  status: 'countdown',
+                  severity: ce.severity ?? 'major',
+                  source: 'hardware',
+                  countdown: 5,
+                  incidentType: 'crash',
+                  location: hasLoc ? { lat: lat!, lon: lon! } : null as any,
+                  hasValidLocation: hasLoc,
+                  isApproximate: false,
+                  radiusKm: 3,
+                });
+              } catch (e) {
+                console.error('[HelmetCrashWatcher] failed to create SOS:', e);
+              }
+            })();
+          }
+        }
       }
 
-      seenAtRef.current = eventMs;
+      // ── Path 2: Live sensor telemetry → critical risk = crash ────────────
+      const pred = predictLive(helmet);
 
-      // If something is already active for this user, let it be.
-      void (async () => {
-        try {
-          const existing = await getActiveSosForUser(user.uid);
-          if (existing) {
-            console.log('[HelmetCrashWatcher] crash detected but active SOS already exists, skipping');
-            return;
-          }
+      if (pred.risk === 'critical') {
+        criticalCountRef.current += 1;
 
-          const lat = typeof ce.lat === 'number' ? ce.lat : helmet?.lat;
-          const lon = typeof ce.lon === 'number' ? ce.lon : helmet?.lon;
-          const hasLoc = typeof lat === 'number' && typeof lon === 'number';
+        // Require 2+ consecutive critical ticks to debounce transient spikes
+        if (criticalCountRef.current >= 2 && !liveCrashFiredRef.current) {
+          liveCrashFiredRef.current = true;
 
-          console.log('[HelmetCrashWatcher] 🚨 helmet crash detected, creating SOS', {
-            severity: ce.severity, lat, lon,
+          console.log('[HelmetCrashWatcher] 🚨 LIVE SENSOR CRASH: risk=critical, auto-creating SOS in 5s', {
+            confidence: pred.confidence,
+            severity: pred.severity,
+            reasons: pred.reasons,
           });
 
-          await createSosRequest({
-            victimId: user.uid,
-            status: 'countdown',
-            severity: ce.severity ?? 'major',
-            source: 'hardware',
-            countdown: 10,
-            incidentType: 'crash',
-            location: hasLoc ? { lat: lat!, lon: lon! } : null as any,
-            hasValidLocation: hasLoc,
-            isApproximate: false,
-            radiusKm: 3,
-          });
+          void (async () => {
+            try {
+              const existing = await getActiveSosForUser(user.uid);
+              if (existing) {
+                console.log('[HelmetCrashWatcher] live crash but active SOS already exists, skipping');
+                return;
+              }
 
-          // GlobalSosWatcher (in the same RootLayout) will now navigate to /app/sos.
-        } catch (e) {
-          console.error('[HelmetCrashWatcher] failed to create SOS:', e);
+              const lat = helmet.lat;
+              const lon = helmet.lon;
+              const hasLoc = typeof lat === 'number' && typeof lon === 'number';
+
+              await createSosRequest({
+                victimId: user.uid,
+                status: 'countdown',
+                severity: pred.severity ?? 'critical',
+                source: 'hardware',
+                countdown: 5,
+                incidentType: 'crash',
+                location: hasLoc ? { lat: lat!, lon: lon! } : null as any,
+                hasValidLocation: hasLoc,
+                isApproximate: false,
+                radiusKm: 3,
+              });
+            } catch (e) {
+              console.error('[HelmetCrashWatcher] live crash SOS creation failed:', e);
+            }
+          })();
         }
-      })();
+      } else {
+        // Risk dropped below critical → reset debounce so it can fire again
+        // if another critical episode occurs later
+        criticalCountRef.current = 0;
+        liveCrashFiredRef.current = false;
+      }
     });
   }, [user?.uid]);
 
