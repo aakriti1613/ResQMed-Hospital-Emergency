@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listenAlertsForHospital, updateHospitalAlert, type HospitalAlert } from '../../data/hospitalAlerts';
 import { getSosRequestDoc, listenAssignmentsForRequest, type SosAssignmentDoc, type SosRequestDoc } from '../../data/sos';
 import { SHOWCASE_HOSPITAL } from '../../data/hospitals';
 import { getUserProfile, type UserProfile, computeAgeFromDob } from '../../data/user';
-import { CheckCircle2, User, Activity, AlertTriangle, Syringe, Ambulance, ArrowLeft } from 'lucide-react';
+import { listenHelmet, type HelmetDevice } from '../../data/helmet';
+import { googleMapsUrl, lastSeenLabel } from '../../features/sos/liveCrashPrediction';
+import { CheckCircle2, User, Activity, AlertTriangle, Syringe, Ambulance, ArrowLeft, Heart, Wind, Waves, MapPin, Wifi, WifiOff } from 'lucide-react';
 import { formatEta } from '../../data/routing';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkline } from '../../components/Sparkline';
+import { heartRateBadge, spo2Badge } from '../../components/ClinicalBadge';
 
 // A single comprehensive object representing an incoming patient
 type PatientIncoming = {
@@ -67,6 +71,43 @@ export const HospitalPortalPage = () => {
   }, [alerts, selectedAlertId]);
 
   const selectedPatient = patients.find(p => p.alert.id === selectedAlertId) || null;
+
+  // ── Live patient vitals (helmet stream) ───────────────────────────────────
+  // Subscribe to helmets/{victimId} for the selected patient so the hospital
+  // sees vitals trend BEFORE the patient arrives. The bridge / SMS ingest is
+  // already writing to that doc; we just visualise it here.
+  const [helmet, setHelmet] = useState<HelmetDevice | null>(null);
+  // Per-session rolling buffer for sparklines — last 30 samples (~1 minute).
+  const hrBufRef    = useRef<number[]>([]);
+  const spo2BufRef  = useRef<number[]>([]);
+  const vibBufRef   = useRef<number[]>([]);
+  const [bufTick, setBufTick] = useState(0); // force re-render on each new sample
+
+  useEffect(() => {
+    // Reset buffers whenever we switch patients
+    hrBufRef.current = [];
+    spo2BufRef.current = [];
+    vibBufRef.current = [];
+    setHelmet(null);
+    setBufTick(0);
+
+    const victimId = selectedPatient?.sos?.victimId;
+    if (!victimId) return;
+
+    return listenHelmet(victimId, (h) => {
+      setHelmet(h);
+      if (!h) return;
+      const push = (buf: number[], v?: number) => {
+        if (typeof v !== 'number') return;
+        buf.push(v);
+        if (buf.length > 30) buf.shift();
+      };
+      push(hrBufRef.current,    h.heartRate);
+      push(spo2BufRef.current,  h.spo2);
+      push(vibBufRef.current,   h.vibration);
+      setBufTick((t) => t + 1);
+    });
+  }, [selectedPatient?.sos?.victimId]);
 
   const handleAcknowledge = async (alertId: string) => {
     try {
@@ -208,6 +249,16 @@ export const HospitalPortalPage = () => {
                   )}
                 </div>
 
+                {/* ─── LIVE PATIENT VITALS (helmet stream — pre-arrival) ─── */}
+                <LiveVitalsCard
+                  helmet={helmet}
+                  hrBuf={hrBufRef.current}
+                  spo2Buf={spo2BufRef.current}
+                  vibBuf={vibBufRef.current}
+                  // bufTick is read to force re-render; we don't use the value directly
+                  bufTick={bufTick}
+                />
+
                 <div className="grid grid-cols-3 gap-4">
                   {/* Transport Card */}
                   <div className="col-span-1 rounded-2xl border border-white/[0.06] bg-[#13141a] p-5">
@@ -290,6 +341,122 @@ export const HospitalPortalPage = () => {
             )}
           </AnimatePresence>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LiveVitalsCard
+// ─────────────────────────────────────────────────────────────────────────────
+// Hospital-facing pre-arrival vitals panel. Shows live HR / SpO₂ / Vibration
+// with sparkline trends, clinical (WHO/AHA) badges for out-of-range values,
+// last-seen timestamp + Google Maps deep link to the helmet's current location.
+//
+// Powered by the existing per-patient subscription in HospitalPortalPage
+// (listenHelmet(victimId, ...)); we just visualise it.
+// ─────────────────────────────────────────────────────────────────────────────
+const LiveVitalsCard = ({
+  helmet, hrBuf, spo2Buf, vibBuf,
+}: {
+  helmet: HelmetDevice | null;
+  hrBuf: number[];
+  spo2Buf: number[];
+  vibBuf: number[];
+  bufTick: number;
+}) => {
+  const live = !!helmet?.lastPingAt && (Date.now() - helmet.lastPingAt.getTime() < 60_000);
+
+  const trend = (series: number[]): { delta: number; arrow: '↑' | '↓' | '→' } => {
+    if (series.length < 3) return { delta: 0, arrow: '→' };
+    const recent = series.slice(-3).reduce((a, b) => a + b, 0) / 3;
+    const older  = series.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+    const delta = recent - older;
+    if (Math.abs(delta) < 1) return { delta, arrow: '→' };
+    return { delta, arrow: delta > 0 ? '↑' : '↓' };
+  };
+
+  const hrTrend   = trend(hrBuf);
+  const spo2Trend = trend(spo2Buf);
+  const vibTrend  = trend(vibBuf);
+
+  const mapsUrl = googleMapsUrl(helmet?.lat, helmet?.lon);
+
+  return (
+    <div className={`rounded-2xl border p-5 ${live ? 'border-emerald-500/25 bg-emerald-500/[0.04]' : 'border-amber-500/25 bg-amber-500/[0.04]'}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          {live
+            ? <Wifi    className="h-4 w-4 text-emerald-300" />
+            : <WifiOff className="h-4 w-4 text-amber-300" />}
+          <div className="text-[10px] font-black uppercase tracking-widest text-white/65">
+            Pre-arrival vitals · {live ? 'LIVE from helmet' : `last seen ${lastSeenLabel(helmet?.lastPingAt)}`}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {mapsUrl && (
+            <a
+              href={mapsUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 border border-sky-500/30 px-2.5 py-1 text-[10px] font-black text-sky-200 hover:bg-sky-500/25 transition"
+            >
+              <MapPin className="h-3 w-3" /> Open on Maps ↗
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <VitalTrendTile
+          icon={<Heart className="h-3.5 w-3.5 text-rose-300" />}
+          label="Heart Rate" unit="BPM"
+          value={helmet?.heartRate} series={hrBuf} color="#fb7185"
+          arrow={hrTrend.arrow} delta={hrTrend.delta}
+        />
+        <VitalTrendTile
+          icon={<Wind className="h-3.5 w-3.5 text-sky-300" />}
+          label="SpO₂" unit="%"
+          value={helmet?.spo2} series={spo2Buf} color="#38bdf8"
+          arrow={spo2Trend.arrow} delta={spo2Trend.delta}
+        />
+        <VitalTrendTile
+          icon={<Waves className="h-3.5 w-3.5 text-amber-300" />}
+          label="Vibration" unit={helmet?.vibrationLabel ?? ''}
+          value={helmet?.vibration} series={vibBuf} color="#facc15"
+          arrow={vibTrend.arrow} delta={vibTrend.delta}
+        />
+      </div>
+
+      {(heartRateBadge(helmet?.heartRate) || spo2Badge(helmet?.spo2)) && (
+        <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-white/[0.06]">
+          {heartRateBadge(helmet?.heartRate)}
+          {spo2Badge(helmet?.spo2)}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VitalTrendTile = ({
+  icon, label, unit, value, series, color, arrow, delta,
+}: {
+  icon: React.ReactNode; label: string; unit: string;
+  value?: number; series: number[]; color: string;
+  arrow: '↑' | '↓' | '→'; delta: number;
+}) => {
+  const display = value === undefined ? '—' : Number.isInteger(value) ? `${value}` : value.toFixed(1);
+  const arrowColor = arrow === '↑' ? '#ef4444' : arrow === '↓' ? '#10b981' : '#94a3b8';
+  return (
+    <div className="rounded-xl bg-black/30 border border-white/[0.06] p-3">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white/50">
+          {icon} {label}
+        </div>
+        <span className="text-base font-black leading-none" style={{ color: arrowColor }} title={`Δ ${delta.toFixed(1)} over last 60s`}>{arrow}</span>
+      </div>
+      <div className="text-2xl font-black leading-none" style={{ color }}>{display}</div>
+      <div className="text-[9px] text-white/40 mt-0.5">{unit}</div>
+      <div className="mt-2">
+        <Sparkline data={series} width={140} height={28} color={color} dot fill />
       </div>
     </div>
   );

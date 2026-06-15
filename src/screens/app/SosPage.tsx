@@ -10,6 +10,9 @@ import { LocationSearchModal } from '../../components/LocationSearchModal';
 import { FirstAidDrawer } from '../../components/FirstAidDrawer';
 import { LiveTrackingMap } from '../../components/LiveTrackingMap';
 import { SosChatBridge } from '../../components/ui/SosChatBridge';
+import { heartRateBadge, spo2Badge, noMovementBadge } from '../../components/ClinicalBadge';
+import { CrashReplay } from '../../components/CrashReplay';
+import { useHelmetHistory } from '../../hooks/useHelmetHistory';
 import { useSharedLocation, hasGrantedGPS } from '../../hooks/useSharedLocation';
 import { useAuth } from '../../auth/AuthProvider';
 import {
@@ -86,6 +89,8 @@ export const SosPage = () => {
   const [liveSosDoc, setLiveSosDoc] = useState<SosRequestDoc | null>(null);
   const [hospitalAlerts, setHospitalAlerts] = useState<HospitalAlert[]>([]);
   const [firstAidOpen, setFirstAidOpen] = useState(false);
+  const [crashReplayOpen, setCrashReplayOpen] = useState(false);
+  const helmetHist = useHelmetHistory(user?.uid, 60);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [helperPublic, setHelperPublic] = useState<UserProfile | null>(null);
   const [ambulanceAssigned, setAmbulanceAssigned] = useState(false);
@@ -1800,32 +1805,57 @@ export const SosPage = () => {
 
       {/* ── Developer Debug Panel for Vitals & Movement ── */}
       {phase === 'active' && (
-        <div className="fixed bottom-24 right-4 z-50 rounded-2xl border border-white/10 bg-[#13141a]/95 backdrop-blur-md p-3 shadow-2xl max-w-[200px]">
-          <div className="text-[10px] font-black uppercase text-white/50 mb-2 border-b border-white/10 pb-1">Vitals Simulator</div>
+        <div className="fixed bottom-24 right-4 z-50 rounded-2xl border border-white/10 bg-[#13141a]/95 backdrop-blur-md p-3 shadow-2xl max-w-[230px]">
+          <div className="text-[10px] font-black uppercase text-white/50 mb-2 border-b border-white/10 pb-1 flex items-center justify-between">
+            <span>Vitals Simulator</span>
+            <span className="text-[8px] text-white/30 normal-case">WHO/AHA/ATLS</span>
+          </div>
           <div className="space-y-3">
             <div>
               <label className="text-[10px] text-white/70 flex justify-between">
                 <span>Heart Rate</span> <span>{mockHr} bpm</span>
               </label>
               <input type="range" min="30" max="200" value={mockHr} onChange={e => setMockHr(Number(e.target.value))} className="w-full accent-rose-500 h-1" />
+              {heartRateBadge(mockHr) && <div className="mt-1">{heartRateBadge(mockHr)}</div>}
             </div>
             <div>
               <label className="text-[10px] text-white/70 flex justify-between">
                 <span>SpO2</span> <span>{mockSpo2}%</span>
               </label>
               <input type="range" min="80" max="100" value={mockSpo2} onChange={e => setMockSpo2(Number(e.target.value))} className="w-full accent-sky-500 h-1" />
+              {spo2Badge(mockSpo2) && <div className="mt-1">{spo2Badge(mockSpo2)}</div>}
             </div>
             <div>
               <label className="text-[10px] text-white/70 flex justify-between">
                 <span>Movement</span> <span>{mockNoMovement}s idle</span>
               </label>
               <input type="range" min="0" max="120" value={mockNoMovement} onChange={e => setMockNoMovement(Number(e.target.value))} className="w-full accent-amber-500 h-1" />
+              {noMovementBadge(mockNoMovement) && <div className="mt-1">{noMovementBadge(mockNoMovement)}</div>}
             </div>
           </div>
         </div>
       )}
 
       <FirstAidDrawer isOpen={firstAidOpen} onClose={() => setFirstAidOpen(false)} />
+
+      {/* Crash Replay — only available when the SOS came from a hardware crash */}
+      {liveSosDoc?.source === 'hardware' && phase === 'active' && (
+        <button
+          type="button"
+          onClick={() => setCrashReplayOpen(true)}
+          className="fixed bottom-24 left-4 z-40 inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 px-3 py-2 text-[11px] font-black text-rose-200 hover:bg-rose-500/25 transition active:scale-95 backdrop-blur-md shadow-2xl"
+          title="View 10-second flight recorder window before the crash"
+        >
+          <Siren className="h-3.5 w-3.5" /> Crash Replay
+        </button>
+      )}
+
+      <CrashReplay
+        open={crashReplayOpen}
+        onClose={() => setCrashReplayOpen(false)}
+        samples={helmetHist.samples}
+        crashAt={helmetHist.helmet?.crashEvent?.at ?? null}
+      />
     </div>
   );
 };

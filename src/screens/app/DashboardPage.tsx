@@ -14,6 +14,8 @@ import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice
 import {
   predictLive, riskColor, riskLabel, googleMapsUrl, lastSeenLabel,
 } from '../../features/sos/liveCrashPrediction';
+import { useHelmetHistory } from '../../hooks/useHelmetHistory';
+import { Sparkline } from '../../components/Sparkline';
 import { useSharedLocation } from '../../hooks/useSharedLocation';
 import { useVoiceSos } from '../../hooks/useVoiceSos';
 import { useTranslation } from 'react-i18next';
@@ -33,6 +35,8 @@ export const DashboardPage = () => {
   const [points, setPoints] = useState(0);
   const [helmet, setHelmet] = useState<HelmetDevice | null>(null);
   const [showMore, setShowMore] = useState(false);
+  // 60-second rolling history per vital — feeds sparklines below.
+  const helmetHist = useHelmetHistory(user?.uid, 60);
 
   const { isListening: isVoiceListening, toggleListening: toggleVoiceSos, isSupported: isVoiceSupported } = useVoiceSos(() => {
     nav(`/app/sos?from=${encodeURIComponent('/app')}`);
@@ -176,10 +180,10 @@ export const DashboardPage = () => {
               ) : null}
             </div>
             <div className="grid grid-cols-4 gap-1.5">
-              <MiniVital label="HR"   value={helmet.heartRate}  unit="BPM"                          tint="#fb7185" />
-              <MiniVital label="SpO₂" value={helmet.spo2}       unit="%"                            tint="#38bdf8" />
-              <MiniVital label="Vib"  value={helmet.vibration}  unit={helmet.vibrationLabel ?? ''}  tint="#facc15" />
-              <MiniVital label="Dist" value={helmet.distanceCm} unit="cm"                           tint="#a78bfa" />
+              <MiniVital label="HR"   value={helmet.heartRate}  unit="BPM"                          tint="#fb7185" series={helmetHist.hrSeries} />
+              <MiniVital label="SpO₂" value={helmet.spo2}       unit="%"                            tint="#38bdf8" series={helmetHist.spo2Series} />
+              <MiniVital label="Vib"  value={helmet.vibration}  unit={helmet.vibrationLabel ?? ''}  tint="#facc15" series={helmetHist.vibSeries} />
+              <MiniVital label="Dist" value={helmet.distanceCm} unit="cm"                           tint="#a78bfa" series={helmetHist.distSeries} />
             </div>
             {/* Live crash-risk prediction (trained rule layer over current data) */}
             <div className="mt-2 flex items-center gap-2 rounded-xl bg-black/30 border border-white/[0.05] px-2.5 py-2">
@@ -571,14 +575,20 @@ const VitalTile = ({
 );
 
 const MiniVital = ({
-  label, value, unit, tint,
-}: { label: string; value: number | undefined; unit: string; tint: string }) => {
+  label, value, unit, tint, series,
+}: { label: string; value: number | undefined; unit: string; tint: string; series?: number[] }) => {
   const display = value === undefined ? '—' : (Number.isInteger(value) ? `${value}` : value.toFixed(1));
   return (
     <div className="rounded-lg bg-black/30 border border-white/[0.05] px-1.5 py-1 text-center">
       <div className="text-[8px] font-black uppercase tracking-widest text-white/40 leading-tight">{label}</div>
       <div className="text-[13px] font-black leading-tight" style={{ color: tint }}>{display}</div>
-      {unit && <div className="text-[8px] text-white/35 leading-tight truncate">{unit}</div>}
+      {series && series.length >= 2 ? (
+        <div className="flex items-center justify-center mt-0.5">
+          <Sparkline data={series} width={56} height={14} color={tint} dot fill ariaLabel={`${label} trend`} />
+        </div>
+      ) : (
+        unit && <div className="text-[8px] text-white/35 leading-tight truncate">{unit}</div>
+      )}
     </div>
   );
 };

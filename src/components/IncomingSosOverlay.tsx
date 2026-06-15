@@ -30,6 +30,9 @@ import { listenActiveSosRequests, acceptSosRequest, type SosRequestDoc, type Par
 import { getUserProfile, computeAgeFromDob, shortAddressFromProfile } from '../data/user';
 import { useSharedLocation } from '../hooks/useSharedLocation';
 import { getDistance } from '../lib/distance';
+import { listenHelmet, type HelmetDevice } from '../data/helmet';
+import { googleMapsUrl } from '../features/sos/liveCrashPrediction';
+import { heartRateBadge, spo2Badge } from './ClinicalBadge';
 
 const IGNORE_KEY = 'arogya_sos_ignored_v1';
 const HELPER_MODE_KEY = 'arogya_helper_mode_enabled';
@@ -74,6 +77,7 @@ export const IncomingSosOverlay = () => {
   const [secondsLeft, setSecondsLeft] = useState(AUTO_DISMISS_SECONDS);
   const [accepting, setAccepting] = useState(false);
   const ignoresRef = useRef<Set<string>>(loadSessionIgnores());
+  const [victimHelmet, setVictimHelmet] = useState<HelmetDevice | null>(null);
 
   // Hide on blocked routes
   const isBlocked = useMemo(() => {
@@ -81,6 +85,13 @@ export const IncomingSosOverlay = () => {
     if (QUIET_EXACT_PATHS.includes(p)) return true;
     return BLOCKED_PREFIXES.some((prefix) => p.startsWith(prefix));
   }, [routeLoc.pathname]);
+
+  // Subscribe to victim's helmet doc while a request is active — so the
+  // helper sees the rider's live vitals before accepting.
+  useEffect(() => {
+    if (!activeReq?.victimId) { setVictimHelmet(null); return; }
+    return listenHelmet(activeReq.victimId, setVictimHelmet);
+  }, [activeReq?.victimId]);
 
   // Subscribe to active SOS feed (only when signed in)
   useEffect(() => {
@@ -303,14 +314,62 @@ export const IncomingSosOverlay = () => {
             <StatChip icon={<Navigation className="h-3.5 w-3.5 text-emerald-300" />} label="Source" value={activeReq.source === 'hardware' ? 'Crash sensor' : 'Manual'} />
           </div>
 
+          {/* Victim helmet vitals — so the helper knows what they're walking into */}
+          {victimHelmet && (
+            victimHelmet.heartRate !== undefined || victimHelmet.spo2 !== undefined ||
+            victimHelmet.vibration !== undefined
+          ) && (
+            <div className="relative mt-3 mx-5 rounded-2xl border border-rose-500/20 bg-rose-500/[0.04] px-3 py-2.5">
+              <div className="flex items-center gap-1.5 mb-1.5 text-[9px] font-black uppercase tracking-widest text-rose-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse" />
+                Victim helmet · live vitals
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-black/30 border border-white/[0.05] py-1.5">
+                  <div className="text-[8px] uppercase tracking-widest text-white/40">HR</div>
+                  <div className="text-base font-black text-rose-300">
+                    {victimHelmet.heartRate !== undefined ? Math.round(victimHelmet.heartRate) : '—'}
+                  </div>
+                  <div className="text-[8px] text-white/40">BPM</div>
+                </div>
+                <div className="rounded-lg bg-black/30 border border-white/[0.05] py-1.5">
+                  <div className="text-[8px] uppercase tracking-widest text-white/40">SpO₂</div>
+                  <div className="text-base font-black text-sky-300">
+                    {victimHelmet.spo2 !== undefined ? Math.round(victimHelmet.spo2) : '—'}
+                  </div>
+                  <div className="text-[8px] text-white/40">%</div>
+                </div>
+                <div className="rounded-lg bg-black/30 border border-white/[0.05] py-1.5">
+                  <div className="text-[8px] uppercase tracking-widest text-white/40">Vib</div>
+                  <div className="text-base font-black text-amber-300">
+                    {victimHelmet.vibration !== undefined ? Math.round(victimHelmet.vibration) : '—'}
+                  </div>
+                  <div className="text-[8px] text-white/40 truncate">{victimHelmet.vibrationLabel ?? ''}</div>
+                </div>
+              </div>
+              {(heartRateBadge(victimHelmet.heartRate) || spo2Badge(victimHelmet.spo2)) && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {heartRateBadge(victimHelmet.heartRate)}
+                  {spo2Badge(victimHelmet.spo2)}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Location preview (textual, map would be overkill for a popup) */}
           {activeReq.location && (
-            <div className="relative mt-4 mx-5 rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2.5 flex items-center gap-2">
+            <a
+              href={googleMapsUrl(activeReq.location.lat, activeReq.location.lon) || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative mt-3 mx-5 rounded-2xl border border-white/[0.06] bg-black/30 px-3 py-2.5 flex items-center gap-2 hover:bg-black/45 transition"
+            >
               <MapPin className="h-3.5 w-3.5 text-red-400 shrink-0" />
               <span className="text-[11px] text-white/70 font-semibold truncate">
                 Lat {activeReq.location.lat.toFixed(4)}, Lon {activeReq.location.lon.toFixed(4)}
               </span>
-            </div>
+              <span className="ml-auto text-[9px] font-black text-sky-300 uppercase tracking-widest">Maps ↗</span>
+            </a>
           )}
 
           {/* Countdown bar */}

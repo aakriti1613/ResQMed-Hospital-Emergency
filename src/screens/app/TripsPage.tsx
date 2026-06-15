@@ -2,9 +2,13 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, HardHat, MapPin, Clock, IndianRupee, ShieldCheck, CheckCircle2, BadgeCheck, Car,
+  Activity, Zap,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appBackPath, appFromQuery } from '../../lib/challengeNav';
+import { useAuth } from '../../auth/AuthProvider';
+import { useAutoTripDetection } from '../../features/trips/useAutoTripDetection';
+import { googleMapsUrl } from '../../features/sos/liveCrashPrediction';
 
 type HelmetDay = {
   dayLabel: string;
@@ -120,6 +124,7 @@ export const TripsPage = () => {
       <AnimatePresence mode="wait">
         {tab === 'rides' ? (
           <motion.div key="rides" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+            <AutoTripStrip />
             {HELMET_DAYS.map((day) => (
               <div key={day.dayLabel} className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 space-y-3">
                 <div className="flex items-center justify-between">
@@ -252,5 +257,111 @@ const Mini = ({ icon, text }: { icon: ReactNode; text: string }) => (
   <div className="inline-flex items-center gap-1 rounded-xl bg-white/[0.03] border border-white/[0.05] px-2 py-1 truncate">
     {icon}
     <span className="truncate">{text}</span>
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AutoTripStrip — surfaces helmet-detected trips (live + recent).
+// Powered by useAutoTripDetection: relayOn=true starts a trip, false ends it.
+// The user does nothing — the helmet ignition wire drives the lifecycle.
+// ─────────────────────────────────────────────────────────────────────────────
+const AutoTripStrip = () => {
+  const { user } = useAuth();
+  const { activeTrip, recent } = useAutoTripDetection(user?.uid);
+
+  if (!activeTrip && recent.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      {activeTrip && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl border border-emerald-500/25 bg-emerald-500/[0.05] p-4"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Trip in progress · auto-detected
+            </div>
+            <span className="text-[10px] font-mono text-white/45">
+              {Math.round((Date.now() - activeTrip.startedAtMs) / 60_000)} min
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            <AutoTripStat label="Distance" value={activeTrip.distanceKm.toFixed(1)} unit="km" tint="#10b981" />
+            <AutoTripStat label="Max HR"   value={activeTrip.maxHeartRate ? Math.round(activeTrip.maxHeartRate).toString() : '—'} unit="BPM" tint="#fb7185" />
+            <AutoTripStat label="Max Vib"  value={activeTrip.maxVibration ? Math.round(activeTrip.maxVibration).toString() : '—'} unit="" tint="#facc15" />
+            <AutoTripStat label="Smooth"   value={`${activeTrip.smoothness}`} unit="/100" tint="#38bdf8" />
+          </div>
+          {activeTrip.route.length > 0 && (() => {
+            const last = activeTrip.route[activeTrip.route.length - 1];
+            const url = googleMapsUrl(last.lat, last.lon);
+            return url ? (
+              <a
+                href={url} target="_blank" rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] px-3 py-1 text-[10px] font-black text-sky-300 hover:bg-white/[0.10] transition"
+              >
+                <MapPin className="h-3 w-3" /> Current location on Maps ↗
+              </a>
+            ) : null;
+          })()}
+        </motion.div>
+      )}
+
+      {recent.length > 0 && (
+        <div className="rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/35">Auto-detected · recent</span>
+            <span className="text-[10px] font-bold text-white/40">{recent.length} trip{recent.length === 1 ? '' : 's'}</span>
+          </div>
+          {recent.slice().reverse().slice(0, 5).map((trip, idx) => {
+            const startedAt = new Date(trip.startedAtMs);
+            const durationMin = trip.endedAtMs
+              ? Math.round((trip.endedAtMs - trip.startedAtMs) / 60_000)
+              : 0;
+            const start = trip.route[0];
+            const end = trip.route[trip.route.length - 1];
+            const routeUrl = start && end
+              ? `https://www.google.com/maps/dir/?api=1&origin=${start.lat},${start.lon}&destination=${end.lat},${end.lon}`
+              : null;
+            return (
+              <div key={trip.id || idx} className="rounded-2xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-black text-white truncate">
+                    <Zap className="h-3 w-3 text-amber-300 shrink-0" />
+                    {startedAt.toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  {routeUrl && (
+                    <a
+                      href={routeUrl} target="_blank" rel="noopener noreferrer"
+                      className="text-[9px] font-black text-sky-300 uppercase tracking-widest hover:text-sky-200 transition"
+                    >
+                      Route ↗
+                    </a>
+                  )}
+                </div>
+                <div className="grid grid-cols-4 gap-1.5 text-center mt-1.5">
+                  <Mini icon={<MapPin className="h-3 w-3 text-emerald-300" />} text={`${trip.distanceKm.toFixed(1)} km`} />
+                  <Mini icon={<Clock className="h-3 w-3 text-white/50" />} text={`${durationMin} min`} />
+                  <Mini icon={<Activity className="h-3 w-3 text-rose-300" />} text={trip.maxHeartRate ? `${Math.round(trip.maxHeartRate)} bpm` : '—'} />
+                  <Mini icon={<ShieldCheck className="h-3 w-3 text-sky-300" />} text={`${trip.smoothness}/100`} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AutoTripStat = ({
+  label, value, unit, tint,
+}: { label: string; value: string; unit: string; tint: string }) => (
+  <div className="rounded-xl bg-black/30 border border-white/[0.05] py-1.5">
+    <div className="text-[8px] uppercase tracking-widest text-white/40">{label}</div>
+    <div className="text-[15px] font-black leading-none mt-0.5" style={{ color: tint }}>{value}</div>
+    <div className="text-[8px] text-white/40 mt-0.5">{unit}</div>
   </div>
 );
