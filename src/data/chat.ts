@@ -63,7 +63,7 @@ export function listenSosMessages(sosId: string, cb: (msgs: SosMessage[]) => voi
     return () => clearInterval(interval);
   }
 
-  // NOTE: Avoid orderBy + where compound query — requires a composite index
+  // NOTE: Avoid orderBy + where compound query. Requires a composite index
   // and causes INTERNAL ASSERTION FAILED on Firebase 12.x without it.
   // We sort client-side instead.
   const q = query(

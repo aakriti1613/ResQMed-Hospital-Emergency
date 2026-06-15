@@ -38,7 +38,7 @@ export const CareHospitalsPage = () => {
     setLoading(true);
     findNearbyHospitals({ lat: currentLocation.lat, lon: currentLocation.lon }, 8)
       .then((list) =>
-        // remove any demo placeholders — user wants only real nearby hospitals
+        // remove any demo placeholders. User wants only real nearby hospitals
         setHospitals(list.filter((h) => !String(h.id || '').startsWith('demo_nearby_')))
       )
       .catch(() => setHospitals([]))
@@ -47,7 +47,7 @@ export const CareHospitalsPage = () => {
 
   const merged = useMemo<HospitalInfo[]>(() => {
     const list: HospitalInfo[] = [
-      // Always pin the showcase hospital at the top — it's the only fully
+      // Always pin the showcase hospital at the top. It's the only fully
       // bookable hospital and we want users to always see it as an option.
       {
         ...SHOWCASE_HOSPITAL,

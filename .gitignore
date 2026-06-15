@@ -33,3 +33,7 @@ functions/.env.*
 
 # Local debugging scripts (do not commit)
 scripts/
+
+# Helmet bridge — never commit the Firebase service account key
+tools/helmet-bridge/serviceAccountKey.json
+tools/helmet-bridge/node_modules/

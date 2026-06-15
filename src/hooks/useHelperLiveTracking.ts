@@ -14,7 +14,7 @@ const ARRIVAL_CONFIRMATIONS = 2;          // need N consecutive pings
  * periodically via Google Directions. Stops on unmount or when `active` flips
  * to false.
  *
- * Designed for the helper side (HelpPage) — the VICTIM just listens to the
+ * Designed for the helper side (HelpPage). The VICTIM just listens to the
  * assignment doc and renders the result.
  */
 export function useHelperLiveTracking(params: {
@@ -85,7 +85,7 @@ export function useHelperLiveTracking(params: {
         lastWriteAtRef.current = now;
         lastWrittenLocRef.current = here;
 
-        // Opportunistically update the straight-line distance every tick —
+        // Opportunistically update the straight-line distance every tick -
         // cheap and gives the victim a smoother "closing distance" readout.
         updateAssignment(assignmentId, {
           helperLocation: { ...here, updatedAt: now },
@@ -94,7 +94,7 @@ export function useHelperLiveTracking(params: {
         } as any).catch((e) => console.warn('[HelperTracking] loc write failed', e));
       }
 
-      // ── Route / ETA recompute (Google Directions — billed) ──────────────
+      // ── Route / ETA recompute (Google Directions. Billed) ──────────────
       const sinceLastRoute = now - lastRouteAtRef.current;
       const deviation = lastWrittenLocRef.current
         ? haversineMeters(here, lastWrittenLocRef.current)

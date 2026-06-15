@@ -239,7 +239,7 @@ export const CareBookPage = () => {
         </div>
       </Panel>
 
-      {/* Chief complaint first — stays above the fixed pay bar when scrolling */}
+      {/* Chief complaint first. Stays above the fixed pay bar when scrolling */}
       <Panel title="Tell the doctor">
         <p className="text-[11px] text-white/45 mb-2 leading-relaxed">
           Symptoms, how long it&apos;s been going on, and anything urgent. This is shared with the doctor before your visit.
@@ -314,7 +314,7 @@ export const CareBookPage = () => {
         </motion.div>
       )}
 
-      {/* Sticky confirm bar — max-height + scroll so small screens / tall docks never cover the form */}
+      {/* Sticky confirm bar. Max-height + scroll so small screens / tall docks never cover the form */}
       <div className="fixed inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-white/[0.06] bg-[#0a0b0f]/95 backdrop-blur-md shadow-[0_-12px_40px_rgba(0,0,0,0.45)]">
         <div className="max-w-lg mx-auto px-4 py-2.5 max-h-[min(52vh,22rem)] overflow-y-auto overscroll-contain space-y-2">
           <div className="flex items-center gap-3">

@@ -50,7 +50,7 @@ export const CareSpecialtiesPage = () => {
         />
       </div>
 
-      {/* Showcase hospital call-out — always bookable */}
+      {/* Showcase hospital call-out. Always bookable */}
       <Link
         to={`/app/care/hospital/${SHOWCASE_HOSPITAL.id}?dept=general`}
         className="block rounded-3xl border border-white/[0.08] bg-[#13141a] p-4 relative overflow-hidden hover:border-white/15 transition"

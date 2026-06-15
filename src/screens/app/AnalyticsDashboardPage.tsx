@@ -22,13 +22,13 @@ import { appFromQuery } from '../../lib/challengeNav';
 // ── Utility helpers ──────────────────────────────────────────────────────────
 
 function fmtTime(sec: number): string {
-  if (sec <= 0) return '—';
+  if (sec <= 0) return '-';
   if (sec < 60) return `${Math.round(sec)}s`;
   return `${Math.round(sec / 60)}m ${Math.round(sec % 60)}s`;
 }
 
 function timeAgo(ms: number): string {
-  if (!ms) return '—';
+  if (!ms) return '-';
   const diff = Date.now() - ms;
   const min = Math.floor(diff / 60000);
   if (min < 1) return 'Just now';

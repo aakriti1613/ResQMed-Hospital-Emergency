@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// IncomingSosOverlay — Uber/Rapido-driver-style global SOS popup.
+// IncomingSosOverlay. Uber/Rapido-driver-style global SOS popup.
 //
 // Lives at the root of the app (mounted inside RootLayout) so that any
 // authenticated user, on ANY screen, receives a full-screen modal the moment
@@ -219,7 +219,7 @@ export const IncomingSosOverlay = () => {
     currentLocation!.lat, currentLocation!.lon,
     activeReq.location.lat, activeReq.location.lon,
   ) : null;
-  const distLabel = dist === null ? '—'
+  const distLabel = dist === null ? '-'
     : dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
 
   const createdMs = (activeReq as any)._createdMs as number | undefined;
@@ -284,7 +284,7 @@ export const IncomingSosOverlay = () => {
                 Emergency nearby
               </div>
               <div className="text-[11px] text-white/50 mt-0.5">
-                Someone needs help — you're the closest volunteer.
+                Someone needs help. You're the closest volunteer.
               </div>
             </div>
             <button

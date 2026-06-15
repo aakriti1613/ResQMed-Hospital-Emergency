@@ -228,7 +228,7 @@ export const TravelSafetyPage = () => {
                     : 'text-emerald-950 bg-emerald-400 hover:bg-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.4)]'
                 }`}
               >
-                {checkedInStatus ? '✓ Checked In!' : "I'm OK — Check In"}
+                {checkedInStatus ? '✓ Checked In!' : "I'm OK. Check In"}
               </button>
               
               <div className="grid grid-cols-2 gap-3">

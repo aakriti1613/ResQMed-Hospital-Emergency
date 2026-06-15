@@ -1,6 +1,6 @@
 /// <reference types="google.maps" />
 // ─────────────────────────────────────────────────────────────────────────────
-// Arogya Raksha — Hospital / Care data layer.
+// Arogya Raksha. Hospital / Care data layer.
 //
 // Strategy (per product spec):
 //  • Nearby hospitals on the map come from **Google Places "hospital" search**
@@ -60,7 +60,7 @@ export interface Doctor {
   feeRupees: number;        // ₹ fee
   /** How many users have already booked this doctor (for social proof). */
   bookingsCount: number;
-  /** Avatar emoji — avoids depending on hosted images. */
+  /** Avatar emoji. Avoids depending on hosted images. */
   avatarEmoji: string;
   /** Accent colour for the avatar disc. */
   avatarTint: string;
@@ -372,7 +372,7 @@ export function buildFallbackNearbyHospitals(origin: { lat: number; lon: number 
  * Returns real hospitals around `origin` within `radiusKm` using Google
  * Places. Results are augmented with distanceKm and sorted by proximity.
  *
- * NOTE: We do **not** attach doctors to these hospitals — in this app only the
+ * NOTE: We do **not** attach doctors to these hospitals. In this app only the
  * showcase hospital has a bookable roster. If the caller needs an always-
  * bookable first item, prepend `SHOWCASE_HOSPITAL` manually.
  */

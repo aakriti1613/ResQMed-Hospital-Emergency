@@ -84,7 +84,7 @@ export function haversineMeters(a: LatLon, b: LatLon): number {
 
 /** Format a seconds value as a short "mins" label (e.g. "12 min", "45 s"). */
 export function formatEta(seconds: number | undefined | null): string {
-  if (!seconds || seconds <= 0) return '—';
+  if (!seconds || seconds <= 0) return '-';
   if (seconds < 60) return `${Math.round(seconds)} s`;
   const mins = Math.round(seconds / 60);
   if (mins < 60) return `${mins} min`;
@@ -95,7 +95,7 @@ export function formatEta(seconds: number | undefined | null): string {
 
 /** Format meters → "850 m" or "2.3 km". */
 export function formatDistance(meters: number | undefined | null): string {
-  if (!meters || meters <= 0) return '—';
+  if (!meters || meters <= 0) return '-';
   if (meters < 1000) return `${Math.round(meters)} m`;
   return `${(meters / 1000).toFixed(1)} km`;
 }

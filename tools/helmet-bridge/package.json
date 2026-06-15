@@ -1,0 +1,16 @@
+{
+  "name": "aarogya-raksha-helmet-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Local bridge: ESP32 helmet JSON → Firestore (no firmware change).",
+  "scripts": {
+    "start": "node helmet-bridge.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

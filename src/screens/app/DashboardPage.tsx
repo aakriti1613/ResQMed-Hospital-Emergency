@@ -4,7 +4,7 @@ import {
   Sparkles,
   ChevronRight, ChevronDown, Clock, Trophy, Mic,
   Users, HardHat, BatteryFull, BatteryLow, BatteryWarning, Wifi, WifiOff, ShieldCheck,
-  Bell, Siren, Share2, Stethoscope, Shield, TrendingUp,
+  Bell, Siren, Share2, Stethoscope, Shield, TrendingUp, MapPin,
 } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { getDepartment } from '../../data/hospitals';
@@ -139,6 +139,33 @@ export const DashboardPage = () => {
           </div>
         </Link>
       </div>
+
+      {/* Live helmet vitals strip — always visible when the helmet is live */}
+      {helmetLive && helmet && (
+        helmet.heartRate !== undefined || helmet.spo2 !== undefined ||
+        helmet.vibration !== undefined || helmet.distanceCm !== undefined ||
+        helmet.lat !== undefined
+      ) && (
+        <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-300/90">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live helmet readings
+            </div>
+            {helmet.lat !== undefined && helmet.lon !== undefined && (
+              <span className="text-[9px] font-mono text-white/40 truncate">
+                {helmet.lat.toFixed(4)}, {helmet.lon.toFixed(4)}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            <MiniVital label="HR" value={helmet.heartRate} unit="BPM" tint="#fb7185" />
+            <MiniVital label="SpO₂" value={helmet.spo2} unit="%" tint="#38bdf8" />
+            <MiniVital label="Vib" value={helmet.vibration} unit={helmet.vibrationLabel ?? ''} tint="#facc15" />
+            <MiniVital label="Dist" value={helmet.distanceCm} unit="cm" tint="#a78bfa" />
+          </div>
+        </div>
+      )}
 
       {/* ── Zone 2: Primary SOS ── */}
       <div className="rounded-3xl border-2 border-red-500/40 bg-[#12131a] p-5 shadow-[0_0_32px_rgba(220,38,38,0.12)]">
@@ -343,7 +370,7 @@ const HelmetCard = ({ helmet, uid }: { helmet: HelmetDevice | null; uid?: string
           if (!uid) return;
           setBusy(true);
           try {
-            // Generate a demo serial — in production, scan a QR or pair via BLE.
+            // Generate a demo serial. In production, scan a QR or pair via BLE.
             const id = `AHO-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
             await pairHelmet({ ownerUid: uid, deviceId: id });
           } finally { setBusy(false); }
@@ -414,7 +441,7 @@ const HelmetCard = ({ helmet, uid }: { helmet: HelmetDevice | null; uid?: string
       <div className="relative mt-3 mb-2 rounded-2xl overflow-hidden bg-black/25 border border-white/[0.06]">
         <img
           src="/helmet.png"
-          alt="Aarogya Helmet One — sensor-equipped smart helmet"
+          alt="Aarogya Helmet One. Sensor-equipped smart helmet"
           className="w-full h-32 object-cover object-center"
           loading="lazy"
         />
@@ -443,12 +470,66 @@ const HelmetCard = ({ helmet, uid }: { helmet: HelmetDevice | null; uid?: string
           Sensors {helmet.sensorsActive ? 'on' : 'off'}
         </Chip>
       </div>
+      {/* Live vitals grid — populated by the helmet bridge / GSM ingest */}
+      {live && (helmet.heartRate !== undefined || helmet.spo2 !== undefined
+                || helmet.vibration !== undefined || helmet.distanceCm !== undefined
+                || helmet.lat !== undefined) && (
+        <div className="relative mt-3 grid grid-cols-4 gap-1.5 text-[10px] font-bold">
+          <VitalTile label="HR" value={helmet.heartRate !== undefined ? `${Math.round(helmet.heartRate)}` : '—'} unit="BPM" tint="#fb7185" />
+          <VitalTile label="SpO₂" value={helmet.spo2 !== undefined ? `${Math.round(helmet.spo2)}` : '—'} unit="%" tint="#38bdf8" />
+          <VitalTile
+            label="Vib"
+            value={helmet.vibration !== undefined ? `${Math.round(helmet.vibration)}` : '—'}
+            unit={helmet.vibrationLabel ?? ''}
+            tint="#facc15"
+          />
+          <VitalTile
+            label="Dist"
+            value={helmet.distanceCm !== undefined ? `${helmet.distanceCm.toFixed(0)}` : '—'}
+            unit="cm"
+            tint="#a78bfa"
+          />
+        </div>
+      )}
+      {live && helmet.lat !== undefined && helmet.lon !== undefined && (
+        <div className="relative mt-2 flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-2.5 py-1 text-[10px] font-bold text-white/75">
+          <MapPin className="h-3 w-3 text-emerald-300" />
+          <span className="font-mono">{helmet.lat.toFixed(5)}, {helmet.lon.toFixed(5)}</span>
+          {helmet.gsmStatus && (
+            <span className="ml-auto text-[9px] uppercase tracking-widest text-white/40">{helmet.gsmStatus}</span>
+          )}
+        </div>
+      )}
+
       <div className="relative mt-3 text-center text-[12px] font-black text-white/90">
         Sensors {helmet.sensorsActive ? 'Active' : 'Off'} · Battery {bat}%
       </div>
       <Link to="/app/profile" className="relative mt-1.5 block text-center text-[10px] font-black text-sky-300 uppercase tracking-widest hover:text-sky-200">
         configure
       </Link>
+    </div>
+  );
+};
+
+const VitalTile = ({
+  label, value, unit, tint,
+}: { label: string; value: string; unit: string; tint: string }) => (
+  <div className="rounded-xl border border-white/[0.08] bg-black/30 px-2 py-2 text-center">
+    <div className="text-[9px] font-black uppercase tracking-widest text-white/45">{label}</div>
+    <div className="mt-0.5 text-base font-black leading-none" style={{ color: tint }}>{value}</div>
+    <div className="mt-0.5 text-[9px] text-white/45 truncate">{unit}</div>
+  </div>
+);
+
+const MiniVital = ({
+  label, value, unit, tint,
+}: { label: string; value: number | undefined; unit: string; tint: string }) => {
+  const display = value === undefined ? '—' : (Number.isInteger(value) ? `${value}` : value.toFixed(1));
+  return (
+    <div className="rounded-lg bg-black/30 border border-white/[0.05] px-1.5 py-1 text-center">
+      <div className="text-[8px] font-black uppercase tracking-widest text-white/40 leading-tight">{label}</div>
+      <div className="text-[13px] font-black leading-tight" style={{ color: tint }}>{display}</div>
+      {unit && <div className="text-[8px] text-white/35 leading-tight truncate">{unit}</div>}
     </div>
   );
 };

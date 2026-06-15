@@ -25,7 +25,7 @@ try {
     app = getApps().length ? getApps()[0]! : initializeApp(firebaseConfig);
     authInstance = getAuth(app);
     try {
-      // v10 stable — no experimental options needed
+      // v10 stable. No experimental options needed
       dbInstance = initializeFirestore(app, {});
     } catch {
       // initializeFirestore throws if called more than once (e.g. HMR); fall back to getFirestore
@@ -44,7 +44,7 @@ export const db = dbInstance;
 export const storage = storageInstance;
 export const functions = functionsInstance;
 
-// Firebase Messaging requires Service Workers — NOT supported in native iOS/Android WebViews.
+// Firebase Messaging requires Service Workers. NOT supported in native iOS/Android WebViews.
 // We load it lazily and only if serviceWorker is available (i.e. on the web, not in the app).
 export const messaging = messagingInstance;
 
@@ -54,10 +54,10 @@ if (app && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       try {
         messagingInstance = getMessaging(app);
       } catch {
-        // silently ignore — not supported in this environment
+        // silently ignore. Not supported in this environment
       }
     })
     .catch(() => {
-      // silently ignore — messaging not available
+      // silently ignore. Messaging not available
     });
 }

@@ -1,4 +1,4 @@
-/** Stable ID for challenge progress — logged-in user or persistent guest. */
+/** Stable ID for challenge progress. Logged-in user or persistent guest. */
 export function getChallengeUserId(authUid?: string | null): string {
   if (authUid) return authUid;
   let gid = localStorage.getItem('arogya_guest_uid');

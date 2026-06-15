@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Arogya Raksha — Helper Rewards ladder
+// Arogya Raksha. Helper Rewards ladder
 //
 // Every helper earns points when they respond to an SOS (see `rewardHelperPoints`
 // in `./user.ts`). Those points unlock progressive tiers in the Profile page.

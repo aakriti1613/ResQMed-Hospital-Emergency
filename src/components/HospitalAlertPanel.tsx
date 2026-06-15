@@ -30,7 +30,7 @@ type Props = {
  * Panel rendered inside an accepted SOS card.
  * Shows hospitals around the **incident location** (not helper location, so the
  * list reflects where the patient will actually be taken). The helper picks one
- * to notify — that creates a `hospitalAlerts/*` doc the hospital portal reads.
+ * to notify. That creates a `hospitalAlerts/*` doc the hospital portal reads.
  */
 export const HospitalAlertPanel = ({
   requestId, victimId, helperId, helperName, victimLocation, severity,
@@ -135,7 +135,7 @@ export const HospitalAlertPanel = ({
               Successfully notified
             </div>
             <div className="text-[11px] font-black text-emerald-100/95 leading-snug">
-              ER is preparing for treatment — stay with the person until handover.
+              ER is preparing for treatment. Stay with the person until handover.
             </div>
             <div className="text-sm font-black text-white truncate mt-1">{activeAlert.hospitalName}</div>
             {activeAlert.hospitalAddress && (
@@ -247,7 +247,7 @@ export const HospitalAlertPanel = ({
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-white/45 truncate">{h.address || '—'}</div>
+                  <div className="text-[10px] text-white/45 truncate">{h.address || '-'}</div>
                   <div className="mt-0.5 flex items-center gap-2 text-[10px] text-white/55">
                     {typeof h.distanceKm === 'number' && (
                       <span className="text-blue-200 font-bold">

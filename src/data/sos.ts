@@ -123,7 +123,7 @@ export type SosAssignmentDoc = {
   distanceMeters?: number;
   distanceTrend?: 'closing' | 'stalled' | 'unknown';
   // ── Uber/Rapido-style live tracking ───────────────────────────────────────
-  /** Helper (ambulance/user) current GPS fix — updated every few seconds */
+  /** Helper (ambulance/user) current GPS fix. Updated every few seconds */
   helperLocation?: { lat: number; lon: number; updatedAt?: number };
   /** Seconds until helper reaches victim (from last Directions API call) */
   etaSeconds?: number;
@@ -251,7 +251,7 @@ export async function createSosRequest(input: Omit<SosRequestDoc, 'id' | 'primar
   // ── Part 1: duplicate-prevention ─────────────────────────────────────────
   const existing = await getActiveSosForUser(input.victimId);
   if (existing) {
-    console.warn('[SOS] ⚠ Existing active SOS found — cancelling old one.');
+    console.warn('[SOS] ⚠ Existing active SOS found. Cancelling old one.');
     try {
       await updateDoc(doc(db, 'sosRequests', existing.id), { status: 'cancelled', updatedAt: serverTimestamp() });
     } catch (e) {

@@ -69,12 +69,12 @@ export const ChallengeScenarioPage = () => {
             )}
             <div>
               <div className="text-lg font-black text-white">
-                {selected.isCorrect ? 'Great decision!' : 'Not quite — learn for next time'}
+                {selected.isCorrect ? 'Great decision!' : 'Not quite. Learn for next time'}
               </div>
               {pointsEarned > 0 ? (
                 <div className="text-sm font-black text-amber-300">+{pointsEarned} Aarogya Points</div>
               ) : alreadyEarned ? (
-                <div className="text-xs text-white/50">Already completed — practice mode</div>
+                <div className="text-xs text-white/50">Already completed. Practice mode</div>
               ) : !user ? (
                 <div className="text-xs text-sky-300">
                   <Link to={`/login?redirect=${encodeURIComponent(challengeEventHref(event.id, from))}`} className="underline font-bold">
@@ -159,7 +159,7 @@ export const ChallengeScenarioPage = () => {
       </AnimatePresence>
 
       <p className="mt-5 text-center text-[10px] text-white/30">
-        Choose carefully — points awarded for correct decisions (+{pts} pts)
+        Choose carefully. Points awarded for correct decisions (+{pts} pts)
       </p>
     </div>
   );

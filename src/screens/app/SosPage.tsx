@@ -215,7 +215,7 @@ export const SosPage = () => {
     }
   }, [phase]);
 
-  // ── Mount: auto-connect GPS (do NOT clear existing location — it may be the
+  // ── Mount: auto-connect GPS (do NOT clear existing location. It may be the
   //    only fix we have if GPS is blocked and user chose manual location)
   useEffect(() => {
     requestGPS({ silent: true, showAlert: false }).finally(() => setIsLocating(false));
@@ -246,7 +246,7 @@ export const SosPage = () => {
     return () => { isCancelled = true; };
   }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── LOCAL COUNTDOWN — zero Firestore writes during this phase ────────────
+  // ── LOCAL COUNTDOWN. Zero Firestore writes during this phase ────────────
   useEffect(() => {
     if (phase !== 'countdown') return;
     const timer = setInterval(() => {
@@ -259,7 +259,7 @@ export const SosPage = () => {
     return () => clearInterval(timer);
   }, [phase]);
 
-  // ── SOS creation — evaluates finalLocation at countdown=0 ─────────────────
+  // ── SOS creation. Evaluates finalLocation at countdown=0 ─────────────────
   // Keep a ref so the effect below always calls the LATEST version
   // (capturing the latest currentLocation value at fire time).
   const createSosRef = useRef<(() => Promise<void>) | undefined>(undefined);
@@ -275,16 +275,16 @@ export const SosPage = () => {
     let finalLocation: { lat: number; lon: number; isApproximate?: boolean } | null = null;
 
     if (hwLat && hwLon) {
-      // 1. Hardware sensor coordinates (crash detection) — highest priority
+      // 1. Hardware sensor coordinates (crash detection). Highest priority
       finalLocation = { lat: Number(hwLat), lon: Number(hwLon) };
     } else if (currentLocation?.source === 'gps' && now - currentLocation.timestamp < 2 * 60 * 1000) {
-      // 2. Live GPS — fresh within 2 minutes
+      // 2. Live GPS. Fresh within 2 minutes
       finalLocation = { lat: currentLocation.lat, lon: currentLocation.lon };
     } else if (currentLocation?.source === 'manual') {
       // 3. Manually selected location
       finalLocation = { lat: currentLocation.lat, lon: currentLocation.lon };
     } else if (currentLocation && now - currentLocation.timestamp < 8 * 60 * 1000) {
-      // 4. Last known location — within 8 minutes (marked as approximate)
+      // 4. Last known location. Within 8 minutes (marked as approximate)
       finalLocation = { lat: currentLocation.lat, lon: currentLocation.lon, isApproximate: true };
     }
     // else → no location at all (null)
@@ -336,7 +336,7 @@ export const SosPage = () => {
       })
       .catch((err) => {
         console.error('[SOS] ❌ Firestore write FAILED inside createSos:', err);
-        showToast('SOS sent (offline mode — check console for error)');
+        showToast('SOS sent (offline mode. Check console for error)');
       });
 
     console.log('[SOS] createSos finished Firestore call, setting phase active...');
@@ -374,7 +374,7 @@ export const SosPage = () => {
     if (isSame) return;
 
     lastLocUpdateRef.current = now;
-    console.log('[SOS] 📍 Location updated (throttled) — patching Firestore:', newLoc);
+    console.log('[SOS] 📍 Location updated (throttled). Patching Firestore:', newLoc);
     setSosLocation(newLoc);
     setNoLocationMode(false);
     updateSosRequest(sosId, { location: newLoc, hasValidLocation: true, isApproximate: false, lastUpdated: now })
@@ -443,7 +443,7 @@ export const SosPage = () => {
 
   // ── Cancel: bulk-cancel ALL active/countdown SOS docs for this user ────────
   const cancelAndClearAll = useCallback(async () => {
-    // ⚡ Signal FIRST (synchronous) — GlobalSosWatcher checks this before any
+    // ⚡ Signal FIRST (synchronous). GlobalSosWatcher checks this before any
     //    React state or Firestore snapshot can fire.
     signalSosCancel();
     isDoneRef.current = true;
@@ -577,7 +577,7 @@ export const SosPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Helper accepted (victim) — auto popup */}
+      {/* Helper accepted (victim). Auto popup */}
       <AnimatePresence>
         {helperAcceptedToast && (
           <motion.div
@@ -757,7 +757,7 @@ export const SosPage = () => {
       </AnimatePresence>
 
       <AnimatePresence mode="wait">
-        {/* ── COUNTDOWN — Helmet One “Emergency detected” (SOS + crash identical) ── */}
+        {/* ── COUNTDOWN. Helmet One “Emergency detected” (SOS + crash identical) ── */}
         {phase === 'countdown' && (
           <motion.div key="countdown" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="flex-1 flex flex-col overflow-y-auto">
@@ -991,7 +991,7 @@ export const SosPage = () => {
           </motion.div>
         )}
 
-        {/* ── ACTIVE PHASE — Helmet One sequence: Alert sent → Live → Guidance → Hospital ── */}
+        {/* ── ACTIVE PHASE. Helmet One sequence: Alert sent → Live → Guidance → Hospital ── */}
         {phase === 'active' && (
           <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="flex-1 flex flex-col overflow-y-auto">
@@ -1061,7 +1061,7 @@ export const SosPage = () => {
 
                   <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.08] px-4 py-3 w-full">
                     <p className="text-xs font-bold text-emerald-100/90 leading-relaxed">
-                      Stay calm — help is on the way. Keep your phone unlocked so responders can reach you.
+                      Stay calm. Help is on the way. Keep your phone unlocked so responders can reach you.
                     </p>
                   </div>
                 </div>
@@ -1139,7 +1139,7 @@ export const SosPage = () => {
                     </div>
                     <div className="text-left min-w-0">
                       <div className="text-sm font-black text-emerald-100">Need to talk?</div>
-                      <div className="text-[11px] text-emerald-200/70">24×7 crisis support — tap to call</div>
+                      <div className="text-[11px] text-emerald-200/70">24×7 crisis support. Tap to call</div>
                     </div>
                   </a>
                 </div>
@@ -1277,7 +1277,7 @@ export const SosPage = () => {
             </div>
 
             <div className="px-5 pb-6 space-y-4 flex-1">
-              {/* No-location warning banner — shown when SOS created without GPS or manual location */}
+              {/* No-location warning banner. Shown when SOS created without GPS or manual location */}
               {noLocationMode && (
                 <div className="rounded-3xl border border-amber-500/30 bg-amber-500/[0.08] p-4">
                   <div className="flex items-start gap-3">
@@ -1301,7 +1301,7 @@ export const SosPage = () => {
                         <div className="text-sm font-black text-white">Responder is on the way</div>
                         <div className="text-[10px] font-black text-white/35 uppercase tracking-widest mt-2">ETA</div>
                         <div className="text-3xl font-black text-white mt-0.5">
-                          {uiPrimaryResponder.etaSeconds ? formatEta(uiPrimaryResponder.etaSeconds) : '—'}
+                          {uiPrimaryResponder.etaSeconds ? formatEta(uiPrimaryResponder.etaSeconds) : '-'}
                         </div>
                         {uiPrimaryResponder.distanceMeters != null && (
                           <div className="text-xs text-white/50 mt-1 font-semibold">
@@ -1628,7 +1628,7 @@ export const SosPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] font-black text-amber-200">Safety Guide</div>
                     <div className="text-[10px] text-amber-100/65 leading-snug">
-                      If you can, move to a safe place and stay calm. Keep your phone unlocked — responders may need to contact you.
+                      If you can, move to a safe place and stay calm. Keep your phone unlocked. Responders may need to contact you.
                     </div>
                   </div>
                 </div>
@@ -1694,7 +1694,7 @@ export const SosPage = () => {
               <p className="mt-2 text-sm text-white/55">All helpers and emergency contacts have been notified that you're OK.</p>
             </div>
 
-            {/* Mood feedback — "How are you feeling?" */}
+            {/* Mood feedback. "How are you feeling?" */}
             <div className="mt-8 rounded-3xl border border-white/[0.06] bg-[#13141a] p-5 text-center">
               <div className="text-xs font-black text-white">How are you feeling?</div>
               <div className="text-[11px] text-white/45 mt-1">This helps medical staff respond better.</div>

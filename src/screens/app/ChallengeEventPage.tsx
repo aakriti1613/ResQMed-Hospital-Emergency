@@ -104,7 +104,7 @@ export const ChallengeEventPage = () => {
           <h2 className="text-sm font-black text-white">Interactive Scenarios</h2>
         </div>
         <p className="text-[11px] text-white/40 mb-3">
-          Realistic emergency situations — choose the best action under pressure.
+          Realistic emergency situations. Choose the best action under pressure.
         </p>
         <div className="space-y-2">
           {event.scenarios.map((scenario, idx) => {

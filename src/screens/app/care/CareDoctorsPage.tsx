@@ -1,6 +1,6 @@
 // NOTE: Historical filename retained (src/screens/app/care/CareDoctorsPage.tsx)
 // so the existing router & dynamic imports keep working. This file now
-// implements the **Hospital details** screen — it lists doctors available at
+// implements the **Hospital details** screen. It lists doctors available at
 // the selected hospital for the selected department.
 
 import { useEffect, useMemo, useState } from 'react';
@@ -110,7 +110,7 @@ export const CareDoctorsPage = () => {
             </div>
             <div className="text-[10px] text-white/70 mt-0.5 flex items-center gap-1">
               <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{hospital?.address || hospital?.tagline || '—'}</span>
+              <span className="truncate">{hospital?.address || hospital?.tagline || '-'}</span>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
  * Google Pay browser-side helper.
  *
  *  ── How this works ──────────────────────────────────────────────────────────
- *  ▸ TEST mode (default): uses DIRECT tokenization in the sandbox — no fake
+ *  ▸ TEST mode (default): uses DIRECT tokenization in the sandbox. No fake
  *    payment gateway (which triggers OR_BIBED_06). Nothing is actually charged.
  *
  *  ▸ PRODUCTION mode: switch the env vars to use your real merchant id and
@@ -51,7 +51,7 @@ const baseCardPaymentMethod = {
 
 /**
  * TEST: use DIRECT tokenization so Google's sandbox never hits a fake
- * `example` gateway — that triggers OR_BIBED_06 ("merchant trouble").
+ * `example` gateway. That triggers OR_BIBED_06 ("merchant trouble").
  * PRODUCTION: real PAYMENT_GATEWAY + your processor credentials.
  */
 const cardPaymentMethod = () => {
@@ -129,7 +129,7 @@ export function buildIsReadyRequest() {
 /** Build the PaymentDataRequest used for `loadPaymentData`. */
 export function buildPaymentDataRequest(input: GpayPaymentInput) {
   const totalPrice = Math.max(0, input.amountRupees).toFixed(2);
-  // In TEST + DIRECT, omit bogus merchantId — it can trigger OR_BIBED_06.
+  // In TEST + DIRECT, omit bogus merchantId. It can trigger OR_BIBED_06.
   const merchantInfo =
     GPAY_ENV === 'TEST'
       ? { merchantName: GPAY_MERCHANT_NAME }
@@ -180,7 +180,7 @@ export type GpaySuccess = {
   raw: any;
 };
 
-/** Local demo payment — same shape as a successful GPay callback. */
+/** Local demo payment. Same shape as a successful GPay callback. */
 export function buildMockGpaySuccess(): GpaySuccess {
   return {
     ref: `mock_gpay_${Date.now()}_${Math.floor(Math.random() * 1e6)}`,

@@ -157,7 +157,7 @@ export const HospitalPortalPage = () => {
                     
                     <div className="text-right">
                       <div className="text-xl font-black text-white">
-                        {p.primaryResponder?.etaSeconds ? formatEta(p.primaryResponder.etaSeconds) : '—'}
+                        {p.primaryResponder?.etaSeconds ? formatEta(p.primaryResponder.etaSeconds) : '-'}
                       </div>
                       <div className="text-[10px] text-white/40 uppercase tracking-widest mt-0.5">ETA</div>
                     </div>

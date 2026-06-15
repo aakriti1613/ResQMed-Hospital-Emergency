@@ -1,5 +1,5 @@
 /**
- * Hospital alerts — written by a helper / responder when they're heading to a
+ * Hospital alerts. Written by a helper / responder when they're heading to a
  * specific hospital with the victim of an active SOS.
  *
  * Use cases this enables today:

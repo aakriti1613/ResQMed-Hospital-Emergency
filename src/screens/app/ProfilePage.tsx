@@ -45,7 +45,7 @@ function makeId() {
 }
 
 function genderLabel(g: Gender | undefined): string {
-  if (!g) return '—';
+  if (!g) return '-';
   return g.charAt(0).toUpperCase() + g.slice(1);
 }
 
@@ -206,7 +206,7 @@ export const ProfilePage = () => {
   // ── MAIN ──────────────────────────────────────────────────────────────────
   const age = calcAge(dob);
   const displayName = name || user?.displayName || 'Guest';
-  const displayPhone = phone || '—';
+  const displayPhone = phone || '-';
 
   return (
     <div className="min-h-full bg-[#0a0b0f] px-4 pt-10 pb-4 max-w-lg mx-auto w-full space-y-4">
@@ -247,11 +247,11 @@ export const ProfilePage = () => {
         {/* Identity pills */}
         <div className="mt-4 flex flex-wrap gap-1.5">
           <Pill icon={<CalendarDays className="h-3 w-3 text-blue-300" />}
-            label={age !== null ? `${age} yrs` : 'Age —'} />
+            label={age !== null ? `${age} yrs` : 'Age -'} />
           <Pill icon={<User className="h-3 w-3 text-purple-300" />}
             label={genderLabel(gender)} />
           <Pill icon={<Droplets className="h-3 w-3 text-red-300" />}
-            label={bloodGroup || 'Blood —'} />
+            label={bloodGroup || 'Blood -'} />
         </div>
 
         {/* Volunteer Trust Score & Badges */}

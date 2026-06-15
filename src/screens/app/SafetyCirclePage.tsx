@@ -13,7 +13,7 @@ type Contact = { name: string; phone: string; relation?: string };
 const RELATION_PRESETS = ['Mother', 'Father', 'Sister', 'Brother', 'Spouse', 'Friend', 'Doctor', 'Other'];
 
 /**
- * Safety Circle — dedicated page for managing emergency contacts.
+ * Safety Circle. Dedicated page for managing emergency contacts.
  * These are the people who get an instant alert (WhatsApp + SMS + voice
  * cascade) the moment the user triggers an SOS, and again on every key
  * milestone (helper accepted, hospital alerted, marked safe).

@@ -2,7 +2,7 @@ import { useRouteError, isRouteErrorResponse, Link } from 'react-router-dom';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 /**
- * React Router `errorElement` fallback — keeps Firestore / runtime hiccups from
+ * React Router `errorElement` fallback. Keeps Firestore / runtime hiccups from
  * nuking the whole UI with a raw stack trace.
  */
 export const RouteErrorFallback = () => {

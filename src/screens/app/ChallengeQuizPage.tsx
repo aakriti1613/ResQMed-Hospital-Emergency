@@ -93,7 +93,7 @@ export const ChallengeQuizPage = () => {
           </div>
         ) : alreadyEarned ? (
           <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-white/60 text-sm">
-            Points already earned for this quiz — great practice run!
+            Points already earned for this quiz. Great practice run!
           </div>
         ) : !user ? (
           <div className="mt-4 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sky-200 text-sm">

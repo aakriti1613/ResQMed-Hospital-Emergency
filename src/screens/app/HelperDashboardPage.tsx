@@ -8,7 +8,7 @@ import { getUserProfile, computeAgeFromDob, shortAddressFromProfile } from '../.
 
 type Tab = 'need-help' | 'leaderboard';
 
-// ── Haversine formula — returns distance in km ────────────────────────────
+// ── Haversine formula. Returns distance in km ────────────────────────────
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -89,7 +89,7 @@ export const HelperDashboardPage = () => {
     if (dist > 5) {
       setTooFarWarning(true);
       setAcceptedId(null);
-      showToast('❌ Location changed — you are too far to assist');
+      showToast('❌ Location changed. You are too far to assist');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acceptedSos?.location?.lat, acceptedSos?.location?.lon]);
@@ -135,7 +135,7 @@ export const HelperDashboardPage = () => {
       });
       setAcceptedId(req.id);
       setTooFarWarning(false);
-      showToast('Accepted — open I Can Help for the full trip screen.');
+      showToast('Accepted. Open I Can Help for the full trip screen.');
     } catch (e: unknown) {
       const msg = String((e as { message?: string })?.message ?? e ?? '');
       if (msg.includes('HELPER_SLOT_FULL')) {
@@ -196,9 +196,9 @@ export const HelperDashboardPage = () => {
             locStatus === 'denied' ? 'text-amber-400/70' : 'text-white/25'
           }`}>
             {locStatus === 'ok'
-              ? `Your location: ${helperLat?.toFixed(4)}, ${helperLon?.toFixed(4)} — showing SOS within 5 km`
+              ? `Your location: ${helperLat?.toFixed(4)}, ${helperLon?.toFixed(4)}. Showing SOS within 5 km`
               : locStatus === 'denied'
-              ? 'Location unavailable — showing all valid SOS requests'
+              ? 'Location unavailable. Showing all valid SOS requests'
               : 'Getting your location…'}
           </span>
         </div>
@@ -247,7 +247,7 @@ export const HelperDashboardPage = () => {
                 </div>
               </div>
 
-              {/* Too-far warning — shown when victim updated location and helper is now >5 km */}
+              {/* Too-far warning. Shown when victim updated location and helper is now >5 km */}
               <AnimatePresence>
                 {tooFarWarning && (
                   <motion.div
@@ -256,7 +256,7 @@ export const HelperDashboardPage = () => {
                   >
                     <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-xs font-black text-amber-300">📍 Location changed — you're too far</div>
+                      <div className="text-xs font-black text-amber-300">📍 Location changed. You're too far</div>
                       <div className="text-[10px] text-amber-300/60 mt-0.5 leading-relaxed">
                         The victim's location was updated and you are now more than 5 km away.
                         Your assignment was removed. New helpers near the updated location are being notified.
@@ -282,7 +282,7 @@ export const HelperDashboardPage = () => {
                 </motion.div>
               )}
 
-              {/* SOS cards — only hasValidLocation=true, within 5 km */}
+              {/* SOS cards. Only hasValidLocation=true, within 5 km */}
               {visibleFeed.map((req) => {
                 const urgency = URGENCY_COLORS[req.severity as keyof typeof URGENCY_COLORS] ?? URGENCY_COLORS.low;
                 const isAccepted = acceptedId === req.id;
@@ -340,7 +340,7 @@ export const HelperDashboardPage = () => {
                     {isAccepted ? (
                       <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2.5">
                         <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                        <div className="text-xs text-emerald-300 font-semibold">You accepted — head to the location</div>
+                        <div className="text-xs text-emerald-300 font-semibold">You accepted. Head to the location</div>
                       </div>
                     ) : (
                       <button

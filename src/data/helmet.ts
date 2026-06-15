@@ -46,6 +46,16 @@ export type HelmetDevice = {
   lastPingAt?: Date;
   verifiedAt?: Date;
   crashEvent?: HelmetCrashEvent | null;
+  // ── Live telemetry (populated by the helmet bridge / ingest endpoints) ──
+  heartRate?: number;
+  spo2?: number;
+  vibration?: number;
+  vibrationLabel?: string;
+  distanceCm?: number;
+  lat?: number;
+  lon?: number;
+  gsmStatus?: string;
+  relayOn?: boolean;
 };
 
 const LS_KEY = 'arogya_helmet_v1';
@@ -74,6 +84,8 @@ function saveDemo(uid: string, d: HelmetDevice) {
 }
 
 function mapHelmet(uid: string, data: any): HelmetDevice {
+  const numOrUndef = (v: any): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) ? v : undefined;
   return {
     ownerUid: data.ownerUid ?? uid,
     deviceId: data.deviceId ?? 'unknown',
@@ -90,6 +102,15 @@ function mapHelmet(uid: string, data: any): HelmetDevice {
           at: data.crashEvent.at?.toDate?.() ?? new Date(data.crashEvent.at ?? Date.now()),
         }
       : null,
+    heartRate:      numOrUndef(data.heartRate),
+    spo2:           numOrUndef(data.spo2),
+    vibration:      numOrUndef(data.vibration),
+    vibrationLabel: typeof data.vibrationLabel === 'string' ? data.vibrationLabel : undefined,
+    distanceCm:     numOrUndef(data.distanceCm),
+    lat:            numOrUndef(data.lat),
+    lon:            numOrUndef(data.lon),
+    gsmStatus:      typeof data.gsmStatus === 'string' ? data.gsmStatus : undefined,
+    relayOn:        typeof data.relayOn === 'boolean' ? data.relayOn : undefined,
   };
 }
 

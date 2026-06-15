@@ -34,19 +34,19 @@ export const AppShell = () => {
         <Outlet />
       </main>
 
-      {/* Bottom Nav — 4 side tabs + center SOS FAB ─────────────────────── */}
+      {/* Bottom Nav. 4 side tabs + center SOS FAB ─────────────────────── */}
       <nav className="fixed inset-x-0 bottom-0 z-50 h-[78px] border-t border-white/[0.06] dark:bg-[#0e0f14]/95 bg-white/95 backdrop-blur-xl">
         <div className="relative grid grid-cols-5 h-full max-w-lg mx-auto">
           <BottomTab to="/app" label={t('nav.home')} icon={<Home className="h-5 w-5" />} tint="emerald" end />
           <BottomTab to="/app/care" label={t('nav.care')} icon={<Stethoscope className="h-5 w-5" />} tint="sky" />
 
-          {/* Center SOS FAB column — empty placeholder so the grid keeps 5 cols */}
+          {/* Center SOS FAB column. Empty placeholder so the grid keeps 5 cols */}
           <div aria-hidden className="relative" />
 
           <BottomTab to="/app/safety" label={t('nav.safety')} icon={<Shield className="h-5 w-5" />} tint="amber" />
           <BottomTab to="/app/profile" label={t('nav.profile')} icon={<User className="h-5 w-5" />} tint="violet" />
 
-          {/* Floating SOS button — visually pinned in the center */}
+          {/* Floating SOS button. Visually pinned in the center */}
           <button
             id="btn-sos-fab"
             type="button"

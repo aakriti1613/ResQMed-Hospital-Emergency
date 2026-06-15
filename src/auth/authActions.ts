@@ -14,7 +14,7 @@ const DEMO_KEY = 'resqmed_demo_user_v1';
  * OTP is not validated (any 4-digit code is accepted in demo).
  */
 /**
- * Login only. Does NOT register a new user — caller must pre-check
+ * Login only. Does NOT register a new user. Caller must pre-check
  * `isPhoneRegistered()` and route to /signup if false.
  * Returns the uid of the signed-in user.
  */
@@ -76,7 +76,7 @@ export async function signupWithPhone(input: {
     uid = cred.user.uid;
     await updateProfile(cred.user, { displayName: input.name });
   } catch {
-    // Already registered — just update profile
+    // Already registered. Just update profile
     const cred = await signInWithEmailAndPassword(auth, email, password);
     uid = cred.user.uid;
     await updateProfile(cred.user, { displayName: input.name });

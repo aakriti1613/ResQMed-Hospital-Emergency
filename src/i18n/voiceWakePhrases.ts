@@ -18,26 +18,26 @@ export const WAKE_PHRASES: string[] = [
   'emergency',
   'save me',
   'sos',
-  // Hindi — Devanagari
+  // Hindi. Devanagari
   'मेरी मदद करो',
   'मदद करो',
   'मुझे मदद',
   'मदद चाहिए',
   'आपातकाल',
   'बचाओ',
-  // Hindi — romanized (browser may transcribe Hindi speech this way)
+  // Hindi. Romanized (browser may transcribe Hindi speech this way)
   'meri madad karo',
   'madad karo',
   'mujhe madad',
   'madad chahiye',
   'aapatakal',
-  // Telugu — Telugu script
+  // Telugu. Telugu script
   'నాకు సహాయం',
   'సహాయం చేయండి',
   'సహాయం కావాలి',
   'అత్యవసర',
   'ఎమర్జెన్సీ',
-  // Telugu — romanized
+  // Telugu. Romanized
   'naku sahayam',
   'sahayam cheyandi',
   'sahayam kavali',

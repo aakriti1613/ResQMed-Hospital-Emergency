@@ -11,13 +11,13 @@ import { useTranslation } from 'react-i18next';
 import { appBackPath, appFromQuery, withFromContext, type ChallengeFrom } from '../../lib/challengeNav';
 
 /**
- * Medical ID — a responder-facing summary of the user's vital health info.
+ * Medical ID. A responder-facing summary of the user's vital health info.
  * Designed to be unlockable from the lock screen / home / SOS active screen
  * so first responders can see blood group, allergies, conditions, meds and
  * the primary emergency contact without unlocking the rest of the phone.
  *
  * The "Show Big" mode renders the same data as a full-screen card with very
- * large typography — meant to be presented to a paramedic at the scene.
+ * large typography. Meant to be presented to a paramedic at the scene.
  */
 export const MedicalIdPage = () => {
   const nav = useNavigate();
@@ -95,19 +95,19 @@ export const MedicalIdPage = () => {
           tint="#dc2626"
           icon={<Droplet className="h-4 w-4 text-white" />}
           label="Blood"
-          value={profile?.bloodGroup || '—'}
+          value={profile?.bloodGroup || '-'}
         />
         <VitalTile
           tint="#10b981"
           icon={<Cake className="h-4 w-4 text-white" />}
           label="Age"
-          value={age !== null ? String(age) : '—'}
+          value={age !== null ? String(age) : '-'}
         />
         <VitalTile
           tint="#3b82f6"
           icon={<User className="h-4 w-4 text-white" />}
           label="Gender"
-          value={profile?.gender ? profile.gender[0]!.toUpperCase() + profile.gender.slice(1) : '—'}
+          value={profile?.gender ? profile.gender[0]!.toUpperCase() + profile.gender.slice(1) : '-'}
         />
       </div>
 
@@ -195,12 +195,12 @@ export const MedicalIdPage = () => {
               <div className="text-[12px] font-black uppercase tracking-widest text-red-300">Medical ID</div>
               <div className="mt-1 text-3xl font-black text-white leading-tight">{profile?.name || 'Unknown'}</div>
               <div className="mt-2 text-base text-white/65">
-                {age !== null ? `${age} years` : '— years'}
+                {age !== null ? `${age} years` : '- years'}
                 {profile?.gender ? ` · ${profile.gender}` : ''}
               </div>
 
               <div className="mt-8 grid grid-cols-2 gap-4">
-                <BigField label="Blood Group" value={profile?.bloodGroup || '—'} tint="#dc2626" />
+                <BigField label="Blood Group" value={profile?.bloodGroup || '-'} tint="#dc2626" />
                 <BigField label="Allergies" value={profile?.allergies || 'None'} tint="#f59e0b" />
                 <BigField label="Conditions" value={profile?.medicalConditions || 'None'} tint="#ec4899" />
                 <BigField label="Medications" value={profile?.medications || 'None'} tint="#8b5cf6" />

@@ -55,7 +55,7 @@ export const AppointmentsPage = () => {
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300/80">Appointments</span>
           </div>
           <h1 className="mt-1 text-2xl font-black text-white">Your visits</h1>
-          <p className="mt-1 text-xs text-white/40">Upcoming and past consultations — all in one place.</p>
+          <p className="mt-1 text-xs text-white/40">Upcoming and past consultations. All in one place.</p>
         </div>
         <Link
           to="/app/care"

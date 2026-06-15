@@ -24,7 +24,7 @@ export const OfflineBanner = () => {
           className="fixed top-0 inset-x-0 z-[100] flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-xs font-black text-amber-950 shadow-lg"
         >
           <WifiOff className="h-3.5 w-3.5 shrink-0" />
-          You're offline — SOS alerts will be queued and sent when reconnected
+          You're offline. SOS alerts will be queued and sent when reconnected
         </motion.div>
       )}
     </AnimatePresence>

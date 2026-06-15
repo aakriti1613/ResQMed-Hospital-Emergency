@@ -84,7 +84,7 @@ export const HelpPage = () => {
   // Use the authenticated user's ID
   const helperUid = user?.uid ?? '';
 
-  // Debug log — check console to confirm different IDs per browser profile
+  // Debug log. Check console to confirm different IDs per browser profile
   useEffect(() => {
     console.log('[I Can Help] helperUid:', helperUid);
   }, [helperUid]);
@@ -100,7 +100,7 @@ export const HelpPage = () => {
     requestGPS({ silent: false, showAlert: false }).finally(() => setIsLocating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen to SOS feed — available to ALL users including guests
+  // Listen to SOS feed. Available to ALL users including guests
   useEffect(() => {
     return listenActiveSosRequests((data) => {
       const now = Date.now();
@@ -157,7 +157,7 @@ export const HelpPage = () => {
 
       if (dist > 50.0 && !tooFarSosIds.has(sosRequestId) && !removingRef.current.has(sosRequestId)) {
         removingRef.current.add(sosRequestId);
-        console.log('[HELPER] ❌ Too far from SOS', sosRequestId, '— removing from helpersAccepted');
+        console.log('[HELPER] ❌ Too far from SOS', sosRequestId, '- removing from helpersAccepted');
         removeHelperFromSos(sosRequestId, helperUid).catch(console.warn);
         setTooFarSosIds(prev => new Set(prev).add(sosRequestId));
         // Un-accept locally so the "Help Now" button reappears
@@ -221,11 +221,11 @@ export const HelpPage = () => {
       assignmentId = `demo-${Date.now()}`;
     }
     setAccepted((s) => ({ ...s, [req.id]: assignmentId }));
-    showToast('Accepted — shared details are on the way screen.');
+    showToast('Accepted. Shared details are on the way screen.');
   };
 
   // ── Part 5 / 7: 30-min freshness filter is already applied in sos.ts listener
-  // Compute distances — show ONLY requests <= 5km where victim has valid location
+  // Compute distances. Show ONLY requests <= 5km where victim has valid location
   const items = feed
     .filter(req => {
       if (!req.location || !req.hasValidLocation || !currentLocation) return false;
@@ -620,7 +620,7 @@ export const HelpPage = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// <AcceptedTracker /> — rendered inside an accepted SOS card.
+// <AcceptedTracker />. Rendered inside an accepted SOS card.
 // ─────────────────────────────────────────────────────────────────────────────
 const AcceptedTracker = ({
   requestId,
@@ -712,7 +712,7 @@ const AcceptedTracker = ({
                     ? formatEta(assignment.etaSeconds)
                     : reached
                       ? t('help.arrived')
-                      : '—'}
+                      : '-'}
                 </div>
                 {assignment?.distanceMeters != null && (
                   <div className="text-[11px] text-white/50 font-semibold mt-1">
