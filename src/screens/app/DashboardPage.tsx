@@ -11,6 +11,9 @@ import { getDepartment } from '../../data/hospitals';
 import { listenUpcomingAppointments, type Appointment } from '../../data/appointments';
 import { listenUserProfile, type UserProfile } from '../../data/user';
 import { listenHelmet, isHelmetLive, pairHelmet, verifyHelmet, type HelmetDevice } from '../../data/helmet';
+import {
+  predictLive, riskColor, riskLabel, googleMapsUrl, lastSeenLabel,
+} from '../../features/sos/liveCrashPrediction';
 import { useSharedLocation } from '../../hooks/useSharedLocation';
 import { useVoiceSos } from '../../hooks/useVoiceSos';
 import { useTranslation } from 'react-i18next';
@@ -140,32 +143,70 @@ export const DashboardPage = () => {
         </Link>
       </div>
 
-      {/* Live helmet vitals strip — always visible when the helmet is live */}
-      {helmetLive && helmet && (
+      {/* Live helmet vitals strip — shows live OR last-known data with offline badge */}
+      {helmet && (
         helmet.heartRate !== undefined || helmet.spo2 !== undefined ||
         helmet.vibration !== undefined || helmet.distanceCm !== undefined ||
         helmet.lat !== undefined
-      ) && (
-        <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] px-3 py-2.5">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-300/90">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Live helmet readings
+      ) && (() => {
+        const live = helmetLive;
+        const pred = predictLive(helmet);
+        const mapsUrl = googleMapsUrl(helmet.lat, helmet.lon);
+        const borderColor = live ? 'border-emerald-500/15 bg-emerald-500/[0.04]'
+                                 : 'border-amber-500/15 bg-amber-500/[0.04]';
+        const eyebrowColor = live ? 'text-emerald-300/90' : 'text-amber-300/90';
+        const dotColor    = live ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400';
+        return (
+          <div className={`rounded-2xl border px-3 py-2.5 ${borderColor}`}>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <div className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest ${eyebrowColor}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                {live ? 'Live helmet readings' : `Helmet offline · last seen ${lastSeenLabel(helmet.lastPingAt)}`}
+              </div>
+              {mapsUrl ? (
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[9px] font-mono text-sky-300 hover:text-sky-200 underline-offset-2 hover:underline truncate"
+                  title="Open in Google Maps"
+                >
+                  📍 {helmet.lat!.toFixed(4)}, {helmet.lon!.toFixed(4)}
+                </a>
+              ) : null}
             </div>
-            {helmet.lat !== undefined && helmet.lon !== undefined && (
-              <span className="text-[9px] font-mono text-white/40 truncate">
-                {helmet.lat.toFixed(4)}, {helmet.lon.toFixed(4)}
+            <div className="grid grid-cols-4 gap-1.5">
+              <MiniVital label="HR"   value={helmet.heartRate}  unit="BPM"                          tint="#fb7185" />
+              <MiniVital label="SpO₂" value={helmet.spo2}       unit="%"                            tint="#38bdf8" />
+              <MiniVital label="Vib"  value={helmet.vibration}  unit={helmet.vibrationLabel ?? ''}  tint="#facc15" />
+              <MiniVital label="Dist" value={helmet.distanceCm} unit="cm"                           tint="#a78bfa" />
+            </div>
+            {/* Live crash-risk prediction (trained rule layer over current data) */}
+            <div className="mt-2 flex items-center gap-2 rounded-xl bg-black/30 border border-white/[0.05] px-2.5 py-2">
+              <span
+                className="text-[9px] font-black uppercase tracking-widest"
+                style={{ color: riskColor(pred.risk) }}
+              >
+                {riskLabel(pred.risk)}
               </span>
+              <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className="h-full transition-all"
+                  style={{ width: `${pred.confidence}%`, background: riskColor(pred.risk) }}
+                />
+              </div>
+              <span className="text-[10px] font-black text-white/85 tabular-nums w-9 text-right">
+                {pred.confidence}%
+              </span>
+            </div>
+            {pred.crashed && (
+              <div className="mt-1 text-[10px] font-bold text-red-300 leading-tight">
+                ⚠ Model classifies current readings as a crash · severity: {pred.severity.toUpperCase()}
+              </div>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-1.5">
-            <MiniVital label="HR" value={helmet.heartRate} unit="BPM" tint="#fb7185" />
-            <MiniVital label="SpO₂" value={helmet.spo2} unit="%" tint="#38bdf8" />
-            <MiniVital label="Vib" value={helmet.vibration} unit={helmet.vibrationLabel ?? ''} tint="#facc15" />
-            <MiniVital label="Dist" value={helmet.distanceCm} unit="cm" tint="#a78bfa" />
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Zone 2: Primary SOS ── */}
       <div className="rounded-3xl border-2 border-red-500/40 bg-[#12131a] p-5 shadow-[0_0_32px_rgba(220,38,38,0.12)]">
@@ -491,13 +532,21 @@ const HelmetCard = ({ helmet, uid }: { helmet: HelmetDevice | null; uid?: string
           />
         </div>
       )}
-      {live && helmet.lat !== undefined && helmet.lon !== undefined && (
-        <div className="relative mt-2 flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-2.5 py-1 text-[10px] font-bold text-white/75">
+      {helmet.lat !== undefined && helmet.lon !== undefined && (
+        <a
+          href={googleMapsUrl(helmet.lat, helmet.lon) || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative mt-2 flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-2.5 py-1 text-[10px] font-bold text-white/75 hover:bg-white/[0.10] hover:text-white transition"
+        >
           <MapPin className="h-3 w-3 text-emerald-300" />
           <span className="font-mono">{helmet.lat.toFixed(5)}, {helmet.lon.toFixed(5)}</span>
-          {helmet.gsmStatus && (
-            <span className="ml-auto text-[9px] uppercase tracking-widest text-white/40">{helmet.gsmStatus}</span>
-          )}
+          <span className="ml-auto text-[9px] uppercase tracking-widest text-sky-300">Open ↗</span>
+        </a>
+      )}
+      {!live && helmet.lastPingAt && (
+        <div className="relative mt-2 text-center text-[10px] font-bold text-amber-300/80">
+          Offline · last seen {lastSeenLabel(helmet.lastPingAt)}
         </div>
       )}
 

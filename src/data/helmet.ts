@@ -56,6 +56,8 @@ export type HelmetDevice = {
   lon?: number;
   gsmStatus?: string;
   relayOn?: boolean;
+  accel?: { x?: number; y?: number; z?: number };
+  gyro?:  { x?: number; y?: number; z?: number };
 };
 
 const LS_KEY = 'arogya_helmet_v1';
@@ -111,6 +113,12 @@ function mapHelmet(uid: string, data: any): HelmetDevice {
     lon:            numOrUndef(data.lon),
     gsmStatus:      typeof data.gsmStatus === 'string' ? data.gsmStatus : undefined,
     relayOn:        typeof data.relayOn === 'boolean' ? data.relayOn : undefined,
+    accel: data.accel ? {
+      x: numOrUndef(data.accel.x), y: numOrUndef(data.accel.y), z: numOrUndef(data.accel.z),
+    } : undefined,
+    gyro: data.gyro ? {
+      x: numOrUndef(data.gyro.x), y: numOrUndef(data.gyro.y), z: numOrUndef(data.gyro.z),
+    } : undefined,
   };
 }
 
