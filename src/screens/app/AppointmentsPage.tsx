@@ -217,6 +217,7 @@ const AppointmentCard = ({ appt, onRemove }: { appt: Appointment; onRemove: () =
             </div>
           )}
           <PaymentBadge appt={appt} />
+          <VisitSummary appt={appt} />
         </div>
         {!isPast && (
           <button
@@ -228,6 +229,28 @@ const AppointmentCard = ({ appt, onRemove }: { appt: Appointment; onRemove: () =
           </button>
         )}
       </div>
+    </div>
+  );
+};
+
+const VisitSummary = ({ appt }: { appt: Appointment }) => {
+  if (appt.status !== 'completed') return null;
+  if (!appt.diagnosis && !appt.prescription && !appt.advice) return null;
+  const Line = ({ label, value }: { label: string; value?: string }) =>
+    value ? (
+      <div>
+        <div className="text-[9px] font-black uppercase tracking-wider text-sky-300/80">{label}</div>
+        <div className="text-[11px] text-white/75 leading-relaxed whitespace-pre-wrap">{value}</div>
+      </div>
+    ) : null;
+  return (
+    <div className="mt-2 rounded-xl border border-sky-500/20 bg-sky-500/[0.06] px-2.5 py-2 space-y-1.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-sky-300">
+        <Stethoscope className="h-3 w-3" /> Doctor's summary
+      </div>
+      <Line label="Diagnosis" value={appt.diagnosis} />
+      <Line label="Prescription" value={appt.prescription} />
+      <Line label="Advice" value={appt.advice} />
     </div>
   );
 };

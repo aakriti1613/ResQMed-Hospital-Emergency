@@ -34,6 +34,12 @@ export type HospitalAlertStatus =
   | 'arrived'       // helper + victim have reached the hospital
   | 'cancelled';    // helper changed hospitals or cancelled
 
+/** State of a hospital-dispatched ambulance for an incoming patient. */
+export type AmbulanceStatus =
+  | 'dispatched'    // hospital has sent a unit toward the patient
+  | 'enroute'       // unit is on the way
+  | 'arrived';      // unit reached the patient / returned with them
+
 export type HospitalAlert = {
   id: string;
   /** SOS request this alert belongs to. */
@@ -60,9 +66,28 @@ export type HospitalAlert = {
   /** Suggested specialty (cardio, ortho, neuro, …) so the right team is on call. */
   suggestedDept?: string;
 
+  // ── Optional patient snapshot (so the portal can render before/without a
+  //    full profile lookup — e.g. guest victims or demo data). ────────────────
+  patientName?: string;
+  patientAge?: number;
+  bloodGroup?: string;
+  allergies?: string;
+  medicalConditions?: string;
+  incidentType?: string;
+
   status: HospitalAlertStatus;
   createdAt?: Date;
   updatedAt?: Date;
+
+  // ── Ambulance dispatch (written by the hospital portal) ────────────────────
+  ambulanceStatus?: AmbulanceStatus;
+  /** Vehicle registration / unit id, e.g. "ARG-108". */
+  ambulanceVehicleNo?: string;
+  /** Crew / paramedic note, e.g. "Dr. Mehta + 2 paramedics". */
+  ambulanceCrew?: string;
+  /** Estimated minutes for the dispatched unit to reach the patient. */
+  ambulanceEtaMin?: number;
+  ambulanceDispatchedAt?: Date;
 };
 
 const LS_KEY = 'arogya_hospital_alerts_v1';
@@ -76,6 +101,7 @@ function loadDemo(): HospitalAlert[] {
       ...x,
       createdAt: x.createdAt ? new Date(x.createdAt) : undefined,
       updatedAt: x.updatedAt ? new Date(x.updatedAt) : undefined,
+      ambulanceDispatchedAt: x.ambulanceDispatchedAt ? new Date(x.ambulanceDispatchedAt) : undefined,
     }));
   } catch {
     return [];
@@ -102,9 +128,20 @@ function mapAlert(id: string, data: any): HospitalAlert {
     victimLocation: data.victimLocation,
     injuryNotes: data.injuryNotes,
     suggestedDept: data.suggestedDept,
+    patientName: data.patientName,
+    patientAge: typeof data.patientAge === 'number' ? data.patientAge : undefined,
+    bloodGroup: data.bloodGroup,
+    allergies: data.allergies,
+    medicalConditions: data.medicalConditions,
+    incidentType: data.incidentType,
     status: data.status ?? 'notified',
     createdAt: data.createdAt?.toDate?.() ?? (data.createdAt ? new Date(data.createdAt) : undefined),
     updatedAt: data.updatedAt?.toDate?.() ?? (data.updatedAt ? new Date(data.updatedAt) : undefined),
+    ambulanceStatus: data.ambulanceStatus,
+    ambulanceVehicleNo: data.ambulanceVehicleNo,
+    ambulanceCrew: data.ambulanceCrew,
+    ambulanceEtaMin: typeof data.ambulanceEtaMin === 'number' ? data.ambulanceEtaMin : undefined,
+    ambulanceDispatchedAt: data.ambulanceDispatchedAt?.toDate?.() ?? (data.ambulanceDispatchedAt ? new Date(data.ambulanceDispatchedAt) : undefined),
   };
 }
 
@@ -141,6 +178,12 @@ export async function notifyHospital(input: NotifyHospitalInput): Promise<string
   if (input.victimLocation)     payload.victimLocation = input.victimLocation;
   if (input.injuryNotes)        payload.injuryNotes = input.injuryNotes;
   if (input.suggestedDept)      payload.suggestedDept = input.suggestedDept;
+  if (input.patientName)        payload.patientName = input.patientName;
+  if (typeof input.patientAge === 'number') payload.patientAge = input.patientAge;
+  if (input.bloodGroup)         payload.bloodGroup = input.bloodGroup;
+  if (input.allergies)          payload.allergies = input.allergies;
+  if (input.medicalConditions)  payload.medicalConditions = input.medicalConditions;
+  if (input.incidentType)       payload.incidentType = input.incidentType;
 
   const ref = await addDoc(collection(db, 'hospitalAlerts'), payload);
   return ref.id;
@@ -161,10 +204,13 @@ export async function cancelHospitalAlert(alertId: string): Promise<void> {
   });
 }
 
-/** Update an alert (used by the future hospital portal to ack / mark arrived). */
+/** Update an alert (used by the hospital portal to ack / mark arrived / dispatch). */
 export async function updateHospitalAlert(
   alertId: string,
-  patch: Partial<Pick<HospitalAlert, 'status' | 'injuryNotes' | 'suggestedDept'>>,
+  patch: Partial<Pick<HospitalAlert,
+    | 'status' | 'injuryNotes' | 'suggestedDept'
+    | 'ambulanceStatus' | 'ambulanceVehicleNo' | 'ambulanceCrew' | 'ambulanceEtaMin'
+  >>,
 ): Promise<void> {
   if (isDemoMode) {
     const list = loadDemo().map((a) =>
@@ -173,10 +219,59 @@ export async function updateHospitalAlert(
     saveDemo(list);
     return;
   }
-  await updateDoc(doc(db, 'hospitalAlerts', alertId), {
-    ...patch,
-    updatedAt: serverTimestamp(),
+  // Drop undefined so we never persist `undefined` to Firestore.
+  const clean: Record<string, unknown> = {};
+  Object.entries(patch).forEach(([k, v]) => {
+    if (v !== undefined) clean[k] = v;
   });
+  clean.updatedAt = serverTimestamp();
+  await updateDoc(doc(db, 'hospitalAlerts', alertId), clean);
+}
+
+export type DispatchAmbulanceInput = {
+  vehicleNo: string;
+  crew?: string;
+  etaMin?: number;
+};
+
+/**
+ * Dispatch a hospital ambulance toward the patient of an incoming alert.
+ * Writes the dispatch onto the alert doc so the victim's SOS screen (which
+ * already listens to alerts for the request) shows "Hospital dispatched an
+ * ambulance · ETA …" — closing the loop end-to-end.
+ */
+export async function dispatchAmbulance(
+  alertId: string,
+  input: DispatchAmbulanceInput,
+): Promise<void> {
+  if (isDemoMode) {
+    const list = loadDemo().map((a) =>
+      a.id === alertId
+        ? {
+            ...a,
+            ambulanceStatus: 'dispatched' as const,
+            ambulanceVehicleNo: input.vehicleNo,
+            ambulanceCrew: input.crew,
+            ambulanceEtaMin: input.etaMin,
+            ambulanceDispatchedAt: new Date(),
+            // A dispatch implies the ER has seen the patient.
+            status: a.status === 'notified' ? ('acknowledged' as const) : a.status,
+            updatedAt: new Date(),
+          }
+        : a,
+    );
+    saveDemo(list);
+    return;
+  }
+  const payload: Record<string, unknown> = {
+    ambulanceStatus: 'dispatched',
+    ambulanceVehicleNo: input.vehicleNo,
+    ambulanceDispatchedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+  if (input.crew) payload.ambulanceCrew = input.crew;
+  if (typeof input.etaMin === 'number') payload.ambulanceEtaMin = input.etaMin;
+  await updateDoc(doc(db, 'hospitalAlerts', alertId), payload);
 }
 
 /** Live listener for all alerts on a given SOS request. */
@@ -221,6 +316,80 @@ export function listenMyAlertForRequest(
       .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))[0];
     cb(mine ?? null);
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Demo seeding — lets the Hospital Portal be demonstrated locally (demo mode)
+// without a second device generating live SOS traffic. No-op outside demo mode.
+// ─────────────────────────────────────────────────────────────────────────────
+export function seedDemoAlerts(hospitalId: string, hospitalName: string): number {
+  if (!isDemoMode) return 0;
+  const now = Date.now();
+  const samples: HospitalAlert[] = [
+    {
+      id: `demo-alert-${now}-1`,
+      requestId: `demo-req-${now}-1`,
+      victimId: `demo-victim-1`,
+      helperId: 'demo-helper-1',
+      helperName: 'Rohan (Good Samaritan)',
+      hospitalId, hospitalName,
+      hospitalAddress: 'Sector 18, City Centre',
+      severity: 'critical',
+      injuryNotes: 'Two-wheeler vs car. Conscious but bleeding from right leg, suspected fracture.',
+      suggestedDept: 'Orthopedics / Trauma',
+      patientName: 'Aarav Sharma', patientAge: 28, bloodGroup: 'B+',
+      allergies: 'Penicillin', medicalConditions: 'Asthma',
+      incidentType: 'crash',
+      status: 'notified',
+      createdAt: new Date(now - 2 * 60 * 1000),
+      updatedAt: new Date(now - 2 * 60 * 1000),
+    },
+    {
+      id: `demo-alert-${now}-2`,
+      requestId: `demo-req-${now}-2`,
+      victimId: `demo-victim-2`,
+      helperId: 'demo-helper-2',
+      helperName: 'Ambulance 108',
+      hospitalId, hospitalName,
+      hospitalAddress: 'Sector 18, City Centre',
+      severity: 'major',
+      injuryNotes: 'Collapse at gym, chest discomfort. Helper performing first aid.',
+      suggestedDept: 'Cardiology',
+      patientName: 'Meera Nair', patientAge: 54, bloodGroup: 'O+',
+      allergies: '', medicalConditions: 'Hypertension, Type-2 Diabetes',
+      incidentType: 'medical',
+      status: 'acknowledged',
+      createdAt: new Date(now - 8 * 60 * 1000),
+      updatedAt: new Date(now - 6 * 60 * 1000),
+    },
+    {
+      id: `demo-alert-${now}-3`,
+      requestId: `demo-req-${now}-3`,
+      victimId: `demo-victim-3`,
+      helperId: 'demo-helper-3',
+      helperName: 'Priya (Helper)',
+      hospitalId, hospitalName,
+      hospitalAddress: 'Sector 18, City Centre',
+      severity: 'minor',
+      injuryNotes: 'Fall from stairs, possible wrist sprain. Stable.',
+      suggestedDept: 'Emergency Room',
+      patientName: 'Kabir Singh', patientAge: 19, bloodGroup: 'A+',
+      incidentType: 'fall',
+      status: 'notified',
+      createdAt: new Date(now - 1 * 60 * 1000),
+      updatedAt: new Date(now - 1 * 60 * 1000),
+    },
+  ];
+  const existing = loadDemo();
+  // Avoid piling up duplicates: keep non-demo + previously real alerts.
+  saveDemo([...samples, ...existing]);
+  return samples.length;
+}
+
+/** Remove demo-seeded alerts (ids starting with "demo-alert-"). */
+export function clearDemoAlerts(): void {
+  if (!isDemoMode) return;
+  saveDemo(loadDemo().filter((a) => !a.id.startsWith('demo-alert-')));
 }
 
 /** Live listener for all alerts sent to a specific hospital. */

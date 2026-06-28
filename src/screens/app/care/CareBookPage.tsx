@@ -7,6 +7,7 @@ import {
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../auth/AuthProvider';
 import { createAppointment } from '../../../data/appointments';
+import { getUserProfile, computeAgeFromDob } from '../../../data/user';
 import {
   SHOWCASE_HOSPITAL, SHOWCASE_HOSPITAL_ID, getDepartment, getHospitalById,
   getShowcaseDoctorById, generateSlots, type Slot,
@@ -87,6 +88,20 @@ export const CareBookPage = () => {
     if (!selectedSlot || !user) return;
     setBusy(true); setErr(null); setOk(null);
     try {
+      // Snapshot the patient's name/age/blood group so the hospital portal can
+      // show who's booked without needing access to the patient's profile.
+      let patientName: string | undefined = user.displayName ?? undefined;
+      let patientAge: number | undefined;
+      let patientBloodGroup: string | undefined;
+      try {
+        const profile = await getUserProfile(user.uid);
+        if (profile) {
+          patientName = profile.name || patientName;
+          patientAge = computeAgeFromDob(profile.dob);
+          patientBloodGroup = profile.bloodGroup || undefined;
+        }
+      } catch { /* snapshot is best-effort */ }
+
       await createAppointment({
         patientId: user.uid,
         doctorId: doctor.id,
@@ -100,6 +115,9 @@ export const CareBookPage = () => {
         department: dept.id,
         departmentName: dept.name,
         hospitalName: hospital.name,
+        patientName,
+        patientAge,
+        patientBloodGroup,
         feeRupees: doctor.feeRupees,
         paymentStatus: payment ? 'paid' : 'unpaid',
         paymentMethod: payment ? 'gpay' : 'cash',

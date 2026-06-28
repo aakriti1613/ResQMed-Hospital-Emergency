@@ -33,7 +33,8 @@ import { formatEta, formatDistance } from '../../data/routing';
 import {
   analyzeSeverityWithML,
 } from '../../features/sos/crashDetection';
-import { listenAlertsForRequest, type HospitalAlert } from '../../data/hospitalAlerts';
+import { listenAlertsForRequest, notifyHospital, type HospitalAlert } from '../../data/hospitalAlerts';
+import { SHOWCASE_HOSPITAL } from '../../data/hospitals';
 import {
   listenUserProfile,
   getUserProfile,
@@ -57,6 +58,18 @@ const HELPLINES = [
   { label: 'Women Helpline', number: '1091', color: '#a855f7' },
   { label: 'Fire', number: '101', color: '#f97316' },
 ];
+
+/** Row used on the "Help is on the way" screen to confirm each party responding. */
+const ConfirmRow = ({ ok, okText, waitText }: { ok: boolean; okText: string; waitText: string }) => (
+  <div className="flex items-center gap-2.5">
+    {ok ? (
+      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+    ) : (
+      <span className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-amber-400/40 border-t-amber-400 animate-spin" />
+    )}
+    <span className={`text-xs font-bold ${ok ? 'text-white/85' : 'text-white/45'}`}>{ok ? okText : waitText}</span>
+  </div>
+);
 
 export const SosPage = () => {
   const { t } = useTranslation();
@@ -139,6 +152,7 @@ export const SosPage = () => {
 
   const isDoneRef = useRef(false);    // blocks all state updates after cancel/resolve
   const createdRef = useRef(false);   // prevents duplicate Firestore writes
+  const autoNotifyRef = useRef(false); // ensures we auto-alert the hospital only once per SOS
   // ── Part 2: throttle location-sync writes to max 1 per 5 seconds ─────────
   const lastLocUpdateRef = useRef(0);
 
@@ -407,9 +421,40 @@ export const SosPage = () => {
 
   // ── Listen to hospital alerts that helpers raise for this SOS ─────────────
   useEffect(() => {
+    autoNotifyRef.current = false; // new SOS → allow one auto-notification
     if (!sosId) { setHospitalAlerts([]); return; }
     return listenAlertsForRequest(sosId, setHospitalAlerts);
   }, [sosId]);
+
+  // ── Make sure the emergency reaches a hospital even if no helper notifies ──
+  //    Once the SOS is active we auto-alert the partner hospital with the
+  //    victim's snapshot, so the ER sees the incoming patient immediately.
+  useEffect(() => {
+    if (autoNotifyRef.current) return;
+    if (!sosId || phase !== 'active') return;
+    // If a helper already alerted a hospital, don't duplicate.
+    if (hospitalAlerts.some((a) => a.status !== 'cancelled')) { autoNotifyRef.current = true; return; }
+    autoNotifyRef.current = true;
+    const loc = sosLocation ?? liveSosDoc?.location ?? undefined;
+    notifyHospital({
+      requestId: sosId,
+      victimId: user?.uid ?? 'guest',
+      helperId: 'auto-system',
+      helperName: 'Auto-alert (ResQMed)',
+      hospitalId: SHOWCASE_HOSPITAL.id,
+      hospitalName: SHOWCASE_HOSPITAL.name,
+      hospitalAddress: SHOWCASE_HOSPITAL.address,
+      severity: manualSeverity,
+      ...(loc ? { victimLocation: loc } : {}),
+      ...(incidentType ? { incidentType } : {}),
+      injuryNotes: 'Auto-generated from victim SOS. Awaiting responder details.',
+      patientName: profile?.name,
+      patientAge: profile ? computeAgeFromDob(profile.dob) : undefined,
+      bloodGroup: profile?.bloodGroup,
+      allergies: profile?.allergies,
+      medicalConditions: profile?.medicalConditions,
+    }).catch((e) => { console.warn('auto hospital notify failed', e); autoNotifyRef.current = false; });
+  }, [sosId, phase, hospitalAlerts, sosLocation, liveSosDoc?.location, manualSeverity, incidentType, profile, user?.uid]);
 
   // ── Listen to current user's profile (for emergency contact count, etc.) ─
   useEffect(() => {
@@ -1040,6 +1085,37 @@ export const SosPage = () => {
                     </div>
                   </div>
 
+                  {/* Live confirmations — update in real time as a helper accepts
+                      and the hospital acknowledges / dispatches an ambulance. */}
+                  {(() => {
+                    const hAlert = hospitalAlerts.filter((a) => a.status !== 'cancelled')[0];
+                    const helperOk = activeAssignments.length > 0 || !!uiPrimaryResponder;
+                    const helperName = uiPrimaryResponder?.helperName || activeAssignments[0]?.helperName;
+                    const hospAck = hAlert?.status === 'acknowledged' || hAlert?.status === 'arrived';
+                    return (
+                      <div className="mt-4 w-full rounded-3xl border border-white/[0.06] bg-[#13141a] p-4 text-left space-y-3">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-white/35">Live confirmations</div>
+                        <ConfirmRow
+                          ok={helperOk}
+                          okText={helperName ? `${helperName} is responding` : 'A responder has accepted'}
+                          waitText="Alerting nearby helpers…"
+                        />
+                        <ConfirmRow
+                          ok={!!hAlert}
+                          okText={hAlert ? `${hAlert.hospitalName} ER ${hospAck ? 'acknowledged · preparing' : 'notified'}` : ''}
+                          waitText="Notifying nearest hospital…"
+                        />
+                        {hAlert?.ambulanceStatus && (
+                          <ConfirmRow
+                            ok
+                            okText={`Ambulance ${hAlert.ambulanceVehicleNo ?? ''} dispatched${typeof hAlert.ambulanceEtaMin === 'number' ? ` · ETA ${hAlert.ambulanceEtaMin} min` : ''}`}
+                            waitText=""
+                          />
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {displayCoords && (
                     <div className="mt-4 w-full rounded-3xl border border-white/[0.06] bg-[#13141a] overflow-hidden text-left">
                       <div className="px-4 pt-3 pb-2 flex items-center justify-between">
@@ -1575,6 +1651,22 @@ export const SosPage = () => {
                         {a.injuryNotes && (
                           <div className="mt-2 rounded-xl border border-white/[0.05] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-white/65">
                             <span className="text-white/35 font-black mr-1">NOTE</span> {a.injuryNotes}
+                          </div>
+                        )}
+                        {a.ambulanceStatus && (
+                          <div className="mt-2 rounded-xl border border-sky-500/25 bg-sky-500/[0.08] px-2.5 py-2 flex items-center gap-2">
+                            <Ambulance className="h-4 w-4 text-sky-300 shrink-0" />
+                            <div className="min-w-0">
+                              <div className="text-[11px] font-black text-sky-200">
+                                Ambulance dispatched{a.ambulanceVehicleNo ? ` · ${a.ambulanceVehicleNo}` : ''}
+                              </div>
+                              <div className="text-[10px] text-white/55">
+                                {a.ambulanceStatus === 'arrived'
+                                  ? 'Unit has reached you'
+                                  : `On the way${typeof a.ambulanceEtaMin === 'number' ? ` · ETA ${a.ambulanceEtaMin} min` : ''}`}
+                                {a.ambulanceCrew ? ` · ${a.ambulanceCrew}` : ''}
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>

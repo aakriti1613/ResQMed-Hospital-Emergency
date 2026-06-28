@@ -37,3 +37,6 @@ scripts/
 # Helmet bridge — never commit the Firebase service account key
 tools/helmet-bridge/serviceAccountKey.json
 tools/helmet-bridge/node_modules/
+
+# Local Claude Code preview/launch config (machine-specific paths)
+.claude/
