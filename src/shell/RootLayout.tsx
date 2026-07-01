@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { GlobalSosWatcher } from './GlobalSosWatcher';
 import { HelmetCrashWatcher } from './HelmetCrashWatcher';
 import { IncomingSosOverlay } from '../components/IncomingSosOverlay';
+import { AssistantWidget } from '../components/AssistantWidget';
 
 export const RootLayout = () => {
   return (
@@ -17,6 +18,9 @@ export const RootLayout = () => {
       <div className="mx-auto w-full max-w-lg min-h-dvh">
         <Outlet />
       </div>
+
+      {/* Kaya — caring health companion (floating). Hidden on SOS/portal routes. */}
+      <AssistantWidget />
     </div>
   );
 };

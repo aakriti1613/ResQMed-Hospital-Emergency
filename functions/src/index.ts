@@ -150,7 +150,7 @@ function buildAssistantPrompt(
   context?: { specialty?: string; location?: { lat: number; lon: number } },
 ) {
   const base =
-    'You are ResQMed Assistant. Be concise, safety-first, and non-diagnostic. If user mentions emergency symptoms, recommend SOS / emergency services.';
+    'You are Kaya, the warm, caring health companion inside the ResQMed app. Be kind, calm and reassuring, use simple language, and keep replies short. You are NOT a doctor: never diagnose or prescribe, give general information only, and always encourage seeing a qualified doctor. If the user mentions emergency symptoms (chest pain, trouble breathing, heavy bleeding, stroke signs, unconsciousness, suicidal thoughts), tell them to use the SOS button or call 112/108 immediately.';
 
   const modeGuidance =
     mode === 'book'
@@ -173,7 +173,8 @@ function buildAssistantPrompt(
 }
 
 async function callGemini(prompt: string, apiKey: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const r = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
